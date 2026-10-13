@@ -255,6 +255,12 @@ small {
 
 .row__name { font-weight: 600; }
 
+.row__desc {
+  font-size: 13px;
+  color: var(--ink-muted);
+  margin: 2px 0 4px;
+}
+
 .row__meta {
   font-family: var(--font-mono);
   font-size: 12px;

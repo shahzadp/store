@@ -66,6 +66,7 @@ function renderList(products) {
           ${thumb}
           <div class="row__main">
             <div class="row__name">${escapeHtml(p.name)}</div>
+            ${p.description ? `<div class="row__desc">${escapeHtml(p.description)}</div>` : ''}
             <div class="row__meta">${escapeHtml(p.category)} · ${escapeHtml(price)} · sort ${p.sort_order} · /${escapeHtml(p.slug)}</div>
           </div>
           ${badge}
@@ -117,6 +118,7 @@ $('#product-form').addEventListener('submit', (event) => {
 
   const payload = {
     name: $('#f-name').value,
+    description: $('#f-description').value,
     category: $('#f-category').value,
     price_cents: priceCents,
     slug: $('#f-slug').value,
@@ -270,6 +272,7 @@ $('#product-list').addEventListener('click', (event) => {
 
   $('#f-id').value = product.id;
   $('#f-name').value = product.name;
+  $('#f-description').value = product.description || '';
   $('#f-category').value = product.category;
   $('#f-price').value = (product.price_cents / 100).toFixed(2);
   $('#f-slug').value = product.slug;

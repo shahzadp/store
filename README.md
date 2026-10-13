@@ -64,7 +64,13 @@ Buy links are plain `wa.me` deep links, so they work with no WhatsApp app
 installed, and nothing is transmitted anywhere:
 
 ```
-https://wa.me/923288304524?text=Hi%20Alex%20Store!...
+Hi Alex Store! I'd like to order:
+
+*Stoneware Mug*
+Kitchen — Rs 7,800
+Glazed stoneware, holds heat well and goes in the dishwasher.
+
+Is it available?
 ```
 
 The number is stored in the catalog's `settings` table (editable in the admin
@@ -72,8 +78,13 @@ panel), stored as country code + number with no `+`, spaces or dashes.
 
 ## Data model
 
-`products` — `id`, `slug` (unique), `name`, `category`, `price_cents`,
-`image_url`, `tint`, `in_stock`, `sort_order`.
+`products` — `id`, `slug` (unique), `name`, `description`, `category`,
+`price_cents`, `image_url`, `tint`, `in_stock`, `sort_order`.
+
+`description` is a short, factual line shown between the name and the price,
+and included in the WhatsApp order message. It is optional — a product with
+none simply omits it rather than rendering an empty line. Capped at 300
+characters.
 
 `collections` — `id`, `slug` (unique), `title`, `description`, `image_url`,
 `tint`, `sort_order`. **Deliberately unrelated to products.** A collection is

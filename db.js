@@ -74,8 +74,8 @@ const Catalog = (() => {
     const productLines = rows
       .map(
         (p) =>
-          `  (${escape(p.slug)}, ${escape(p.name)}, ${escape(p.category)}, ` +
-          `${p.price_cents}, ${escape(p.image_url)}, ` +
+          `  (${escape(p.slug)}, ${escape(p.name)}, ${escape(p.description)}, ` +
+          `${escape(p.category)}, ${p.price_cents}, ${escape(p.image_url)}, ` +
           `${escape(p.tint)}, ${p.in_stock ? 1 : 0}, ${p.sort_order})`,
       )
       .join(',\n');
@@ -99,6 +99,7 @@ CREATE TABLE IF NOT EXISTS products (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   slug        TEXT    NOT NULL UNIQUE,
   name        TEXT    NOT NULL,
+  description TEXT    NOT NULL DEFAULT '',
   category    TEXT    NOT NULL DEFAULT 'General',
   price_cents INTEGER NOT NULL CHECK (price_cents >= 0),
   image_url   TEXT,
@@ -127,10 +128,11 @@ CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 INSERT OR IGNORE INTO settings (key, value) VALUES
 ${settingLines};
 
-INSERT INTO products (slug, name, category, price_cents, image_url, tint, in_stock, sort_order) VALUES
+INSERT INTO products (slug, name, description, category, price_cents, image_url, tint, in_stock, sort_order) VALUES
 ${productLines}
 ON CONFLICT (slug) DO UPDATE SET
   name        = excluded.name,
+  description = excluded.description,
   category    = excluded.category,
   price_cents = excluded.price_cents,
   image_url   = excluded.image_url,
@@ -217,6 +219,9 @@ ON CONFLICT (slug) DO UPDATE SET
     const name = typeof input.name === 'string' ? input.name.trim() : '';
     if (!name || name.length > 120) errors.name = 'Required, max 120 characters';
 
+    const description =
+      typeof input.description === 'string' ? input.description.trim().slice(0, 300) : '';
+
     const price = Number(input.price_cents);
     if (!Number.isInteger(price) || price < 0) {
       errors.price_cents = 'Must be whole paisa, e.g. 780000 for Rs 7,800';
@@ -244,6 +249,7 @@ ON CONFLICT (slug) DO UPDATE SET
       value: {
         slug,
         name,
+        description,
         category,
         price_cents: price,
         image_url: imageUrl,
@@ -303,9 +309,9 @@ ON CONFLICT (slug) DO UPDATE SET
     if (slugTaken('products', value.slug)) return { ok: false, errors: { slug: 'Already in use' } };
 
     run(
-      `INSERT INTO products (slug, name, category, price_cents, image_url, tint, in_stock, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [value.slug, value.name, value.category, value.price_cents,
+      `INSERT INTO products (slug, name, description, category, price_cents, image_url, tint, in_stock, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [value.slug, value.name, value.description, value.category, value.price_cents,
        value.image_url, value.tint, value.in_stock, value.sort_order],
     );
     saveDraft();
@@ -319,10 +325,10 @@ ON CONFLICT (slug) DO UPDATE SET
 
     run(
       `UPDATE products
-          SET slug = ?, name = ?, category = ?, price_cents = ?,
+          SET slug = ?, name = ?, description = ?, category = ?, price_cents = ?,
               image_url = ?, tint = ?, in_stock = ?, sort_order = ?
         WHERE id = ?`,
-      [value.slug, value.name, value.category, value.price_cents,
+      [value.slug, value.name, value.description, value.category, value.price_cents,
        value.image_url, value.tint, value.in_stock, value.sort_order, id],
     );
     saveDraft();

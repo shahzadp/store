@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS products (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   slug        TEXT    NOT NULL UNIQUE,
   name        TEXT    NOT NULL,
+  description TEXT    NOT NULL DEFAULT '',
   category    TEXT    NOT NULL DEFAULT 'General',
   price_cents INTEGER NOT NULL CHECK (price_cents >= 0),
   image_url   TEXT,
@@ -53,17 +54,18 @@ INSERT OR IGNORE INTO settings (key, value) VALUES
   ('whatsapp',   '923288304524'),
   ('free_delivery_over_paisa', '600000');
 
-INSERT INTO products (slug, name, category, price_cents, tint, in_stock, sort_order) VALUES
-  ('stoneware-mug',  'Stoneware Mug',   'Kitchen',   780000, '#D9CCEA', 1, 10),
-  ('linen-throw',    'Linen Throw',     'Textiles', 1780000, '#E8DDF2', 1, 20),
-  ('glass-carafe',   'Glass Carafe',    'Kitchen',  1170000, '#CFC3E3', 1, 30),
-  ('soy-candle',     'Soy Candle',      'Candles',   670000, '#E3D6EE', 1, 40),
-  ('ceramic-vase',   'Ceramic Vase',    'Decor',    1560000, '#E3D6EE', 1, 50),
-  ('wool-cushion',   'Wool Cushion',    'Textiles', 1330000, '#CFC3E3', 1, 60),
-  ('serving-bowl',   'Serving Bowl',    'Kitchen',  1000000, '#E8DDF2', 1, 70),
-  ('brass-tray',     'Brass Tray',      'Decor',    1450000, '#D9CCEA', 1, 80)
+INSERT INTO products (slug, name, description, category, price_cents, tint, in_stock, sort_order) VALUES
+  ('stoneware-mug',  'Stoneware Mug',   'Glazed stoneware, holds heat well and goes in the dishwasher.', 'Kitchen',   780000, '#D9CCEA', 1, 10),
+  ('linen-throw',    'Linen Throw',     'Woven European flax, softens with every wash.', 'Textiles', 1780000, '#E8DDF2', 1, 20),
+  ('glass-carafe',   'Glass Carafe',    'Borosilicate glass with a cork stopper, pours without dripping.', 'Kitchen',  1170000, '#CFC3E3', 1, 30),
+  ('soy-candle',     'Soy Candle',      'Rapeseed and coconut wax, unscented, about 40 hours of burn.', 'Candles',   670000, '#E3D6EE', 1, 40),
+  ('ceramic-vase',   'Ceramic Vase',    'Wheel-thrown stoneware with a matte white glaze.', 'Decor',    1560000, '#E3D6EE', 1, 50),
+  ('wool-cushion',   'Wool Cushion',    'Lambswool cover with a feather-down insert, 45cm square.', 'Textiles', 1330000, '#CFC3E3', 1, 60),
+  ('serving-bowl',   'Serving Bowl',    'Shallow glazed bowl, nests with the others to save shelf space.', 'Kitchen',  1000000, '#E8DDF2', 1, 70),
+  ('brass-tray',     'Brass Tray',      'Unlacquered brass that darkens to a deeper patina over time.', 'Decor',    1450000, '#D9CCEA', 1, 80)
 ON CONFLICT (slug) DO UPDATE SET
   name        = excluded.name,
+  description = excluded.description,
   category    = excluded.category,
   price_cents = excluded.price_cents,
   tint        = excluded.tint,

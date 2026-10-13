@@ -33,12 +33,18 @@ const Store = (() => {
   }
 
   function productLink(product) {
-    return whatsappLink(
-      `Hi ${storeName}! I'd like to order:\n\n` +
-        `*${product.name}*\n` +
-        `${product.category} — ${formatPrice(product.price_cents)}\n\n` +
-        `Is it available?`,
-    );
+    const lines = [
+      `Hi ${storeName}! I'd like to order:`,
+      '',
+      `*${product.name}*`,
+      `${product.category} — ${formatPrice(product.price_cents)}`,
+    ];
+
+    // Only ask about the detail if there is any, and keep it to one extra line.
+    if (product.description) lines.push(product.description);
+    lines.push('', 'Is it available?');
+
+    return whatsappLink(lines.join('\n'));
   }
 
   function escapeHtml(value) {
@@ -79,6 +85,9 @@ const Store = (() => {
           <a class="product__link" href="${escapeHtml(href)}" target="_blank" rel="noopener">${media}</a>
           <div class="cat">${escapeHtml(product.category)}</div>
           <div class="product__name">${escapeHtml(product.name)}</div>
+          ${product.description
+            ? `<p class="product__desc">${escapeHtml(product.description)}</p>`
+            : ''}
           <div class="product__price">${escapeHtml(price)}</div>
           <a class="btn btn-solid btn-buy" href="${escapeHtml(href)}" target="_blank" rel="noopener"
              ${product.in_stock ? '' : 'aria-disabled="true"'}>

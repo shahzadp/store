@@ -512,9 +512,17 @@ h2 {
   line-height: 1.2;
 }
 
+.product__desc {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-body);
+}
+
 .product__price {
   font-size: 15px;
-  color: var(--ink-body);
+  color: var(--ink);
+  font-weight: 600;
 }
 
 /* ==========================================================================
