@@ -47,6 +47,24 @@ const Store = (() => {
     }[c]));
   }
 
+  /** Editorial card. Collections aren't for sale, so this is never a link. */
+  function collectionCard(collection) {
+    const media = collection.image_url
+      ? `<img class="collection-card__media" src="${escapeHtml(collection.image_url)}" alt="" loading="lazy">`
+      : `<div class="collection-card__media" style="background:${escapeHtml(collection.tint || '#D9CCEA')}" aria-hidden="true"></div>`;
+
+    return `
+      <article class="collection-card">
+        ${media}
+        <div class="collection-card__body">
+          <h3 class="collection-card__title">${escapeHtml(collection.title)}</h3>
+          ${collection.description
+            ? `<p class="collection-card__text">${escapeHtml(collection.description)}</p>`
+            : ''}
+        </div>
+      </article>`;
+  }
+
   function productCard(product) {
     const href = productLink(product);
     const price = formatPrice(product.price_cents);
@@ -103,5 +121,6 @@ const Store = (() => {
     productLink,
     escapeHtml,
     productCard,
+    collectionCard,
   };
 })();

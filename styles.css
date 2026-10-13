@@ -153,6 +153,11 @@ h2 {
   gap: 14px;
 }
 
+/* Breadcrumb only — the section heading below carries the page title */
+.page-head--tight {
+  padding-bottom: 0;
+}
+
 .crumbs {
   display: flex;
   gap: 10px;
@@ -222,6 +227,55 @@ h2 {
   background: var(--surface-dark);
   border-color: var(--surface-dark);
   color: var(--ink-on-dark);
+}
+
+/* ==========================================================================
+   Collections
+   ========================================================================== */
+
+.editorial {
+  padding-top: 72px;
+  padding-bottom: 8px;
+}
+
+.collections {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+/* Editorial card — deliberately not a link, since collections aren't for sale */
+.collection-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-light);
+  border: 1px solid var(--line);
+}
+
+.collection-card__media {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-bottom: 1px solid var(--line);
+  object-fit: cover;
+  display: block;
+}
+
+.collection-card__body {
+  padding: 22px;
+}
+
+.collection-card__title {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.collection-card__text {
+  margin: 0;
+  font-size: 16px;
+  color: var(--ink-body);
 }
 
 /* Per-product purchase button */
@@ -679,21 +733,34 @@ h2 {
     padding: 40px 20px;
   }
 
+  .editorial {
+    padding: 40px 20px 0;
+  }
+
   .page-head {
     padding: 32px 20px 28px;
     gap: 12px;
   }
 
-  .page-head__title {
-    font-size: 38px;
-  }
-
-  .page-head__lede {
-    font-size: 16px;
+  .page-head--tight {
+    padding-bottom: 0;
   }
 
   .shop--flush {
     padding-top: 32px;
+  }
+
+  .collections {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .collection-card__body {
+    padding: 18px;
+  }
+
+  .collection-card__title {
+    font-size: 26px;
   }
 
   .filters {

@@ -16,6 +16,17 @@ async function start() {
     ? products.map(Store.productCard).join('')
     : '<li class="catalog-status">No products in the catalog yet.</li>';
 
+  // Collections are editorial and independent of the catalog.
+  const strip = document.getElementById('home-collections');
+  if (strip) {
+    const collections = Catalog.listCollections();
+    strip.setAttribute('aria-busy', 'false');
+    strip.innerHTML = collections
+      .slice(0, 3)
+      .map(Store.collectionCard)
+      .join('');
+  }
+
   if (Catalog.hasDraft()) {
     console.info('Showing a local draft catalog — published catalog.sql is unchanged.');
   }

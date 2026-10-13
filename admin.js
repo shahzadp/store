@@ -141,6 +141,114 @@ $('#product-form').addEventListener('submit', (event) => {
 
 $('#cancel-btn').addEventListener('click', resetForm);
 
+/* ------------------------------------------------------------ collections */
+
+function renderCollections() {
+  const list = document.getElementById('collection-list');
+  const items = Catalog.listCollections();
+
+  if (!items.length) {
+    list.innerHTML = '<p class="muted">No collections yet. Add the first one above.</p>';
+    return;
+  }
+
+  list.innerHTML = items
+    .map((c) => {
+      const thumb = c.image_url
+        ? `<img class="row__thumb" src="${escapeHtml(c.image_url)}" alt="">`
+        : `<div class="row__thumb" style="background:${escapeHtml(c.tint || '#D9CCEA')}"></div>`;
+      return `
+        <div class="row" data-cid="${c.id}">
+          ${thumb}
+          <div class="row__main">
+            <div class="row__name">${escapeHtml(c.title)}</div>
+            <div class="row__meta">sort ${c.sort_order} · /${escapeHtml(c.slug)}</div>
+          </div>
+          <div class="row__actions">
+            <button class="btn btn-ghost" type="button" data-cedit="${c.id}">Edit</button>
+            <button class="btn btn-danger" type="button" data-cdelete="${c.id}">Delete</button>
+          </div>
+        </div>`;
+    })
+    .join('');
+}
+
+function resetCollectionForm() {
+  $('#collection-form').reset();
+  $('#c-id').value = '';
+  $('#c-title').textContent = 'Add a collection';
+  $('#c-submit').textContent = 'Add collection';
+  $('#c-cancel').hidden = true;
+  highlightTint('');
+}
+
+$('#collection-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+
+  const payload = {
+    title: $('#c-title-field').value,
+    description: $('#c-description').value,
+    slug: $('#c-slug').value,
+    image_url: $('#c-image').value,
+    tint: $('#c-tint').value,
+    sort_order: Number($('#c-sort').value) || 0,
+  };
+
+  const id = $('#c-id').value;
+  const result = id
+    ? Catalog.updateCollection(Number(id), payload)
+    : Catalog.createCollection(payload);
+
+  if (!result.ok) {
+    status(Object.entries(result.errors).map(([k, v]) => `${k}: ${v}`).join('; '), 'err');
+    return;
+  }
+
+  status(id ? 'Collection saved' : 'Collection added', 'ok');
+  resetCollectionForm();
+  renderCollections();
+  updateDraftNote();
+});
+
+$('#c-cancel').addEventListener('click', resetCollectionForm);
+
+$('#collection-list').addEventListener('click', (event) => {
+  const editId = event.target.dataset.cedit;
+  const deleteId = event.target.dataset.cdelete;
+  if (!editId && !deleteId) return;
+
+  const id = Number(editId || deleteId);
+
+  if (deleteId) {
+    const title = event.target.closest('.row').querySelector('.row__name').textContent;
+    if (!confirm(`Delete "${title}"? This only affects your local copy until you publish.`)) return;
+    Catalog.deleteCollection(id);
+    status('Deleted', 'ok');
+    renderCollections();
+    updateDraftNote();
+    return;
+  }
+
+  const collection = Catalog.listCollections().find((c) => c.id === id);
+  if (!collection) return;
+
+  $('#c-id').value = collection.id;
+  $('#c-title-field').value = collection.title;
+  $('#c-description').value = collection.description || '';
+  $('#c-slug').value = collection.slug;
+  $('#c-image').value = collection.image_url || '';
+  $('#c-tint').value = collection.tint || '';
+  $('#c-sort').value = collection.sort_order;
+
+  $('#c-title').textContent = `Edit "${collection.title}"`;
+  $('#c-submit').textContent = 'Save changes';
+  $('#c-cancel').hidden = false;
+  highlightTint(collection.tint);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+/* -------------------------------------------------------- product list ops */
+
 $('#product-list').addEventListener('click', (event) => {
   const editId = event.target.dataset.edit;
   const deleteId = event.target.dataset.delete;
@@ -208,25 +316,36 @@ $('#discard').addEventListener('click', async () => {
 
 /* --------------------------------------------------------------- swatches */
 
+function fillSwatches(boxId) {
+  const box = document.getElementById(boxId);
+  box.innerHTML = TINTS.map(
+    (tint) =>
+      `<button class="swatch" type="button" data-tint="${tint}" style="background:${tint}" aria-pressed="false" aria-label="Use ${tint}"></button>`,
+  ).join('');
+
+  box.addEventListener('click', (event) => {
+    const tint = event.target.dataset.tint;
+    if (!tint) return;
+    const input = box.dataset.target;
+    document.getElementById(input).value =
+      document.getElementById(input).value === tint ? '' : tint;
+    highlightTint(document.getElementById(input).value);
+  });
+}
+
 function highlightTint(value) {
   document.querySelectorAll('.swatch').forEach((el) => {
     el.setAttribute('aria-pressed', String(el.dataset.tint === value));
   });
 }
 
-$('#swatches').innerHTML = TINTS.map(
-  (tint) =>
-    `<button class="swatch" type="button" data-tint="${tint}" style="background:${tint}" aria-pressed="false" aria-label="Use ${tint}"></button>`,
-).join('');
+fillSwatches('swatches');
+fillSwatches('c-swatches');
 
-$('#swatches').addEventListener('click', (event) => {
-  const tint = event.target.dataset.tint;
-  if (!tint) return;
-  $('#f-tint').value = $('#f-tint').value === tint ? '' : tint;
-  highlightTint($('#f-tint').value);
+$('#refresh').addEventListener('click', () => {
+  refresh();
+  renderCollections();
 });
-
-$('#refresh').addEventListener('click', refresh);
 
 /* ------------------------------------------------------------------- boot */
 
@@ -237,6 +356,7 @@ $('#refresh').addEventListener('click', refresh);
     $('#s-name').value = Catalog.getSetting('store_name') || 'Alex Store';
     $('#s-wa').value = Catalog.getSetting('whatsapp') || '';
     refresh();
+    renderCollections();
     status(Catalog.hasDraft() ? 'Loaded local draft' : 'Loaded published catalog', 'ok');
   } catch (err) {
     status(`Could not load: ${err.message}`, 'err');

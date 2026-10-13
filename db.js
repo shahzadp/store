@@ -63,6 +63,7 @@ const Catalog = (() => {
   /** Rebuilds catalog.sql text from the live database. */
   function toSql() {
     const rows = all('SELECT * FROM products ORDER BY sort_order, id');
+    const collections = all('SELECT * FROM collections ORDER BY sort_order, id');
     const settings = all('SELECT * FROM settings ORDER BY key');
 
     const escape = (v) =>
@@ -76,6 +77,14 @@ const Catalog = (() => {
           `  (${escape(p.slug)}, ${escape(p.name)}, ${escape(p.category)}, ` +
           `${p.price_cents}, ${escape(p.image_url)}, ` +
           `${escape(p.tint)}, ${p.in_stock ? 1 : 0}, ${p.sort_order})`,
+      )
+      .join(',\n');
+
+    const collectionLines = collections
+      .map(
+        (c) =>
+          `  (${escape(c.slug)}, ${escape(c.title)}, ${escape(c.description)}, ` +
+          `${escape(c.image_url)}, ${escape(c.tint)}, ${c.sort_order})`,
       )
       .join(',\n');
 
@@ -100,6 +109,19 @@ CREATE TABLE IF NOT EXISTS products (
 
 CREATE INDEX IF NOT EXISTS idx_products_sort ON products (sort_order, id);
 
+-- Editorial groupings. No price, no stock, no link to products.
+CREATE TABLE IF NOT EXISTS collections (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug        TEXT    NOT NULL UNIQUE,
+  title       TEXT    NOT NULL,
+  description TEXT    NOT NULL DEFAULT '',
+  image_url   TEXT,
+  tint        TEXT,
+  sort_order  INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_collections_sort ON collections (sort_order, id);
+
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 
 INSERT OR IGNORE INTO settings (key, value) VALUES
@@ -114,6 +136,15 @@ ON CONFLICT (slug) DO UPDATE SET
   image_url   = excluded.image_url,
   tint        = excluded.tint,
   in_stock    = excluded.in_stock,
+  sort_order  = excluded.sort_order;
+
+INSERT INTO collections (slug, title, description, image_url, tint, sort_order) VALUES
+${collectionLines}
+ON CONFLICT (slug) DO UPDATE SET
+  title       = excluded.title,
+  description = excluded.description,
+  image_url   = excluded.image_url,
+  tint        = excluded.tint,
   sort_order  = excluded.sort_order;
 `;
   }
@@ -153,6 +184,15 @@ ON CONFLICT (slug) DO UPDATE SET
 
   function listProducts() {
     return all('SELECT * FROM products ORDER BY sort_order ASC, id ASC');
+  }
+
+  /**
+   * Editorial collections. Intentionally a separate table with no relation to
+   * products: not for sale, no price, no stock, never derived from the
+   * product list.
+   */
+  function listCollections() {
+    return all('SELECT * FROM collections ORDER BY sort_order ASC, id ASC');
   }
 
   function getSetting(key) {
@@ -214,17 +254,53 @@ ON CONFLICT (slug) DO UPDATE SET
     };
   }
 
-  function slugTaken(slug, exceptId = null) {
+  /** Validates a collection. Editorial only — no price, no stock. */
+  function validateCollection(input) {
+    const errors = {};
+
+    const title = typeof input.title === 'string' ? input.title.trim() : '';
+    if (!title || title.length > 120) errors.title = 'Required, max 120 characters';
+
+    const description =
+      typeof input.description === 'string' ? input.description.trim().slice(0, 600) : '';
+
+    const requested = typeof input.slug === 'string' ? input.slug.trim().toLowerCase() : '';
+    const slug = requested || slugify(title);
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+      errors.slug = 'Lowercase letters, numbers and single dashes only';
+    }
+
+    const imageUrl =
+      typeof input.image_url === 'string' && input.image_url.trim() ? input.image_url.trim() : null;
+    if (imageUrl && !/^https?:\/\//i.test(imageUrl)) errors.image_url = 'Must be an http(s) URL';
+
+    if (Object.keys(errors).length) return { ok: false, errors };
+
+    return {
+      ok: true,
+      value: {
+        slug,
+        title,
+        description,
+        image_url: imageUrl,
+        tint: typeof input.tint === 'string' && input.tint.trim() ? input.tint.trim() : null,
+        sort_order: Number.isInteger(Number(input.sort_order)) ? Number(input.sort_order) : 0,
+      },
+    };
+  }
+
+  function slugTaken(table, slug, exceptId = null) {
+    // `table` is never user input — only the literals 'products'/'collections'.
     const row = exceptId
-      ? one('SELECT id FROM products WHERE slug = ? AND id <> ?', [slug, exceptId])
-      : one('SELECT id FROM products WHERE slug = ?', [slug]);
+      ? one(`SELECT id FROM ${table} WHERE slug = ? AND id <> ?`, [slug, exceptId])
+      : one(`SELECT id FROM ${table} WHERE slug = ?`, [slug]);
     return Boolean(row);
   }
 
   function createProduct(input) {
     const { ok, errors, value } = validate(input);
     if (!ok) return { ok: false, errors };
-    if (slugTaken(value.slug)) return { ok: false, errors: { slug: 'Already in use' } };
+    if (slugTaken('products', value.slug)) return { ok: false, errors: { slug: 'Already in use' } };
 
     run(
       `INSERT INTO products (slug, name, category, price_cents, image_url, tint, in_stock, sort_order)
@@ -239,7 +315,7 @@ ON CONFLICT (slug) DO UPDATE SET
   function updateProduct(id, input) {
     const { ok, errors, value } = validate(input);
     if (!ok) return { ok: false, errors };
-    if (slugTaken(value.slug, id)) return { ok: false, errors: { slug: 'Already in use' } };
+    if (slugTaken('products', value.slug, id)) return { ok: false, errors: { slug: 'Already in use' } };
 
     run(
       `UPDATE products
@@ -258,6 +334,46 @@ ON CONFLICT (slug) DO UPDATE SET
     saveDraft();
   }
 
+  /* ------------------------------------------------------- collections */
+
+  function createCollection(input) {
+    const { ok, errors, value } = validateCollection(input);
+    if (!ok) return { ok: false, errors };
+    if (slugTaken('collections', value.slug)) {
+      return { ok: false, errors: { slug: 'Already in use' } };
+    }
+
+    run(
+      `INSERT INTO collections (slug, title, description, image_url, tint, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [value.slug, value.title, value.description, value.image_url, value.tint, value.sort_order],
+    );
+    saveDraft();
+    return { ok: true, value };
+  }
+
+  function updateCollection(id, input) {
+    const { ok, errors, value } = validateCollection(input);
+    if (!ok) return { ok: false, errors };
+    if (slugTaken('collections', value.slug, id)) {
+      return { ok: false, errors: { slug: 'Already in use' } };
+    }
+
+    run(
+      `UPDATE collections
+          SET slug = ?, title = ?, description = ?, image_url = ?, tint = ?, sort_order = ?
+        WHERE id = ?`,
+      [value.slug, value.title, value.description, value.image_url, value.tint, value.sort_order, id],
+    );
+    saveDraft();
+    return { ok: true, value };
+  }
+
+  function deleteCollection(id) {
+    run('DELETE FROM collections WHERE id = ?', [id]);
+    saveDraft();
+  }
+
   /** Settings that the published catalog should carry. */
   function setSetting(key, value) {
     run('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value',
@@ -268,11 +384,15 @@ ON CONFLICT (slug) DO UPDATE SET
   return {
     init,
     listProducts,
+    listCollections,
     getSetting,
     slugify,
     createProduct,
     updateProduct,
     deleteProduct,
+    createCollection,
+    updateCollection,
+    deleteCollection,
     setSetting,
     toSql,
     saveDraft,

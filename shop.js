@@ -4,6 +4,7 @@
    ========================================================================== */
 
 let allProducts = [];
+let categories = [];
 let activeCategory = 'All';
 
 function render() {
@@ -23,9 +24,9 @@ function render() {
     `${visible.length} ${noun}`;
 }
 
-/** Builds the category pills, in first-appearance order. */
+/** Builds the category pills, alphabetically for a stable order. */
 function renderFilters() {
-  const categories = ['All', ...new Set(allProducts.map((p) => p.category))];
+  categories = ['All', ...[...new Set(allProducts.map((p) => p.category))].sort((a, b) => a.localeCompare(b))];
   const box = document.getElementById('filters');
 
   box.innerHTML = categories
@@ -37,11 +38,27 @@ function renderFilters() {
     .join('');
 }
 
+/** Honours ?category= so a Collections card can deep-link into a filter. */
+function readCategoryFromUrl() {
+  const requested = new URLSearchParams(window.location.search).get('category');
+  if (!requested) return 'All';
+
+  const match = allProducts.find((p) => p.category === requested);
+  return match ? match.category : 'All';
+}
+
 document.getElementById('filters').addEventListener('click', (event) => {
   const button = event.target.closest('.filter');
   if (!button) return;
 
   activeCategory = button.dataset.category;
+
+  // Keep the address bar honest so the filter can be shared or reloaded.
+  const url = new URL(window.location);
+  if (activeCategory === 'All') url.searchParams.delete('category');
+  else url.searchParams.set('category', activeCategory);
+  history.replaceState(null, '', url);
+
   document.querySelectorAll('.filter').forEach((el) => {
     el.setAttribute('aria-pressed', String(el.dataset.category === activeCategory));
   });
@@ -52,6 +69,7 @@ async function start() {
   await Store.init();
 
   allProducts = Catalog.listProducts();
+  activeCategory = readCategoryFromUrl();
   renderFilters();
   render();
 }

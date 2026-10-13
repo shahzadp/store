@@ -95,7 +95,7 @@
           <label for="f-tint">Placeholder tint</label>
           <input id="f-tint" name="tint" placeholder="#D9CCEA">
           <small>Only used when there is no image URL.</small>
-          <div class="swatches" id="swatches"></div>
+          <div class="swatches" id="swatches" data-target="f-tint"></div>
         </div>
 
         <div class="field field--wide">
@@ -114,9 +114,66 @@
   </section>
 
   <section class="card">
+    <h2 id="c-title">Add a collection</h2>
+    <p class="muted">
+      Collections are editorial, not for sale. They are independent of the
+      product catalog — no price, no stock, and nothing links between them.
+    </p>
+    <form id="collection-form" autocomplete="off">
+      <input type="hidden" id="c-id" name="id">
+
+      <div class="grid">
+        <div class="field">
+          <label for="c-title-field">Title</label>
+          <input id="c-title-field" name="title" required placeholder="The Quiet Edit">
+        </div>
+
+        <div class="field">
+          <label for="c-slug">Slug</label>
+          <input id="c-slug" name="slug" placeholder="auto from title">
+        </div>
+
+        <div class="field field--wide">
+          <label for="c-description">Description</label>
+          <textarea id="c-description" name="description" rows="3"
+                    placeholder="A sentence or two about the mood of this collection."></textarea>
+        </div>
+
+        <div class="field">
+          <label for="c-sort">Sort order</label>
+          <input id="c-sort" name="sort_order" type="number" step="10" value="0">
+        </div>
+
+        <div class="field">
+          <label for="c-tint">Placeholder tint</label>
+          <input id="c-tint" name="tint" placeholder="#D9CCEA">
+          <div class="swatches" id="c-swatches" data-target="c-tint"></div>
+        </div>
+
+        <div class="field field--wide">
+          <label for="c-image">Image URL</label>
+          <input id="c-image" name="image_url" placeholder="https://… (blank uses the tinted placeholder)">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-solid" type="submit" id="c-submit">Add collection</button>
+        <button class="btn btn-ghost" type="button" id="c-cancel" hidden>Cancel edit</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <div class="card__head">
+      <h2>Collections</h2>
+      <button class="btn btn-ghost" type="button" id="refresh">Refresh</button>
+    </div>
+    <div id="collection-list" class="list"><p class="muted">Loading…</p></div>
+  </section>
+
+  <section class="card">
     <div class="card__head">
       <h2>Products</h2>
-      <button class="btn btn-ghost" type="button" id="refresh">Refresh</button>
     </div>
     <div id="product-list" class="list"><p class="muted">Loading…</p></div>
   </section>

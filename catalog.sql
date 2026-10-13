@@ -10,6 +10,10 @@
 --   * The store trades in PKR only — there is no currency column.
 --   * slug must be unique; it is derived from the name if left to the admin UI.
 --   * tint is a fallback colour for products with no image_url.
+--
+-- products and collections are deliberately unrelated tables. A collection is
+-- editorial: it is not for sale, carries no price, and is never derived from
+-- the product list. Nothing links a collection to products in either direction.
 -- ===========================================================================
 
 CREATE TABLE IF NOT EXISTS products (
@@ -25,6 +29,19 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 CREATE INDEX IF NOT EXISTS idx_products_sort ON products (sort_order, id);
+
+-- Editorial groupings. No price, no stock, no link to products.
+CREATE TABLE IF NOT EXISTS collections (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug        TEXT    NOT NULL UNIQUE,
+  title       TEXT    NOT NULL,
+  description TEXT    NOT NULL DEFAULT '',
+  image_url   TEXT,
+  tint        TEXT,
+  sort_order  INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_collections_sort ON collections (sort_order, id);
 
 CREATE TABLE IF NOT EXISTS settings (
   key   TEXT PRIMARY KEY,
@@ -51,4 +68,14 @@ ON CONFLICT (slug) DO UPDATE SET
   price_cents = excluded.price_cents,
   tint        = excluded.tint,
   in_stock    = excluded.in_stock,
+  sort_order  = excluded.sort_order;
+
+INSERT INTO collections (slug, title, description, tint, sort_order) VALUES
+  ('the-quiet-edit',  'The Quiet Edit',   'A restrained palette of stoneware, linen and brass chosen to sit easily in an already-lived room.', '#D9CCEA', 10),
+  ('table-and-tide',  'Table & Tide',     'Pieces for the everyday table — mugs, carafes and bowls made to be used daily and washed often.', '#CFC3E3', 20),
+  ('soft-light',      'Soft Light',       'Candles and objects that catch a low, late light. Best near a window at the end of the day.', '#E3D6EE', 30)
+ON CONFLICT (slug) DO UPDATE SET
+  title       = excluded.title,
+  description = excluded.description,
+  tint        = excluded.tint,
   sort_order  = excluded.sort_order;

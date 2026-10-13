@@ -85,6 +85,22 @@ body {
 
 .muted { color: var(--ink-muted); }
 
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--line);
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
 code {
   font-family: var(--font-mono);
   font-size: 13px;

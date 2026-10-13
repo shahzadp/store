@@ -16,12 +16,13 @@ a backend, because there is no backend.
 | `common.js` | PKR formatting, WhatsApp links, product cards. |
 | `drawer.js` | Mobile navigation drawer. |
 | `index.html` / `styles.css` / `app.js` | Homepage. |
-| `shop.html` / `shop.js` | Shop All page with category filters. |
+| `shop.html` / `shop.js` | Products page with category filters. |
+| `collections.html` / `collections.js` | Collections — editorial, not for sale. |
 | `admin.html` / `admin.css` / `admin.js` | Catalog editor. |
 | `README.md` | This file. |
 
 Live at https://shahzadp.github.io/store/
-(admin: `/admin.html`, full catalog: `/shop.html`).
+(products: `/shop.html`, collections: `/collections.html`, admin: `/admin.html`).
 
 ## Currency
 
@@ -74,6 +75,12 @@ panel), stored as country code + number with no `+`, spaces or dashes.
 `products` — `id`, `slug` (unique), `name`, `category`, `price_cents`,
 `image_url`, `tint`, `in_stock`, `sort_order`.
 
+`collections` — `id`, `slug` (unique), `title`, `description`, `image_url`,
+`tint`, `sort_order`. **Deliberately unrelated to products.** A collection is
+editorial: no price column, no stock, and no foreign key in either direction.
+Collections are never derived from the product list, and no collection links to
+the catalog. Deleting a product cannot affect a collection.
+
 `settings` — free-form `key`/`value`:
 
 | Key | Meaning |
@@ -102,10 +109,16 @@ with a tap-outside backdrop. It closes on link click, backdrop tap, the `X`,
 `Escape`, or rotating past the 820px breakpoint — at which point the drawer
 resets so it can't strand itself over the desktop layout.
 
-`shop.html` is a separate page rather than a longer homepage: it has its own
-breadcrumb, category filters (All / Kitchen / Textiles / Candles / Decor) and
-a live item count, so "View all" lands somewhere new instead of scrolling to
-the top. Both pages share `common.js` and `drawer.js`.
+`shop.html` lists every product with category filters (Kitchen / Textiles /
+Candles / Decor), derived from the data and a live item count. Filter state is
+kept in the query string (`?category=Kitchen`), so a filtered view can be
+reloaded or shared.
+
+**Collections are separate from products.** They are a distinct table, a
+distinct page, and a distinct admin form. The two share no data: a collection
+carries no price and no stock, and nothing links a collection to the catalog.
+The only overlap is navigation — the header and footer link to both pages as
+siblings.
 
 ## Security note
 
