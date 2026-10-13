@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Alex Store — Shop All page
+   Alex Store — All Products page
    Lists the entire catalog with category filters, straight from SQLite.
    ========================================================================== */
 
