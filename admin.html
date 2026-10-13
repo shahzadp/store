@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Catalog â€” Alex Store</title>
+<title>Catalog — Alex Store</title>
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
 <body>
 
 <header class="bar">
-  <h1>Catalog â€” Alex Store</h1>
+  <h1>Catalog — Alex Store</h1>
   <div class="bar__actions">
     <span id="status" class="status" role="status" aria-live="polite"></span>
   </div>
@@ -26,7 +26,7 @@
     <p class="muted">
       Edits are saved to <strong>this browser only</strong>. Visitors still see the published
       <code>catalog.sql</code>. To publish, download it and replace
-      <code>catalog.sql</code> in the repo, then push â€” Pages rebuilds in about a minute.
+      <code>catalog.sql</code> in the repo, then push — Pages rebuilds in about a minute.
     </p>
     <div class="publish-actions">
       <button class="btn btn-solid" type="button" id="export">Download catalog.sql</button>
@@ -46,7 +46,7 @@
       <div class="field">
         <label for="s-wa">WhatsApp number</label>
         <input id="s-wa" name="whatsapp" inputmode="numeric">
-        <small>Country code and number only â€” no <code>+</code>, spaces or dashes.</small>
+        <small>Country code and number only — no <code>+</code>, spaces or dashes.</small>
       </div>
     </div>
     <div class="form-actions">
@@ -73,7 +73,7 @@
         <div class="field field--wide">
           <label for="f-description">Description</label>
           <textarea id="f-description" name="description" rows="2"
-                    placeholder="One line, plain and factual â€” material, size, how it behaves. No marketing language."></textarea>
+                    placeholder="One line, plain and factual — material, size, how it behaves. No marketing language."></textarea>
           <small>Shown between the name and the price. Keep it to a sentence or two.</small>
         </div>
 
@@ -95,7 +95,7 @@
 
         <div class="field field--wide">
           <label for="f-image">Image URL</label>
-          <input id="f-image" name="image_url" placeholder="https://â€¦ (blank uses the tinted placeholder)">
+          <input id="f-image" name="image_url" placeholder="https://… (blank uses the tinted placeholder)">
         </div>
 
         <div class="field field--wide">
@@ -124,7 +124,7 @@
     <h2 id="c-title">Add a collection</h2>
     <p class="muted">
       Collections are editorial, not for sale. They are independent of the
-      product catalog â€” no price, no stock, and nothing links between them.
+      product catalog — no price, no stock, and nothing links between them.
     </p>
     <form id="collection-form" autocomplete="off">
       <input type="hidden" id="c-id" name="id">
@@ -159,7 +159,7 @@
 
         <div class="field field--wide">
           <label for="c-image">Image URL</label>
-          <input id="c-image" name="image_url" placeholder="https://â€¦ (blank uses the tinted placeholder)">
+          <input id="c-image" name="image_url" placeholder="https://… (blank uses the tinted placeholder)">
         </div>
       </div>
 
@@ -174,7 +174,7 @@
     <h2>Semantic search index</h2>
     <p class="muted">
       Precomputes a 384-dimension embedding for every product so visitors never
-      run the model on the catalog â€” only on their own query.
+      run the model on the catalog — only on their own query.
       The <code>bekko-embedding-v1-a8m</code> model is ~65 MB (fp16 checkpoint) and is
       downloaded to this browser only.
     </p>
@@ -190,22 +190,22 @@
       <h2>Collections</h2>
       <button class="btn btn-ghost" type="button" id="refresh">Refresh</button>
     </div>
-    <div id="collection-list" class="list"><p class="muted">Loadingâ€¦</p></div>
+    <div id="collection-list" class="list"><p class="muted">Loading…</p></div>
   </section>
 
   <section class="card">
     <div class="card__head">
       <h2>Products</h2>
     </div>
-    <div id="product-list" class="list"><p class="muted">Loadingâ€¦</p></div>
+    <div id="product-list" class="list"><p class="muted">Loading…</p></div>
   </section>
 
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
-<script src="./db.js?v=6"></script>
-<script src="./common.js?v=6"></script>
-<script src="./search.js?v=6"></script>
-<script src="./admin.js?v=6"></script>
+<script src="./db.js?v=7"></script>
+<script src="./common.js?v=7"></script>
+<script src="./search.js?v=7"></script>
+<script src="./admin.js?v=7"></script>
 </body>
 </html>

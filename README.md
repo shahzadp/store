@@ -67,15 +67,22 @@ The search icon (or `Ctrl`/`Cmd` + `K`) opens a dialog with two modes:
 - **Text (default)** — instant, no download. Matches against the
   product name, category and description.
 - **Semantic (opt-in)** — a **Semantic** toggle in the dialog embeds
-  your query with [bekko-embedding-v1-a8m](https://huggingface.co/hotchpotch/bekko-embedding-v1-a8m)
+  your query with [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
   running in the browser, then ranks products by cosine similarity
   against precomputed vectors stored in SQLite.
 
-The embedding model is **~124 MB** and cannot be made smaller in the
-browser (the quantised builds are native-only and the fp16 one is
-larger). So it is **never loaded until you turn Semantic on**, and it
-is then cached in IndexedDB — you download it once per browser, not
-once per search. Text search always stays available and instant.
+The embedding model is **~86 MB** (fp32). It is **never loaded
+until you turn Semantic on**, and it is then cached in IndexedDB —
+you download it once per browser, not once per search. Text search
+always stays available and instant.
+
+> **Language tradeoff.** all-MiniLM-L6-v2 is **English-only**. If
+> Urdu or Roman-Urdu queries matter more than the smaller download,
+> swap `SEARCH_MODEL` in `db.js` to
+> `hotchpotch/bekko-embedding-v1-a8m` (124 MB, multilingual, 100+
+> languages) and rebuild the index — the two are not interchangeable,
+> so switching models always means re-running **Build search index**
+> and republishing `catalog.sql`.
 
 The product vectors are precomputed at publish time: in the admin
 panel, **Build search index** embeds every product and the resulting

@@ -5,14 +5,15 @@
    Text (default) — instant, no download. Matches against product
    name, category and description.
 
-   Semantic (opt-in) — embeds the query with bekko-embedding-v1-a8m
+   Semantic (opt-in) — embeds the query with all-MiniLM-L6-v2
    running in the browser (ONNX via Transformers.js), then ranks by
    cosine similarity against precomputed vectors stored in SQLite.
 
-   The model is ~124 MB and cannot be made smaller in-browser: the
-   quantised variants are native-only (AVX/arm64) and the fp16 build
-   is larger. So the model is never loaded until the visitor explicitly
-   asks for semantic search, and it is cached in IndexedDB afterwards.
+   The model is ~86 MB. It is never loaded until the visitor
+   explicitly asks for semantic search, and it is then cached in
+   IndexedDB — so the cost is once per browser, not per search.
+   (bekko-embedding-v1-a8m is the multilingual alternative: 124 MB
+   but covers 100+ languages, where MiniLM-L6-v2 is English-only.)
    ========================================================================== */
 
 // jsDelivr's `+esm` build is used rather than `dist/transformers.web.js`:
