@@ -381,7 +381,7 @@ $('#build-index').addEventListener('click', async () => {
   );
 
   try {
-    out.textContent = 'Loading model (~86 MB, one time)';
+    out.textContent = 'Loading model (~42 MB, one time)';
     const vectors = await Search.embed(texts, (done, total) => {
       out.textContent = `Embedding ${done}/${total}…`;
     });

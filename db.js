@@ -377,11 +377,12 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
   /* ---------------------------------------------------- semantic search */
 
 // Full Hugging Face repo id — the org prefix is required or the hub 401s.
-// all-MiniLM-L6-v2: 86 MB fp32 (smaller than bekko's 124 MB), 384-dim,
-// Apache-2.0. English-only — bekko-embedding-v1-a8m is the multilingual
-// alternative if Urdu/Roman-Urdu queries matter more than download size.
-const SEARCH_MODEL = 'sentence-transformers/all-MiniLM-L6-v2';
-const SEARCH_DIMS = 384;
+// paraphrase-albert-small-v2: 42.5 MB fp32, 768-dim, Apache-2.0 — the
+// smallest retrieval-trained embedding model that runs in browser WASM
+// (the ~30 MB ONNX variants use native AVX/arm64 kernels and won't run
+// under WASM; bge-micro-v2 is gated). English-only.
+const SEARCH_MODEL = 'sentence-transformers/paraphrase-albert-small-v2';
+const SEARCH_DIMS = 768;
 
 function base64ToFloat32(b64) {
     const binary = atob(b64);

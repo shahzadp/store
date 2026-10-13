@@ -67,17 +67,23 @@ The search icon (or `Ctrl`/`Cmd` + `K`) opens a dialog with two modes:
 - **Text (default)** — instant, no download. Matches against the
   product name, category and description.
 - **Semantic (opt-in)** — a **Semantic** toggle in the dialog embeds
-  your query with [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
+  your query with [paraphrase-albert-small-v2](https://huggingface.co/sentence-transformers/paraphrase-albert-small-v2)
   running in the browser, then ranks products by cosine similarity
   against precomputed vectors stored in SQLite.
 
-The embedding model is **~86 MB** (fp32). It is **never loaded
-until you turn Semantic on**, and it is then cached in IndexedDB —
-you download it once per browser, not once per search. Text search
-always stays available and instant.
+The embedding model is **~42 MB** (fp32, 768-dim) — the smallest
+retrieval-trained embedding model that runs in browser WASM. It is
+**never loaded until you turn Semantic on**, and it is then cached
+in IndexedDB — you download it once per browser, not once per
+search. Text search always stays available and instant.
 
-> **Language tradeoff.** all-MiniLM-L6-v2 is **English-only**. If
-> Urdu or Roman-Urdu queries matter more than the smaller download,
+> **Why not smaller?** The ~30 MB ONNX variants (e5-small qint8,
+> albert qint8) use native AVX/arm64 kernels that don't run under
+> WASM, and `BAAI/bge-micro-v2` is gated. 42 MB is the genuine
+> floor for a model that loads in the browser.
+
+> **Language tradeoff.** paraphrase-albert-small-v2 is **English-only**.
+> If Urdu or Roman-Urdu queries matter more than the smaller download,
 > swap `SEARCH_MODEL` in `db.js` to
 > `hotchpotch/bekko-embedding-v1-a8m` (124 MB, multilingual, 100+
 > languages) and rebuild the index — the two are not interchangeable,
