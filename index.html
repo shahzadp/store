@@ -1,12 +1,162 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>store</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Store</title>
+<meta name="description" content="Quiet objects for the lived-in home.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Source+Sans+3:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <h1>store</h1>
-  <p>Published with GitHub Pages.</p>
+
+<div class="announce">Shipping offer or announcement</div>
+
+<header class="header">
+  <div class="header__inner">
+    <a class="icon-link" href="#" aria-label="Menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"></path></svg>
+    </a>
+
+    <a class="logo" href="#">Store Name</a>
+
+    <nav class="nav">
+      <a href="#shop">Shop</a>
+      <a href="#">Collections</a>
+      <a href="#">Journal</a>
+      <a href="#">About</a>
+    </nav>
+
+    <div class="utils">
+      <a href="#">Search</a>
+      <a href="#">Account</a>
+      <a href="#">Cart (0)</a>
+      <a class="icon-link" href="#" aria-label="Cart">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 016 0v2"></path></svg>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero container">
+    <div class="hero__copy">
+      <div class="cat">New Season</div>
+      <h1 class="hero__title">Quiet objects for the lived-in home.</h1>
+      <p class="hero__lede">A short line about what the store makes or curates and what sets it apart.</p>
+      <div class="hero__actions">
+        <a class="btn btn-solid" href="#shop">Shop the Collection</a>
+        <a class="btn btn-outline" href="#">Our Story</a>
+      </div>
+    </div>
+    <div class="hero__media placeholder">Hero photo</div>
+  </section>
+
+  <section class="shop" id="shop">
+    <div class="container">
+      <div class="section-head">
+        <h2>Featured Products</h2>
+        <a class="section-head__link" href="#">View all →</a>
+      </div>
+
+      <ul class="products">
+        <li>
+          <a class="product" href="#">
+            <div class="product__img placeholder" style="background:var(--tint-1)">Product photo</div>
+            <div class="cat">Kitchen</div>
+            <div class="product__name">Stoneware Mug</div>
+            <div class="product__price">$28</div>
+          </a>
+        </li>
+        <li>
+          <a class="product" href="#">
+            <div class="product__img placeholder" style="background:var(--tint-2)">Product photo</div>
+            <div class="cat">Textiles</div>
+            <div class="product__name">Linen Throw</div>
+            <div class="product__price">$64</div>
+          </a>
+        </li>
+        <li>
+          <a class="product" href="#">
+            <div class="product__img placeholder" style="background:var(--tint-3)">Product photo</div>
+            <div class="cat">Kitchen</div>
+            <div class="product__name">Glass Carafe</div>
+            <div class="product__price">$42</div>
+          </a>
+        </li>
+        <li>
+          <a class="product" href="#">
+            <div class="product__img placeholder" style="background:var(--tint-4)">Product photo</div>
+            <div class="cat">Candles</div>
+            <div class="product__name">Soy Candle</div>
+            <div class="product__price">$24</div>
+          </a>
+        </li>
+        <li>
+          <a class="product" href="#">
+            <div class="product__img placeholder" style="background:var(--tint-4)">Product photo</div>
+            <div class="cat">Decor</div>
+            <div class="product__name">Ceramic Vase</div>
+            <div class="product__price">$56</div>
+          </a>
+        </li>
+        <li>
+          <a class="product" href="#">
+            <div class="product__img placeholder" style="background:var(--tint-3)">Product photo</div>
+            <div class="cat">Textiles</div>
+            <div class="product__name">Wool Cushion</div>
+            <div class="product__price">$48</div>
+          </a>
+        </li>
+        <li>
+          <a class="product" href="#">
+            <div class="product__img placeholder" style="background:var(--tint-2)">Product photo</div>
+            <div class="cat">Kitchen</div>
+            <div class="product__name">Serving Bowl</div>
+            <div class="product__price">$36</div>
+          </a>
+        </li>
+        <li>
+          <a class="product" href="#">
+            <div class="product__img placeholder" style="background:var(--tint-1)">Product photo</div>
+            <div class="cat">Decor</div>
+            <div class="product__name">Brass Tray</div>
+            <div class="product__price">$52</div>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="notes container">
+    <div>
+      <div class="cat">Delivery</div>
+      <div>Delivery details and timeframe.</div>
+    </div>
+    <div>
+      <div class="cat">Returns</div>
+      <div>Returns policy summary.</div>
+    </div>
+    <div>
+      <div class="cat">Care</div>
+      <div>Materials and care note.</div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__title">Contact us on WhatsApp</div>
+      <div class="footer__meta">Reply time or hours · WhatsApp number</div>
+    </div>
+    <div>
+      <a class="btn btn-solid" href="#">Chat on WhatsApp</a>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>
