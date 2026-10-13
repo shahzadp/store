@@ -469,6 +469,43 @@ h2 {
   display: none;
 }
 
+/* Semantic opt-in toggle — sits between the input and the close button */
+.search__semantic {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--ink-muted);
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.search__semantic:hover {
+  border-color: var(--ink-accent);
+  color: var(--ink-accent);
+}
+
+.search__semantic[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--section);
+}
+
+.search__semantic svg {
+  flex: none;
+}
+
+.search__semantic--loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
 .search__close {
   flex: none;
   width: 32px;

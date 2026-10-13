@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Alex Store — catalog admin
+   Alex Store â€” catalog admin
    Edits a local SQLite copy (db.js) and exports catalog.sql to publish.
    ========================================================================== */
 
@@ -67,7 +67,7 @@ function renderList(products) {
           <div class="row__main">
             <div class="row__name">${escapeHtml(p.name)}</div>
             ${p.description ? `<div class="row__desc">${escapeHtml(p.description)}</div>` : ''}
-            <div class="row__meta">${escapeHtml(p.category)} · ${escapeHtml(price)} · sort ${p.sort_order} · /${escapeHtml(p.slug)}</div>
+            <div class="row__meta">${escapeHtml(p.category)} Â· ${escapeHtml(price)} Â· sort ${p.sort_order} Â· /${escapeHtml(p.slug)}</div>
           </div>
           ${badge}
           <div class="row__actions">
@@ -164,7 +164,7 @@ function renderCollections() {
           ${thumb}
           <div class="row__main">
             <div class="row__name">${escapeHtml(c.title)}</div>
-            <div class="row__meta">sort ${c.sort_order} · /${escapeHtml(c.slug)}</div>
+            <div class="row__meta">sort ${c.sort_order} Â· /${escapeHtml(c.slug)}</div>
           </div>
           <div class="row__actions">
             <button class="btn btn-ghost" type="button" data-cedit="${c.id}">Edit</button>
@@ -307,13 +307,13 @@ $('#export').addEventListener('click', () => {
   link.download = 'catalog.sql';
   link.click();
   URL.revokeObjectURL(url);
-  status('Downloaded catalog.sql — replace the repo copy and push', 'ok');
+  status('Downloaded catalog.sql â€” replace the repo copy and push', 'ok');
 });
 
 $('#discard').addEventListener('click', async () => {
   if (!confirm('Discard local edits and reload the published catalog?')) return;
   Catalog.clearDraft();
-  status('Reloading…');
+  status('Reloadingâ€¦');
   window.location.reload();
 });
 
@@ -352,10 +352,10 @@ function indexNote() {
   const count = Catalog.listProducts().length;
 
   if (Catalog.indexIsComplete()) {
-    note.textContent = `Index is current — ${count} products embedded. Download catalog.sql to publish it.`;
+    note.textContent = `Index is current â€” ${count} products embedded. Download catalog.sql to publish it.`;
     note.className = 'draft-note';
   } else {
-    note.textContent = `No current index — ${count} products need embedding before semantic search can run.`;
+    note.textContent = `No current index â€” ${count} products need embedding before semantic search can run.`;
     note.className = 'draft-note draft-note--active';
   }
 }
@@ -381,9 +381,9 @@ $('#build-index').addEventListener('click', async () => {
   );
 
   try {
-    out.textContent = 'Loading model (~130 MB, one time)…';
+    out.textContent = 'Loading model (~65 MB on first use, then cached)...';
     const vectors = await Search.embed(texts, (done, total) => {
-      out.textContent = `Embedding ${done}/${total}…`;
+      out.textContent = `Embedding ${done}/${total}â€¦`;
     });
 
     Catalog.replaceVectors(
@@ -412,7 +412,7 @@ $('#refresh').addEventListener('click', () => {
 /* ------------------------------------------------------------------- boot */
 
 (async function init() {
-  status('Loading catalog…');
+  status('Loading catalogâ€¦');
   try {
     await Catalog.init();
     $('#s-name').value = Catalog.getSetting('store_name') || 'Alex Store';

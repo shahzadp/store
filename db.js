@@ -376,7 +376,7 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
 
   /* ---------------------------------------------------- semantic search */
 
-// Full Hugging Face repo id ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â the org prefix is required or the hub 401s.
+// Full Hugging Face repo id - the org prefix is required or the hub 401s.
 const SEARCH_MODEL = 'hotchpotch/bekko-embedding-v1-a8m';
 const SEARCH_DIMS = 384;
 

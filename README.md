@@ -15,6 +15,8 @@ a backend, because there is no backend.
 | `db.js` | Boots SQLite, runs `catalog.sql`, exposes queries and edits. |
 | `common.js` | PKR formatting, WhatsApp links, product cards. |
 | `drawer.js` | Mobile navigation drawer. |
+| `sticky.js` | Keeps the announcement bar and header pinned on scroll. |
+| `search.js` | Search dialog: instant text mode + opt-in semantic mode. |
 | `index.html` / `styles.css` / `app.js` | Homepage. |
 | `shop.html` / `shop.js` | Products page with category filters. |
 | `collections.html` / `collections.js` | Collections — editorial, not for sale. |
@@ -58,6 +60,28 @@ experiment without touching the live site. **Visitors never see your draft** —
 they always get the published `catalog.sql`. The admin panel shows a banner
 when local edits are pending, and **Discard local edits** reverts.
 
+## Search
+
+The search icon (or `Ctrl`/`Cmd` + `K`) opens a dialog with two modes:
+
+- **Text (default)** — instant, no download. Matches against the
+  product name, category and description.
+- **Semantic (opt-in)** — a **Semantic** toggle in the dialog embeds
+  your query with [bekko-embedding-v1-a8m](https://huggingface.co/hotchpotch/bekko-embedding-v1-a8m)
+  running in the browser, then ranks products by cosine similarity
+  against precomputed vectors stored in SQLite.
+
+The embedding model is **~124 MB** and cannot be made smaller in the
+browser (the quantised builds are native-only and the fp16 one is
+larger). So it is **never loaded until you turn Semantic on**, and it
+is then cached in IndexedDB — you download it once per browser, not
+once per search. Text search always stays available and instant.
+
+The product vectors are precomputed at publish time: in the admin
+panel, **Build search index** embeds every product and the resulting
+`catalog.sql` ships with the vectors baked in, so visitors only ever
+embed their own query — never the catalog.
+
 ## How the WhatsApp hand-off works
 
 Buy links are plain `wa.me` deep links, so they work with no WhatsApp app
@@ -92,8 +116,14 @@ editorial: no price column, no stock, and no foreign key in either direction.
 Collections are never derived from the product list, and no collection links to
 the catalog. Deleting a product cannot affect a collection.
 
-`settings` — free-form `key`/`value`:
+`product_vectors` — `slug` (primary key), `vector` (base64-encoded
+float32, 384 dimensions), `model`. One precomputed embedding per product
+for semantic search, built by the admin panel's **Build search index**
+and published with `catalog.sql`. The model string records which encoder
+produced each vector so a stale index is never silently mixed with a
+different model's vectors.
 
+`settings` — free-form `key`/`value`:
 | Key | Meaning |
 | --- | --- |
 | `store_name` | Shown in the logo, `document.title` and WhatsApp messages. |

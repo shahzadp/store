@@ -1,13 +1,18 @@
 /* ==========================================================================
-   Semantic search
-   Embeds the query with bekko-embedding-v1-a8m running entirely in the
-   browser (ONNX via Transformers.js), then ranks products by cosine
-   similarity against precomputed vectors stored in SQLite.
+   Search
+   Two modes:
 
-   The model is ~130 MB, so it is NOT loaded until the visitor actually runs
-   a search. Everything else on the page loads without it. If the model
-   cannot be loaded at all, search silently falls back to keyword matching so
-   the feature is never a dead end.
+   Text (default) — instant, no download. Matches against product
+   name, category and description.
+
+   Semantic (opt-in) — embeds the query with bekko-embedding-v1-a8m
+   running in the browser (ONNX via Transformers.js), then ranks by
+   cosine similarity against precomputed vectors stored in SQLite.
+
+   The model is ~124 MB and cannot be made smaller in-browser: the
+   quantised variants are native-only (AVX/arm64) and the fp16 build
+   is larger. So the model is never loaded until the visitor explicitly
+   asks for semantic search, and it is cached in IndexedDB afterwards.
    ========================================================================== */
 
 // jsDelivr's `+esm` build is used rather than `dist/transformers.web.js`:
@@ -23,7 +28,7 @@ const Search = (() => {
 
   /* ----------------------------------------------------------- loading */
 
-  function loadExtractor() {
+  function loadExtractor(onProgress) {
     if (extractorPromise) return extractorPromise;
 
     extractorPromise = (async () => {
@@ -32,14 +37,20 @@ const Search = (() => {
       env.allowLocalModels = false;
       env.useBrowserCache = true;
 
+      // WASM is the safe denominator: WebGPU ONNX support is spotty
+      // across browsers, and the model is small enough that WASM is fine.
       extractor = await pipeline('feature-extraction', Catalog.SEARCH_MODEL, {
         dtype: 'fp32',
         device: 'wasm',
+        progress_callback: (info) => {
+          if (onProgress && info && info.status === 'progress' && info.file) {
+            onProgress(info.file, info.loaded, info.total);
+          }
+        },
       });
 
       return extractor;
     })().catch((err) => {
-      // Remember the failure so we do not retry a 130 MB download on every keystroke.
       loadError = err;
       extractorPromise = null;
       throw err;
@@ -55,7 +66,7 @@ const Search = (() => {
   /* --------------------------------------------------------- embeddings */
 
   async function embed(texts, onProgress) {
-    const pipe = await loadExtractor();
+    const pipe = await loadExtractor(onProgress);
 
     const out = [];
     const batchSize = 8;
@@ -85,35 +96,48 @@ const Search = (() => {
     return dot;
   }
 
-  /** Plain substring ranking, used when the model is unavailable. */
+  /** Plain substring ranking. Always available, always instant. */
   function keywordRank(products, query) {
     const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
 
     return products
       .map((product) => {
         const haystack = `${product.name} ${product.category} ${product.description || ''}`.toLowerCase();
-        const score = terms.reduce((total, term) => (haystack.includes(term) ? total + 1 : total), 0);
+        const score = terms.reduce(
+          (total, term) => (haystack.includes(term) ? total + 1 : total),
+          0,
+        );
         return { product, score };
       })
       .filter((row) => row.score > 0)
       .sort((a, b) => b.score - a.score);
   }
 
-  async function rank(query) {
+  /**
+   * mode: 'keyword' (default, instant) or 'semantic' (loads the model).
+   * Returns rows of { product, score, mode, reason? }.
+   */
+  async function rank(query, mode = 'keyword', onProgress) {
     const products = Catalog.listProducts();
     const trimmed = query.trim();
     if (!trimmed) return [];
 
-    // Distinguish "nobody has built the index yet" from "the model failed to
-    // load" — the fix is different, so the message should be too.
-    const fallback = (reason) =>
-      keywordRank(products, trimmed).map((row) => ({ ...row, mode: 'keyword', reason }));
+    if (mode === 'keyword') {
+      return keywordRank(products, trimmed).map((row) => ({ ...row, mode: 'keyword' }));
+    }
 
-    if (loadError) return fallback('model-failed');
-    if (!Catalog.indexIsComplete()) return fallback('no-index');
+    // Semantic was requested but the published index is missing or was
+    // built with a different model — search against noise is worse than
+    // an honest text match.
+    if (loadError) {
+      return keywordRank(products, trimmed).map((row) => ({ ...row, mode: 'keyword', reason: 'model-failed' }));
+    }
+    if (!Catalog.indexIsComplete()) {
+      return keywordRank(products, trimmed).map((row) => ({ ...row, mode: 'keyword', reason: 'no-index' }));
+    }
 
     try {
-      const [queryVector] = await embed([trimmed]);
+      const [queryVector] = await embed([trimmed], onProgress);
       const index = Catalog.getVectors();
 
       return products
@@ -127,7 +151,7 @@ const Search = (() => {
     } catch (err) {
       console.warn('Semantic search unavailable, using keyword match:', err);
       loadError = err;
-      return fallback('model-failed');
+      return keywordRank(products, trimmed).map((row) => ({ ...row, mode: 'keyword', reason: 'model-failed' }));
     }
   }
 
@@ -148,50 +172,34 @@ function searchDialog() {
   const results = document.getElementById('search-results');
   const status = document.getElementById('search-status');
   const form = document.getElementById('search-form');
+  const toggle = document.getElementById('search-semantic');
 
   let lastQuery = '';
   let sequence = 0;
+  let semanticWanted = false;
+  let loading = false;
 
   function setStatus(message, kind = '') {
     status.textContent = message;
     status.className = `search__status ${kind}`;
   }
 
-  async function run() {
-    const query = input.value.trim();
-    lastQuery = query;
-
-    if (!query) {
-      results.innerHTML = '';
-      setStatus('');
-      return;
-    }
-
-    const ticket = ++sequence;
-
-    // Warm the model on the very first query so the wait is explained up front.
-    setStatus(Search.isModelLoaded() ? 'Searching…' : 'Loading search model (~130 MB, one time)…');
-
-    const rows = await Search.rank(query);
-
-    // A slower earlier keystroke must not overwrite a newer result.
-    if (ticket !== sequence) return;
-
+  function render(rows) {
     if (!rows.length) {
       results.innerHTML = '<li class="search__empty">No matches.</li>';
-      setStatus('', '');
+      setStatus('');
       return;
     }
 
     // Raw cosine on short text is not a calibrated confidence score, so it is
     // shown as a bar relative to the best hit rather than a percentage.
-    const top = rows[0].score || 1;
     const floor = Math.min(...rows.map((r) => r.score));
+    const top = rows[0].score || 1;
     const span = top - floor || 1;
 
     results.innerHTML = rows
       .slice(0, 8)
-      .map(({ product, score, mode }, index) => {
+      .map(({ product, score, mode, reason }, index) => {
         const price = Store.formatPrice(product.price_cents);
         const strength = mode === 'keyword' ? 100 : Math.round(((score - floor) / span) * 100);
         const meta = index === 0 ? 'best match' : '';
@@ -213,16 +221,73 @@ function searchDialog() {
       })
       .join('');
 
-    const mode = rows[0].mode;
-    if (mode === 'keyword') {
+    const first = rows[0];
+    if (first.mode === 'keyword') {
       setStatus(
-        rows[0].reason === 'no-index'
-          ? 'Showing text matches — the search index has not been published yet.'
-          : 'Showing text matches — the embedding model could not be loaded.',
+        first.reason === 'no-index'
+          ? 'Text matches — the semantic index is not published yet.'
+          : first.reason === 'model-failed'
+            ? 'Text matches — the embedding model could not be loaded.'
+            : `${rows.length} text match${rows.length === 1 ? '' : 'es'}.`,
       );
     } else {
       setStatus(`${rows.length} match${rows.length === 1 ? '' : 'es'} by meaning.`);
     }
+  }
+
+  async function run() {
+    const query = input.value.trim();
+    lastQuery = query;
+
+    if (!query) {
+      results.innerHTML = '';
+      setStatus('');
+      return;
+    }
+
+    const ticket = ++sequence;
+
+    // Text mode is the default and never touches the model.
+    if (!semanticWanted) {
+      render(await Search.rank(query, 'keyword'));
+      return;
+    }
+
+    // Semantic mode: load the model on demand, with visible progress.
+    if (loading) return; // a load is already in flight; its result will re-render
+    loading = true;
+    toggle.classList.add('search__semantic--loading');
+
+    const onProgress = (file, loaded, total) => {
+      if (ticket !== sequence) return;
+      const pct = total ? Math.round((loaded / total) * 100) : 0;
+      setStatus(Search.isModelLoaded() ? 'Embedding…' : `Loading model — ${pct}%`);
+    };
+
+    try {
+      const rows = await Search.rank(query, 'semantic', onProgress);
+      if (ticket !== sequence) return;
+      render(rows);
+    } catch (err) {
+      if (ticket === sequence) {
+        render(await Search.rank(query, 'keyword'));
+        setStatus('Text matches — the embedding model could not be loaded.');
+      }
+    } finally {
+      loading = false;
+      toggle.classList.remove('search__semantic--loading');
+      toggle.setAttribute('aria-pressed', String(semanticWanted));
+    }
+  }
+
+  function toggleSemantic() {
+    semanticWanted = !semanticWanted;
+    toggle.setAttribute('aria-pressed', String(semanticWanted));
+
+    if (semanticWanted && !Search.isModelLoaded()) {
+      setStatus('Semantic search on — the model downloads once, then is cached.');
+    }
+    if (lastQuery) run();
   }
 
   function open() {
@@ -255,6 +320,11 @@ function searchDialog() {
     event.preventDefault();
     run();
   });
+
+  if (toggle) {
+    toggle.setAttribute('aria-pressed', 'false');
+    toggle.addEventListener('click', toggleSemantic);
+  }
 
   let debounce;
   input.addEventListener('input', () => {
