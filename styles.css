@@ -134,6 +134,33 @@ h2 {
   border-color: var(--surface-dark);
 }
 
+/* Compact variant for header links */
+.btn-sm {
+  padding: 9px 16px;
+  min-height: 0;
+  font-size: 14px;
+}
+
+/* Per-product purchase button */
+.btn-buy {
+  padding: 10px 16px;
+  min-height: 42px;
+  font-size: 14px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.btn-buy[aria-disabled='true'] {
+  background: var(--ink-muted);
+  cursor: not-allowed;
+}
+
+.catalog-status {
+  grid-column: 1 / -1;
+  color: var(--ink-body);
+  font-size: 16px;
+}
+
 /* ==========================================================================
    Announcement bar
    ========================================================================== */
@@ -152,6 +179,7 @@ h2 {
    ========================================================================== */
 
 .header {
+  position: relative;
   border-bottom: 1px solid var(--line);
   padding: 24px var(--gutter);
   display: flex;
@@ -202,6 +230,15 @@ h2 {
   width: 44px;
   height: 44px;
   margin: 0 -10px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.icon-link:hover {
+  color: var(--ink-accent);
 }
 
 /* ==========================================================================
@@ -391,9 +428,36 @@ h2 {
     flex-wrap: nowrap;
   }
 
-  /* Swap the desktop nav for menu + cart controls */
-  .nav,
-  .utils a:not(.icon-link) {
+  /* Swap the desktop nav for the menu button */
+  .nav {
+    display: none;
+  }
+
+  /* Dropdown panel revealed by the hamburger */
+  .nav--open {
+    display: flex;
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    flex-direction: column;
+    gap: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 8px 20px 20px;
+  }
+
+  .nav--open a {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nav--open a:last-child {
+    border-bottom: 0;
+  }
+
+  /* Keep only the WhatsApp CTA in the header on mobile */
+  .utils {
     display: none;
   }
 

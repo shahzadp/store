@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Store</title>
-<meta name="description" content="Quiet objects for the lived-in home.">
+<title>Alex Store</title>
+<meta name="description" content="Quiet objects for the lived-in home. Order on WhatsApp.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Source+Sans+3:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
@@ -12,17 +12,17 @@
 </head>
 <body>
 
-<div class="announce">Shipping offer or announcement</div>
+<div class="announce">Free delivery on orders over $60 &middot; Order on WhatsApp</div>
 
 <header class="header">
   <div class="header__inner">
-    <a class="icon-link" href="#" aria-label="Menu">
+    <button class="icon-link" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-nav" aria-label="Menu">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"></path></svg>
-    </a>
+    </button>
 
-    <a class="logo" href="#">Store Name</a>
+    <a class="logo" href="#">Alex Store</a>
 
-    <nav class="nav">
+    <nav class="nav" id="mobile-nav">
       <a href="#shop">Shop</a>
       <a href="#">Collections</a>
       <a href="#">Journal</a>
@@ -30,12 +30,8 @@
     </nav>
 
     <div class="utils">
-      <a href="#">Search</a>
-      <a href="#">Account</a>
-      <a href="#">Cart (0)</a>
-      <a class="icon-link" href="#" aria-label="Cart">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 016 0v2"></path></svg>
-      </a>
+      <a href="#shop">Search</a>
+      <a class="btn btn-solid btn-sm" data-whatsapp-general href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
     </div>
   </div>
 </header>
@@ -58,74 +54,11 @@
     <div class="container">
       <div class="section-head">
         <h2>Featured Products</h2>
-        <a class="section-head__link" href="#">View all →</a>
+        <a class="section-head__link" href="#">View all &rarr;</a>
       </div>
 
-      <ul class="products">
-        <li>
-          <a class="product" href="#">
-            <div class="product__img placeholder" style="background:var(--tint-1)">Product photo</div>
-            <div class="cat">Kitchen</div>
-            <div class="product__name">Stoneware Mug</div>
-            <div class="product__price">$28</div>
-          </a>
-        </li>
-        <li>
-          <a class="product" href="#">
-            <div class="product__img placeholder" style="background:var(--tint-2)">Product photo</div>
-            <div class="cat">Textiles</div>
-            <div class="product__name">Linen Throw</div>
-            <div class="product__price">$64</div>
-          </a>
-        </li>
-        <li>
-          <a class="product" href="#">
-            <div class="product__img placeholder" style="background:var(--tint-3)">Product photo</div>
-            <div class="cat">Kitchen</div>
-            <div class="product__name">Glass Carafe</div>
-            <div class="product__price">$42</div>
-          </a>
-        </li>
-        <li>
-          <a class="product" href="#">
-            <div class="product__img placeholder" style="background:var(--tint-4)">Product photo</div>
-            <div class="cat">Candles</div>
-            <div class="product__name">Soy Candle</div>
-            <div class="product__price">$24</div>
-          </a>
-        </li>
-        <li>
-          <a class="product" href="#">
-            <div class="product__img placeholder" style="background:var(--tint-4)">Product photo</div>
-            <div class="cat">Decor</div>
-            <div class="product__name">Ceramic Vase</div>
-            <div class="product__price">$56</div>
-          </a>
-        </li>
-        <li>
-          <a class="product" href="#">
-            <div class="product__img placeholder" style="background:var(--tint-3)">Product photo</div>
-            <div class="cat">Textiles</div>
-            <div class="product__name">Wool Cushion</div>
-            <div class="product__price">$48</div>
-          </a>
-        </li>
-        <li>
-          <a class="product" href="#">
-            <div class="product__img placeholder" style="background:var(--tint-2)">Product photo</div>
-            <div class="cat">Kitchen</div>
-            <div class="product__name">Serving Bowl</div>
-            <div class="product__price">$36</div>
-          </a>
-        </li>
-        <li>
-          <a class="product" href="#">
-            <div class="product__img placeholder" style="background:var(--tint-1)">Product photo</div>
-            <div class="cat">Decor</div>
-            <div class="product__name">Brass Tray</div>
-            <div class="product__price">$52</div>
-          </a>
-        </li>
+      <ul class="products" id="products" aria-busy="true">
+        <li class="catalog-status">Loading catalog&hellip;</li>
       </ul>
     </div>
   </section>
@@ -149,14 +82,17 @@
 <footer class="footer">
   <div class="footer__inner">
     <div>
-      <div class="footer__title">Contact us on WhatsApp</div>
-      <div class="footer__meta">Reply time or hours · WhatsApp number</div>
+      <div class="footer__title">Order on WhatsApp</div>
+      <div class="footer__meta">Replies within a few hours &middot; +92 328 8304524</div>
     </div>
     <div>
-      <a class="btn btn-solid" href="#">Chat on WhatsApp</a>
+      <a class="btn btn-solid" data-whatsapp-general href="#" target="_blank" rel="noopener">Chat on WhatsApp</a>
     </div>
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+<script src="./db.js"></script>
+<script src="./app.js"></script>
 </body>
 </html>

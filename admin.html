@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catalog — Alex Store</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Source+Sans+3:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+
+<header class="bar">
+  <h1>Catalog — Alex Store</h1>
+  <div class="bar__actions">
+    <span id="status" class="status" role="status" aria-live="polite"></span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card" id="publish-card">
+    <h2>Publish changes</h2>
+    <p class="muted">
+      Edits are saved to <strong>this browser only</strong>. Visitors still see the published
+      <code>catalog.sql</code>. To publish, download it and replace
+      <code>catalog.sql</code> in the repo, then push — Pages rebuilds in about a minute.
+    </p>
+    <div class="publish-actions">
+      <button class="btn btn-solid" type="button" id="export">Download catalog.sql</button>
+      <button class="btn btn-ghost" type="button" id="discard">Discard local edits</button>
+    </div>
+    <p class="draft-note" id="draft-note"></p>
+  </section>
+
+  <section class="card">
+    <h2>Store details</h2>
+    <p class="muted">These live in the catalog too, and publish the same way.</p>
+    <div class="grid">
+      <div class="field">
+        <label for="s-name">Store name</label>
+        <input id="s-name" name="store_name">
+      </div>
+      <div class="field">
+        <label for="s-wa">WhatsApp number</label>
+        <input id="s-wa" name="whatsapp" inputmode="numeric">
+        <small>Country code and number only — no <code>+</code>, spaces or dashes.</small>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-solid" type="button" id="save-settings">Save details</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 id="form-title">Add a product</h2>
+    <form id="product-form" autocomplete="off">
+      <input type="hidden" id="f-id" name="id">
+
+      <div class="grid">
+        <div class="field">
+          <label for="f-name">Name</label>
+          <input id="f-name" name="name" required placeholder="Stoneware Mug">
+        </div>
+
+        <div class="field">
+          <label for="f-category">Category</label>
+          <input id="f-category" name="category" placeholder="Kitchen">
+        </div>
+
+        <div class="field">
+          <label for="f-price">Price</label>
+          <input id="f-price" name="price" type="text" inputmode="decimal" required placeholder="28.00">
+          <small>Stored as whole cents, so no floating-point drift.</small>
+        </div>
+
+        <div class="field">
+          <label for="f-currency">Currency</label>
+          <input id="f-currency" name="currency" value="USD" maxlength="3" placeholder="USD">
+        </div>
+
+        <div class="field">
+          <label for="f-slug">Slug</label>
+          <input id="f-slug" name="slug" placeholder="auto from name">
+        </div>
+
+        <div class="field">
+          <label for="f-sort">Sort order</label>
+          <input id="f-sort" name="sort_order" type="number" step="10" value="0">
+        </div>
+
+        <div class="field field--wide">
+          <label for="f-image">Image URL</label>
+          <input id="f-image" name="image_url" placeholder="https://… (blank uses the tinted placeholder)">
+        </div>
+
+        <div class="field field--wide">
+          <label for="f-tint">Placeholder tint</label>
+          <input id="f-tint" name="tint" placeholder="#D9CCEA">
+          <small>Only used when there is no image URL.</small>
+          <div class="swatches" id="swatches"></div>
+        </div>
+
+        <div class="field field--wide">
+          <label class="checkbox">
+            <input id="f-stock" name="in_stock" type="checkbox" checked>
+            In stock
+          </label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-solid" type="submit" id="submit-btn">Add product</button>
+        <button class="btn btn-ghost" type="button" id="cancel-btn" hidden>Cancel edit</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <div class="card__head">
+      <h2>Products</h2>
+      <button class="btn btn-ghost" type="button" id="refresh">Refresh</button>
+    </div>
+    <div id="product-list" class="list"><p class="muted">Loading…</p></div>
+  </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+<script src="./db.js"></script>
+<script src="./admin.js"></script>
+</body>
+</html>
