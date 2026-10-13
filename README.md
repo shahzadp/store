@@ -13,11 +13,22 @@ a backend, because there is no backend.
 | `catalog.sql` | The catalog. Plain text SQLite that seeds the browser database. |
 | `hero-still-life.svg` | Hero illustration. |
 | `db.js` | Boots SQLite, runs `catalog.sql`, exposes queries and edits. |
-| `index.html` / `styles.css` / `app.js` | The storefront. |
+| `common.js` | PKR formatting, WhatsApp links, product cards. |
+| `drawer.js` | Mobile navigation drawer. |
+| `index.html` / `styles.css` / `app.js` | Homepage. |
+| `shop.html` / `shop.js` | Shop All page with category filters. |
 | `admin.html` / `admin.css` / `admin.js` | Catalog editor. |
 | `README.md` | This file. |
 
-Live at https://shahzadp.github.io/store/ (admin: `/admin.html`).
+Live at https://shahzadp.github.io/store/
+(admin: `/admin.html`, full catalog: `/shop.html`).
+
+## Currency
+
+The store trades in **PKR only** — there is no currency column and no way to
+set another currency anywhere in the app. Prices are whole integer paisa
+(`780000` = Rs 7,800) so there is no floating-point drift, and they render
+through the `en-PK` locale as `Rs 7,800`.
 
 ---
 
@@ -61,16 +72,20 @@ panel), stored as country code + number with no `+`, spaces or dashes.
 ## Data model
 
 `products` — `id`, `slug` (unique), `name`, `category`, `price_cents`,
-`currency`, `image_url`, `tint`, `in_stock`, `sort_order`.
+`image_url`, `tint`, `in_stock`, `sort_order`.
 
-`settings` — free-form `key`/`value`, currently `store_name` and `whatsapp`.
+`settings` — free-form `key`/`value`:
+
+| Key | Meaning |
+| --- | --- |
+| `store_name` | Shown in the logo, `document.title` and WhatsApp messages. |
+| `whatsapp` | `wa.me` number: country code + digits, no `+` or spaces. |
+| `free_delivery_over_paisa` | Threshold for the announcement bar, in paisa. |
 
 Notes:
 - Prices are **whole integer paisa**, so there is no floating-point drift.
-  `780000` = Rs 7,800. The seeded prices were converted from the original USD
-  mockups at roughly 278 PKR/USD and rounded to clean amounts.
-- Currency is per-product (`PKR` by default) and is rendered with the locale
-  sellers expect, so PKR reads as `Rs 7,800` rather than `PKR 7,800`.
+  `780000` = Rs 7,800. The seeded prices were converted from the original
+  dollar mockups and rounded to clean amounts.
 - `slug` is generated from the name when left blank and must be unique.
 - `tint` is only used when `image_url` is empty; pick from the design's
   lavender palette via the swatches in the admin panel.
@@ -86,6 +101,11 @@ The mobile header's hamburger opens a slide-in drawer (`min(80vw, 300px)`)
 with a tap-outside backdrop. It closes on link click, backdrop tap, the `X`,
 `Escape`, or rotating past the 820px breakpoint — at which point the drawer
 resets so it can't strand itself over the desktop layout.
+
+`shop.html` is a separate page rather than a longer homepage: it has its own
+breadcrumb, category filters (All / Kitchen / Textiles / Candles / Decor) and
+a live item count, so "View all" lands somewhere new instead of scrolling to
+the top. Both pages share `common.js` and `drawer.js`.
 
 ## Security note
 

@@ -13,19 +13,16 @@ function escapeHtml(value) {
   }[c]));
 }
 
-/** Locale that renders each currency the way sellers there expect. */
-const CURRENCY_LOCALE = { PKR: 'en-PK', USD: 'en-US', GBP: 'en-GB', EUR: 'de-DE' };
-
-function formatPrice(cents, currency) {
-  const code = currency || 'PKR';
+/** The store trades in PKR only. */
+function formatPrice(paisa) {
   try {
-    return new Intl.NumberFormat(CURRENCY_LOCALE[code] || 'en-US', {
+    return new Intl.NumberFormat('en-PK', {
       style: 'currency',
-      currency: code,
+      currency: 'PKR',
       maximumFractionDigits: 2,
-    }).format(cents / 100);
+    }).format(paisa / 100);
   } catch {
-    return `${code} ${(cents / 100).toFixed(2)}`;
+    return `Rs ${(paisa / 100).toFixed(2)}`;
   }
 }
 
@@ -56,7 +53,7 @@ function renderList(products) {
 
   list.innerHTML = products
     .map((p) => {
-      const price = formatPrice(p.price_cents, p.currency);
+      const price = formatPrice(p.price_cents);
       const thumb = p.image_url
         ? `<img class="row__thumb" src="${escapeHtml(p.image_url)}" alt="">`
         : `<div class="row__thumb" style="background:${escapeHtml(p.tint || '#D9CCEA')}"></div>`;
@@ -102,7 +99,6 @@ function updateDraftNote() {
 function resetForm() {
   $('#product-form').reset();
   $('#f-id').value = '';
-  $('#f-currency').value = 'PKR';
   $('#f-stock').checked = true;
   $('#form-title').textContent = 'Add a product';
   $('#submit-btn').textContent = 'Add product';
@@ -123,7 +119,6 @@ $('#product-form').addEventListener('submit', (event) => {
     name: $('#f-name').value,
     category: $('#f-category').value,
     price_cents: priceCents,
-    currency: $('#f-currency').value || 'PKR',
     slug: $('#f-slug').value,
     image_url: $('#f-image').value,
     tint: $('#f-tint').value,
@@ -169,7 +164,6 @@ $('#product-list').addEventListener('click', (event) => {
   $('#f-name').value = product.name;
   $('#f-category').value = product.category;
   $('#f-price').value = (product.price_cents / 100).toFixed(2);
-  $('#f-currency').value = product.currency;
   $('#f-slug').value = product.slug;
   $('#f-sort').value = product.sort_order;
   $('#f-image').value = product.image_url || '';

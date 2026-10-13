@@ -12,7 +12,7 @@
 </head>
 <body>
 
-<div class="announce">Free delivery on orders over $60 &middot; Order on WhatsApp</div>
+<div class="announce" data-free-delivery>Order on WhatsApp</div>
 
 <header class="header">
   <div class="header__inner">
@@ -20,16 +20,16 @@
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"></path></svg>
     </button>
 
-    <a class="logo" href="#">Alex Store</a>
+    <a class="logo" href="./">Alex Store</a>
 
     <nav class="nav" id="mobile-nav" aria-label="Main">
       <button class="nav__close" type="button" data-menu-close aria-label="Close menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
       </button>
-      <a href="#shop">Shop</a>
-      <a href="#">Collections</a>
-      <a href="#">Journal</a>
-      <a href="#">About</a>
+      <a href="./shop.html">Shop All</a>
+      <a href="#collections">Collections</a>
+      <a href="#journal">Journal</a>
+      <a href="#about">About</a>
       <div class="nav__footer">
         <div class="cat">Questions?</div>
         <a class="nav__wa" data-whatsapp-general href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
@@ -37,7 +37,7 @@
     </nav>
 
     <div class="utils">
-      <a href="#shop">Search</a>
+      <a href="./shop.html">Shop All</a>
       <a class="btn btn-solid btn-sm" data-whatsapp-general href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
     </div>
   </div>
@@ -52,8 +52,8 @@
       <h1 class="hero__title">Quiet objects for the lived-in home.</h1>
       <p class="hero__lede">A short line about what the store makes or curates and what sets it apart.</p>
       <div class="hero__actions">
-        <a class="btn btn-solid" href="#shop">Shop the Collection</a>
-        <a class="btn btn-outline" href="#">Our Story</a>
+        <a class="btn btn-solid" href="./shop.html">Shop the Collection</a>
+        <a class="btn btn-outline" href="#about">Our Story</a>
       </div>
     </div>
     <div class="hero__media">
@@ -66,7 +66,7 @@
     <div class="container">
       <div class="section-head">
         <h2>Featured Products</h2>
-        <a class="section-head__link" href="#">View all &rarr;</a>
+        <a class="section-head__link" href="./shop.html">View all &rarr;</a>
       </div>
 
       <ul class="products" id="products" aria-busy="true">
@@ -76,7 +76,7 @@
   </section>
 
   <section class="notes container">
-    <div>
+    <div id="delivery">
       <div class="cat">Delivery</div>
       <div>Delivery details and timeframe.</div>
     </div>
@@ -105,6 +105,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
 <script src="./db.js"></script>
+<script src="./common.js"></script>
+<script src="./drawer.js"></script>
 <script src="./app.js"></script>
 </body>
 </html>

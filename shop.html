@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop All — Alex Store</title>
+<meta name="description" content="Browse every piece Alex Store makes or curates. Order on WhatsApp.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Source+Sans+3:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<div class="announce" data-free-delivery>Order on WhatsApp</div>
+
+<header class="header">
+  <div class="header__inner">
+    <button class="icon-link" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-nav" aria-label="Menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"></path></svg>
+    </button>
+
+    <a class="logo" href="./">Alex Store</a>
+
+    <nav class="nav" id="mobile-nav" aria-label="Main">
+      <button class="nav__close" type="button" data-menu-close aria-label="Close menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+      <a href="./shop.html" aria-current="page">Shop All</a>
+      <a href="./index.html#collections">Collections</a>
+      <a href="./index.html#journal">Journal</a>
+      <a href="./index.html#about">About</a>
+      <div class="nav__footer">
+        <div class="cat">Questions?</div>
+        <a class="nav__wa" data-whatsapp-general href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
+      </div>
+    </nav>
+
+    <div class="utils">
+      <a href="./index.html">Home</a>
+      <a class="btn btn-solid btn-sm" data-whatsapp-general href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
+    </div>
+  </div>
+</header>
+
+<div class="nav-backdrop" data-menu-close hidden></div>
+
+<main>
+  <section class="page-head container">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="./">Home</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">Shop All</span>
+    </nav>
+    <div class="cat">The full collection</div>
+    <h1 class="page-head__title">Every piece, in one place.</h1>
+    <p class="page-head__lede">
+      Browse the whole catalog below. Tap <strong>Buy on WhatsApp</strong> on anything you
+      would like — we confirm availability and arrange delivery from there.
+    </p>
+  </section>
+
+  <section class="shop shop--flush">
+    <div class="container">
+      <div class="section-head">
+        <h2>All Products</h2>
+        <span class="catalog-count" id="count" aria-live="polite"></span>
+      </div>
+
+      <div class="filters" id="filters" role="group" aria-label="Filter by category"></div>
+
+      <ul class="products" id="products" aria-busy="true">
+        <li class="catalog-status">Loading catalog&hellip;</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__title">Order on WhatsApp</div>
+      <div class="footer__meta">Replies within a few hours &middot; +92 328 8304524</div>
+    </div>
+    <div>
+      <a class="btn btn-solid" data-whatsapp-general href="#" target="_blank" rel="noopener">Chat on WhatsApp</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+<script src="./db.js"></script>
+<script src="./common.js"></script>
+<script src="./drawer.js"></script>
+<script src="./shop.js"></script>
+</body>
+</html>

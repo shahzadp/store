@@ -6,7 +6,8 @@
 -- rebuilds and everyone sees the change — no server involved.
 --
 -- Rules:
---   * price_cents is whole paisa (780000 = Rs 7,800.00). Never use decimals.
+--   * price_cents is whole paisa (780000 = Rs 7,800). Never use decimals.
+--   * The store trades in PKR only — there is no currency column.
 --   * slug must be unique; it is derived from the name if left to the admin UI.
 --   * tint is a fallback colour for products with no image_url.
 -- ===========================================================================
@@ -17,7 +18,6 @@ CREATE TABLE IF NOT EXISTS products (
   name        TEXT    NOT NULL,
   category    TEXT    NOT NULL DEFAULT 'General',
   price_cents INTEGER NOT NULL CHECK (price_cents >= 0),
-  currency    TEXT    NOT NULL DEFAULT 'PKR',
   image_url   TEXT,
   tint        TEXT,
   in_stock    INTEGER NOT NULL DEFAULT 1 CHECK (in_stock IN (0, 1)),
@@ -34,22 +34,21 @@ CREATE TABLE IF NOT EXISTS settings (
 INSERT OR IGNORE INTO settings (key, value) VALUES
   ('store_name', 'Alex Store'),
   ('whatsapp',   '923288304524'),
-  ('currency',   'PKR');
+  ('free_delivery_over_paisa', '600000');
 
-INSERT INTO products (slug, name, category, price_cents, currency, tint, in_stock, sort_order) VALUES
-  ('stoneware-mug',  'Stoneware Mug',   'Kitchen',   780000, 'PKR', '#D9CCEA', 1, 10),
-  ('linen-throw',    'Linen Throw',     'Textiles', 1780000, 'PKR', '#E8DDF2', 1, 20),
-  ('glass-carafe',   'Glass Carafe',    'Kitchen',  1170000, 'PKR', '#CFC3E3', 1, 30),
-  ('soy-candle',     'Soy Candle',      'Candles',   670000, 'PKR', '#E3D6EE', 1, 40),
-  ('ceramic-vase',   'Ceramic Vase',    'Decor',    1560000, 'PKR', '#E3D6EE', 1, 50),
-  ('wool-cushion',   'Wool Cushion',    'Textiles', 1330000, 'PKR', '#CFC3E3', 1, 60),
-  ('serving-bowl',   'Serving Bowl',    'Kitchen',  1000000, 'PKR', '#E8DDF2', 1, 70),
-  ('brass-tray',     'Brass Tray',      'Decor',    1450000, 'PKR', '#D9CCEA', 1, 80)
+INSERT INTO products (slug, name, category, price_cents, tint, in_stock, sort_order) VALUES
+  ('stoneware-mug',  'Stoneware Mug',   'Kitchen',   780000, '#D9CCEA', 1, 10),
+  ('linen-throw',    'Linen Throw',     'Textiles', 1780000, '#E8DDF2', 1, 20),
+  ('glass-carafe',   'Glass Carafe',    'Kitchen',  1170000, '#CFC3E3', 1, 30),
+  ('soy-candle',     'Soy Candle',      'Candles',   670000, '#E3D6EE', 1, 40),
+  ('ceramic-vase',   'Ceramic Vase',    'Decor',    1560000, '#E3D6EE', 1, 50),
+  ('wool-cushion',   'Wool Cushion',    'Textiles', 1330000, '#CFC3E3', 1, 60),
+  ('serving-bowl',   'Serving Bowl',    'Kitchen',  1000000, '#E8DDF2', 1, 70),
+  ('brass-tray',     'Brass Tray',      'Decor',    1450000, '#D9CCEA', 1, 80)
 ON CONFLICT (slug) DO UPDATE SET
   name        = excluded.name,
   category    = excluded.category,
   price_cents = excluded.price_cents,
-  currency    = excluded.currency,
   tint        = excluded.tint,
   in_stock    = excluded.in_stock,
   sort_order  = excluded.sort_order;

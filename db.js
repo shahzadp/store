@@ -9,7 +9,11 @@
 const SQLJS_VERSION = '1.10.3';
 const SQLJS_BASE = `https://cdn.jsdelivr.net/npm/sql.js@${SQLJS_VERSION}/dist/`;
 const CATALOG_URL = './catalog.sql';
-const DRAFT_KEY = 'alexstore.catalogDraft';
+
+// v2: the schema dropped the per-product currency column. Bumping the key
+// means a stale USD draft in someone's browser is ignored rather than
+// silently reappearing.
+const DRAFT_KEY = 'alexstore.catalogDraft.v2';
 
 const Catalog = (() => {
   let db = null;
@@ -70,7 +74,7 @@ const Catalog = (() => {
       .map(
         (p) =>
           `  (${escape(p.slug)}, ${escape(p.name)}, ${escape(p.category)}, ` +
-          `${p.price_cents}, ${escape(p.currency)}, ${escape(p.image_url)}, ` +
+          `${p.price_cents}, ${escape(p.image_url)}, ` +
           `${escape(p.tint)}, ${p.in_stock ? 1 : 0}, ${p.sort_order})`,
       )
       .join(',\n');
@@ -88,7 +92,6 @@ CREATE TABLE IF NOT EXISTS products (
   name        TEXT    NOT NULL,
   category    TEXT    NOT NULL DEFAULT 'General',
   price_cents INTEGER NOT NULL CHECK (price_cents >= 0),
-  currency    TEXT    NOT NULL DEFAULT 'PKR',
   image_url   TEXT,
   tint        TEXT,
   in_stock    INTEGER NOT NULL DEFAULT 1 CHECK (in_stock IN (0, 1)),
@@ -102,13 +105,12 @@ CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 INSERT OR IGNORE INTO settings (key, value) VALUES
 ${settingLines};
 
-INSERT INTO products (slug, name, category, price_cents, currency, image_url, tint, in_stock, sort_order) VALUES
+INSERT INTO products (slug, name, category, price_cents, image_url, tint, in_stock, sort_order) VALUES
 ${productLines}
 ON CONFLICT (slug) DO UPDATE SET
   name        = excluded.name,
   category    = excluded.category,
   price_cents = excluded.price_cents,
-  currency    = excluded.currency,
   image_url   = excluded.image_url,
   tint        = excluded.tint,
   in_stock    = excluded.in_stock,
@@ -177,19 +179,13 @@ ON CONFLICT (slug) DO UPDATE SET
 
     const price = Number(input.price_cents);
     if (!Number.isInteger(price) || price < 0) {
-      errors.price_cents = 'Must be whole cents, e.g. 2800 for $28.00';
+      errors.price_cents = 'Must be whole paisa, e.g. 780000 for Rs 7,800';
     }
 
     const category =
       typeof input.category === 'string' && input.category.trim()
         ? input.category.trim().slice(0, 60)
         : 'General';
-
-    let currency = 'PKR';
-    if (input.currency) {
-      currency = String(input.currency).trim().toUpperCase();
-      if (!/^[A-Z]{3}$/.test(currency)) errors.currency = 'Must be a 3-letter code';
-    }
 
     const requested = typeof input.slug === 'string' ? input.slug.trim().toLowerCase() : '';
     const slug = requested || slugify(name);
@@ -210,7 +206,6 @@ ON CONFLICT (slug) DO UPDATE SET
         name,
         category,
         price_cents: price,
-        currency,
         image_url: imageUrl,
         tint: typeof input.tint === 'string' && input.tint.trim() ? input.tint.trim() : null,
         in_stock: input.in_stock === false || input.in_stock === 0 ? 0 : 1,
@@ -232,9 +227,9 @@ ON CONFLICT (slug) DO UPDATE SET
     if (slugTaken(value.slug)) return { ok: false, errors: { slug: 'Already in use' } };
 
     run(
-      `INSERT INTO products (slug, name, category, price_cents, currency, image_url, tint, in_stock, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [value.slug, value.name, value.category, value.price_cents, value.currency,
+      `INSERT INTO products (slug, name, category, price_cents, image_url, tint, in_stock, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [value.slug, value.name, value.category, value.price_cents,
        value.image_url, value.tint, value.in_stock, value.sort_order],
     );
     saveDraft();
@@ -248,10 +243,10 @@ ON CONFLICT (slug) DO UPDATE SET
 
     run(
       `UPDATE products
-          SET slug = ?, name = ?, category = ?, price_cents = ?, currency = ?,
+          SET slug = ?, name = ?, category = ?, price_cents = ?,
               image_url = ?, tint = ?, in_stock = ?, sort_order = ?
         WHERE id = ?`,
-      [value.slug, value.name, value.category, value.price_cents, value.currency,
+      [value.slug, value.name, value.category, value.price_cents,
        value.image_url, value.tint, value.in_stock, value.sort_order, id],
     );
     saveDraft();
