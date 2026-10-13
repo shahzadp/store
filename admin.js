@@ -345,9 +345,68 @@ function highlightTint(value) {
 fillSwatches('swatches');
 fillSwatches('c-swatches');
 
+/* ------------------------------------------------------- search index */
+
+function indexNote() {
+  const note = $('#index-note');
+  const count = Catalog.listProducts().length;
+
+  if (Catalog.indexIsComplete()) {
+    note.textContent = `Index is current — ${count} products embedded. Download catalog.sql to publish it.`;
+    note.className = 'draft-note';
+  } else {
+    note.textContent = `No current index — ${count} products need embedding before semantic search can run.`;
+    note.className = 'draft-note draft-note--active';
+  }
+}
+
+$('#build-index').addEventListener('click', async () => {
+  const button = $('#build-index');
+  const out = $('#index-status');
+  const products = Catalog.listProducts();
+
+  if (!products.length) {
+    out.textContent = 'No products to index.';
+    out.className = 'status err';
+    return;
+  }
+
+  button.disabled = true;
+  out.className = 'status';
+
+  // Name and description are what a shopper would search by; category gives
+  // the model a little more context to match against.
+  const texts = products.map(
+    (p) => `${p.name}. ${p.category}. ${p.description || ''}`.trim(),
+  );
+
+  try {
+    out.textContent = 'Loading model (~130 MB, one time)…';
+    const vectors = await Search.embed(texts, (done, total) => {
+      out.textContent = `Embedding ${done}/${total}…`;
+    });
+
+    Catalog.replaceVectors(
+      products.map((p, i) => ({ slug: p.slug, vector: vectors[i] })),
+    );
+
+    out.textContent = `Indexed ${products.length} products.`;
+    out.className = 'status ok';
+    indexNote();
+    updateDraftNote();
+  } catch (err) {
+    console.error(err);
+    out.textContent = `Could not build index: ${err.message}`;
+    out.className = 'status err';
+  } finally {
+    button.disabled = false;
+  }
+});
+
 $('#refresh').addEventListener('click', () => {
   refresh();
   renderCollections();
+  indexNote();
 });
 
 /* ------------------------------------------------------------------- boot */
@@ -360,6 +419,7 @@ $('#refresh').addEventListener('click', () => {
     $('#s-wa').value = Catalog.getSetting('whatsapp') || '';
     refresh();
     renderCollections();
+    indexNote();
     status(Catalog.hasDraft() ? 'Loaded local draft' : 'Loaded published catalog', 'ok');
   } catch (err) {
     status(`Could not load: ${err.message}`, 'err');

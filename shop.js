@@ -82,3 +82,4 @@ start().catch((err) => {
 });
 
 initDrawer();
+searchDialog();

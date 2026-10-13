@@ -4,6 +4,7 @@
    ========================================================================== */
 
 initDrawer();
+searchDialog();
 
 async function start() {
   await Store.init();
