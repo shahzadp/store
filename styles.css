@@ -41,6 +41,10 @@
   /* Layout */
   --container: 1200px;
   --gutter: 40px;
+
+  /* Height of the sticky announcement bar. The header docks directly beneath
+     it, and JS keeps this in sync because the bar wraps on narrow screens. */
+  --announce-h: 37px;
 }
 
 /* ==========================================================================
@@ -296,6 +300,9 @@ h2 {
    ========================================================================== */
 
 .announce {
+  position: sticky;
+  top: 0;
+  z-index: 50;
   background: var(--surface-dark);
   color: var(--ink-on-dark);
   text-align: center;
@@ -309,7 +316,10 @@ h2 {
    ========================================================================== */
 
 .header {
-  position: relative;
+  position: sticky;
+  top: var(--announce-h);
+  z-index: 40;
+  background: var(--bg);
   border-bottom: 1px solid var(--line);
   padding: 24px var(--gutter);
   display: flex;
