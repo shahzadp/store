@@ -394,8 +394,11 @@ h2 {
   padding-bottom: 80px;
 }
 
+/* On desktop the hero is copy-only, so it needs a ceiling to stop the
+   headline and paragraph stretching the full 1200px grid. */
 .hero__copy {
   flex: 1 1 460px;
+  max-width: 760px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -419,7 +422,10 @@ h2 {
   flex-wrap: wrap;
 }
 
+/* Hidden on desktop — the illustration suits the stacked mobile hero, where
+   it sits under the copy at full width. Shown again below the breakpoint. */
 .hero__media {
+  display: none;
   flex: 1 1 380px;
   min-height: 420px;
   background: var(--tint-1);
@@ -661,6 +667,7 @@ h2 {
 
   .hero__copy {
     flex: none;
+    max-width: none;
     gap: 18px;
   }
 
@@ -673,7 +680,9 @@ h2 {
     font-size: 17px;
   }
 
+  /* Stacked mobile hero — the illustration returns here */
   .hero__media {
+    display: flex;
     flex: none;
     min-height: 0;
     height: 260px;
