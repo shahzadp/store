@@ -10,15 +10,25 @@ function escapeHtml(value) {
   }[c]));
 }
 
-/** Formats integer cents as currency, e.g. 2800 -> $28.00 */
+/** Locale that renders each currency the way sellers there expect. */
+const CURRENCY_LOCALE = {
+  PKR: 'en-PK', // "Rs 7,800.00"
+  USD: 'en-US',
+  GBP: 'en-GB',
+  EUR: 'de-DE',
+};
+
+/** Formats integer minor units as currency, e.g. 780000 -> Rs 7,800.00 */
 function formatPrice(cents, currency) {
+  const code = currency || 'USD';
   try {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(CURRENCY_LOCALE[code] || 'en-US', {
       style: 'currency',
-      currency: currency || 'USD',
+      currency: code,
+      maximumFractionDigits: 2,
     }).format(cents / 100);
   } catch {
-    return `$${(cents / 100).toFixed(2)}`;
+    return `${code} ${(cents / 100).toFixed(2)}`;
   }
 }
 
@@ -98,15 +108,55 @@ async function start() {
   }
 }
 
+/* ------------------------------------------------------------------- menu */
+
+const MOBILE_BREAKPOINT = 820;
+
 function initMenu() {
   const button = document.querySelector('[data-menu-toggle]');
   const nav = document.getElementById('mobile-nav');
   if (!button || !nav) return;
 
+  const isMobile = () => window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
+
+  function open() {
+    nav.classList.add('nav--open');
+    document.body.classList.add('nav-open');
+    button.setAttribute('aria-expanded', 'true');
+    document.querySelector('.nav-backdrop')?.removeAttribute('hidden');
+  }
+
+  function close() {
+    nav.classList.remove('nav--open');
+    document.body.classList.remove('nav-open');
+    button.setAttribute('aria-expanded', 'false');
+    document.querySelector('.nav-backdrop')?.setAttribute('hidden', '');
+    button.focus();
+  }
+
   button.addEventListener('click', () => {
-    const open = button.getAttribute('aria-expanded') === 'true';
-    button.setAttribute('aria-expanded', String(!open));
-    nav.classList.toggle('nav--open', !open);
+    if (button.getAttribute('aria-expanded') === 'true') close();
+    else open();
+  });
+
+  // Close button inside the drawer, and the tap-outside backdrop.
+  nav.querySelector('[data-menu-close]')?.addEventListener('click', close);
+  document.querySelector('.nav-backdrop')?.addEventListener('click', close);
+
+  // Following an in-page link should close the drawer, not leave it covering
+  // the section that just scrolled into view.
+  nav.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener('click', () => close());
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && button.getAttribute('aria-expanded') === 'true') close();
+  });
+
+  // Rotating or resizing past the breakpoint must not strand the open drawer
+  // over the desktop layout.
+  window.addEventListener('resize', () => {
+    if (!isMobile() && button.getAttribute('aria-expanded') === 'true') close();
   });
 }
 

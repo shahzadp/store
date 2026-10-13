@@ -13,15 +13,23 @@ function escapeHtml(value) {
   }[c]));
 }
 
+/** Locale that renders each currency the way sellers there expect. */
+const CURRENCY_LOCALE = { PKR: 'en-PK', USD: 'en-US', GBP: 'en-GB', EUR: 'de-DE' };
+
 function formatPrice(cents, currency) {
+  const code = currency || 'PKR';
   try {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(cents / 100);
+    return new Intl.NumberFormat(CURRENCY_LOCALE[code] || 'en-US', {
+      style: 'currency',
+      currency: code,
+      maximumFractionDigits: 2,
+    }).format(cents / 100);
   } catch {
-    return `$${(cents / 100).toFixed(2)}`;
+    return `${code} ${(cents / 100).toFixed(2)}`;
   }
 }
 
-/** "28.00" / "$28" / "28" -> 2800. Returns null when unparseable. */
+/** "7800.00" / "Rs 7,800" / "7800" -> 780000. Returns null when unparseable. */
 function parsePriceToCents(input) {
   const cleaned = String(input).replace(/[^0-9.]/g, '');
   if (!cleaned || (cleaned.match(/\./g) || []).length > 1) return null;
@@ -94,7 +102,7 @@ function updateDraftNote() {
 function resetForm() {
   $('#product-form').reset();
   $('#f-id').value = '';
-  $('#f-currency').value = 'USD';
+  $('#f-currency').value = 'PKR';
   $('#f-stock').checked = true;
   $('#form-title').textContent = 'Add a product';
   $('#submit-btn').textContent = 'Add product';
@@ -107,7 +115,7 @@ $('#product-form').addEventListener('submit', (event) => {
 
   const priceCents = parsePriceToCents($('#f-price').value);
   if (priceCents === null) {
-    status('Price must be a number like 28.00', 'err');
+    status('Price must be a number like 7800.00', 'err');
     return;
   }
 
@@ -115,7 +123,7 @@ $('#product-form').addEventListener('submit', (event) => {
     name: $('#f-name').value,
     category: $('#f-category').value,
     price_cents: priceCents,
-    currency: $('#f-currency').value || 'USD',
+    currency: $('#f-currency').value || 'PKR',
     slug: $('#f-slug').value,
     image_url: $('#f-image').value,
     tint: $('#f-tint').value,

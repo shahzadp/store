@@ -11,6 +11,7 @@ a backend, because there is no backend.
 | File | Role |
 | --- | --- |
 | `catalog.sql` | The catalog. Plain text SQLite that seeds the browser database. |
+| `hero-still-life.svg` | Hero illustration. |
 | `db.js` | Boots SQLite, runs `catalog.sql`, exposes queries and edits. |
 | `index.html` / `styles.css` / `app.js` | The storefront. |
 | `admin.html` / `admin.css` / `admin.js` | Catalog editor. |
@@ -65,7 +66,11 @@ panel), stored as country code + number with no `+`, spaces or dashes.
 `settings` — free-form `key`/`value`, currently `store_name` and `whatsapp`.
 
 Notes:
-- Prices are **whole integer cents**, so there is no floating-point drift.
+- Prices are **whole integer paisa**, so there is no floating-point drift.
+  `780000` = Rs 7,800. The seeded prices were converted from the original USD
+  mockups at roughly 278 PKR/USD and rounded to clean amounts.
+- Currency is per-product (`PKR` by default) and is rendered with the locale
+  sellers expect, so PKR reads as `Rs 7,800` rather than `PKR 7,800`.
 - `slug` is generated from the name when left blank and must be unique.
 - `tint` is only used when `image_url` is empty; pick from the design's
   lavender palette via the swatches in the admin panel.
@@ -76,6 +81,11 @@ The layout is a faithful reimplementation of the *Store — Desktop* and
 *Store — Mobile* mockups as one responsive page, built with plain
 HTML/CSS/JS. The `accent` colour from the mockups is `--accent` in
 `styles.css`.
+
+The mobile header's hamburger opens a slide-in drawer (`min(80vw, 300px)`)
+with a tap-outside backdrop. It closes on link click, backdrop tap, the `X`,
+`Escape`, or rotating past the 820px breakpoint — at which point the drawer
+resets so it can't strand itself over the desktop layout.
 
 ## Security note
 

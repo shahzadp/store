@@ -22,11 +22,18 @@
 
     <a class="logo" href="#">Alex Store</a>
 
-    <nav class="nav" id="mobile-nav">
+    <nav class="nav" id="mobile-nav" aria-label="Main">
+      <button class="nav__close" type="button" data-menu-close aria-label="Close menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
       <a href="#shop">Shop</a>
       <a href="#">Collections</a>
       <a href="#">Journal</a>
       <a href="#">About</a>
+      <div class="nav__footer">
+        <div class="cat">Questions?</div>
+        <a class="nav__wa" data-whatsapp-general href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
+      </div>
     </nav>
 
     <div class="utils">
@@ -35,6 +42,8 @@
     </div>
   </div>
 </header>
+
+<div class="nav-backdrop" data-menu-close hidden></div>
 
 <main>
   <section class="hero container">
@@ -47,7 +56,10 @@
         <a class="btn btn-outline" href="#">Our Story</a>
       </div>
     </div>
-    <div class="hero__media placeholder">Hero photo</div>
+    <div class="hero__media">
+      <img class="hero__img" src="./hero-still-life.svg"
+           alt="Ceramic vase with dried stems, a glass carafe, a mug and a candle on a table">
+    </div>
   </section>
 
   <section class="shop" id="shop">
