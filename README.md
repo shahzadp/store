@@ -92,8 +92,16 @@ against 7/16 and 12/16 for the SPLADE-tiny encoder it replaced (random is
 Product vectors are precomputed at publish time: in the admin panel,
 **Build search index** embeds every product and the resulting
 `catalog.sql` ships with the vectors baked in, so visitors only ever
-embed their own query — never the catalog. The engine is cached by the
-browser after the first fetch.
+embed their own query — never the catalog.
+
+The engine itself is prefetched on an idle callback shortly after load,
+so the ~10 MB download overlaps time the visitor is already spending on
+the page instead of stalling their first search. It waits for the catalog
+to finish loading first, and is skipped when the browser reports
+`saveData`, when offline, or when no search index has been published —
+there would be nothing to rank against. The prefetch shares
+`loadEngine()`'s memoised promise with a real search, so whichever starts
+first, the other just awaits the same download.
 
 ## How the WhatsApp hand-off works
 

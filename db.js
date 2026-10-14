@@ -481,8 +481,14 @@ const SEARCH_DIMS = 384;
     saveDraft();
   }
 
-  return {
+  /** True once init() has resolved and queries are safe to run. */
+  function isReady() {
+    return db !== null;
+  }
+
+  return {
     init,
+    isReady,
     listProducts,
     listCollections,
     getSetting,

@@ -5,6 +5,7 @@
 
 initDrawer();
 searchDialog();
+Search.prefetch();
 
 async function start() {
   await Store.init();

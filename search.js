@@ -115,7 +115,51 @@ const Search = (() => {
     }
   }
 
-  return { rank, embed, isModelLoaded, loadEngine };
+  /**
+   * Warm the engine on an idle callback so the first search doesn't sit on
+   * a ~10 MB download. Deferred rather than immediate: it must not compete
+   * with the page's own resources, and visitors who never search should not
+   * pay for it. Skipped when the browser asks for data saving, when
+   * offline, and when no search index is published — there is nothing to
+   * rank against without one.
+   *
+   * Racing this against `run()` is safe: both go through `loadEngine`, which
+   * memoises the in-flight promise, so whoever starts second just awaits the
+   * same download.
+   */
+  async function prefetch() {
+    const connection = navigator.connection;
+    if (connection && connection.saveData) return;
+    if (!navigator.onLine) return;
+
+    // Wait for the catalog. prefetch() is called at module scope, so an idle
+    // callback can easily fire before Catalog.init() has resolved — asking
+    // indexIsComplete() then throws on an unopened database. Bounded so a
+    // catalog that never loads cannot spin here.
+    for (let i = 0; i < 40; i++) {
+      if (Catalog.isReady()) break;
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    }
+
+    if (!Catalog.isReady()) return;
+
+    const warm = () => {
+      // Nothing to rank against without a published index, so don't spend
+      // ~10 MB on a storefront that has no products indexed yet.
+      if (!Catalog.indexIsComplete()) return;
+
+      loadEngine().catch(() => {
+        // Best-effort. If this fails, the first real search retries and
+        // surfaces the error in the dialog where the user can see it.
+      });
+    };
+
+    // Deferred so the download never competes with the page's own work.
+    if (typeof requestIdleCallback !== 'function') warm();
+    else requestIdleCallback(warm, { timeout: 4000 });
+  }
+
+  return { rank, embed, isModelLoaded, loadEngine, prefetch };
 })();
 
 /* ==========================================================================
@@ -171,7 +215,7 @@ function searchDialog() {
               </span>
               <span class="search__score">
                 ${meta ? `<span class="search__best">${meta}</span>` : ''}
-                <span class="search__bar" aria-hidden="true"><span style="width:${strength}%"></span></span>
+                <span class="search__meter" aria-hidden="true"><span style="width:${strength}%"></span></span>
               </span>
             </a>
           </li>`;

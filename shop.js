@@ -83,3 +83,4 @@ start().catch((err) => {
 
 initDrawer();
 searchDialog();
+Search.prefetch();
