@@ -131,6 +131,25 @@ Rebuilding after a product edit also matters for quality, not just
 coverage: the vector is built from `name. category. description`, so an
 edited description is not reflected in search until the index is rebuilt.
 
+Search failures are recoverable rather than terminal. Two cases used to
+produce a dead search box:
+
+- **Search opened before the catalog finished loading.** On a cold cache
+  `rank()` queried the database before `Catalog.init()` had resolved and
+  threw, which the dialog reported as "The model could not be loaded" —
+  even though nothing was wrong with the model. `rank()` now waits for
+  `Catalog.isReady()` first.
+- **The model download dropped.** A ~10 MB transfer is easily interrupted
+  on mobile. The failure is counted rather than latched, so the dialog
+  retries automatically (up to 3 attempts, showing "Connection lost —
+  downloading the model again…"). If all attempts fail it shows a
+  **Try again** button instead of requiring the visitor to close and
+  reopen the dialog.
+
+A backstop stops a genuinely dead network from retrying on every keystroke:
+after 3 consecutive failures `loadEngine()` refuses until `resetFailures()`
+is called, which the **Try again** button does.
+
 ## How the WhatsApp hand-off works
 
 Buy links are plain `wa.me` deep links, so they work with no WhatsApp app

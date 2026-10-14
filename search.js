@@ -19,12 +19,20 @@ const TERNLIGHT_ENGINE =
 const Search = (() => {
   let enginePromise = null;
   let engine = null;
-  let loadError = null;
+
+  // A ~10 MB download that gets interrupted — routine on mobile — must not
+  // kill search for the rest of the page session. Count consecutive failures
+  // so a genuine outage stops retrying, and let an explicit retry reset it.
+  let failures = 0;
+  const MAX_FAILURES = 3;
 
   /* ----------------------------------------------------------- loading */
 
   function loadEngine(onProgress) {
     if (enginePromise) return enginePromise;
+    if (failures >= MAX_FAILURES) {
+      return Promise.reject(new Error('Model download failed repeatedly'));
+    }
 
     enginePromise = (async () => {
       if (onProgress) onProgress('Loading model…');
@@ -37,15 +45,23 @@ const Search = (() => {
       await mod.default();
 
       engine = mod;
+      failures = 0;
       if (onProgress) onProgress(null);
       return mod;
     })().catch((err) => {
-      loadError = err;
+      failures++;
+      // Drop the memo so the next attempt starts a genuinely fresh download
+      // rather than re-awaiting a promise that has already rejected.
       enginePromise = null;
       throw err;
     });
 
     return enginePromise;
+  }
+
+  /** Clear the failure count so the next search retries from scratch. */
+  function resetFailures() {
+    failures = 0;
   }
 
   function isModelLoaded() {
@@ -88,32 +104,39 @@ const Search = (() => {
 
   /**
    * Semantic ranking. Returns rows of { product, score }.
+   *
+   * Engine load failures are deliberately NOT swallowed — the dialog retries
+   * them. Swallowing used to strand the visitor behind a dead search box.
    */
   async function rank(query, onProgress) {
-    const products = Catalog.listProducts();
     const trimmed = query.trim();
     if (!trimmed) return [];
 
-    if (loadError) return [];
+    // Wait for the catalog. On a cold cache the visitor can open search
+    // before sql.js and catalog.sql have finished loading, and querying the
+    // database before then throws — that used to surface as "The model could
+    // not be loaded", even though nothing was wrong with the model. Bounded
+    // so a catalog that never arrives cannot leave this hanging.
+    for (let i = 0; i < 60; i++) {
+      if (Catalog.isReady()) break;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
+    if (!Catalog.isReady()) return [];
     if (!Catalog.indexIsComplete()) return [];
 
-    try {
-      const [queryVector] = await embed([trimmed], onProgress);
-      const index = Catalog.getVectors();
+    const products = Catalog.listProducts();
+    const [queryVector] = await embed([trimmed], onProgress);
+    const index = Catalog.getVectors();
 
-      return products
-        .map((product) => {
-          const entry = index.get(product.slug);
-          if (!entry || entry.vector.length !== queryVector.length) return null;
-          return { product, score: similarity(queryVector, entry.vector) };
-        })
-        .filter(Boolean)
-        .sort((a, b) => b.score - a.score);
-    } catch (err) {
-      console.warn('Semantic search unavailable:', err);
-      loadError = err;
-      return [];
-    }
+    return products
+      .map((product) => {
+        const entry = index.get(product.slug);
+        if (!entry || entry.vector.length !== queryVector.length) return null;
+        return { product, score: similarity(queryVector, entry.vector) };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.score - a.score);
   }
 
   /**
@@ -160,7 +183,7 @@ const Search = (() => {
     else requestIdleCallback(warm, { timeout: 4000 });
   }
 
-  return { rank, embed, isModelLoaded, loadEngine, prefetch };
+  return { rank, embed, isModelLoaded, loadEngine, prefetch, resetFailures };
 })();
 
 /* ==========================================================================
@@ -240,6 +263,26 @@ function searchDialog() {
       </li>`;
   }
 
+  /** Terminal state: retry by hand, so nobody has to close and reopen. */
+  function renderRetry() {
+    results.innerHTML = `
+      <li class="search__retry">
+        <span>Could not reach the model. Check your connection and try again.</span>
+        <button class="search__retry-btn" type="button" id="search-retry">Try again</button>
+      </li>`;
+
+    document.getElementById('search-retry').addEventListener('click', () => {
+      Search.resetFailures();
+      run();
+    });
+  }
+
+  // A dropped 10 MB download is common on mobile and usually clears on the
+  // next attempt, so retry a couple of times automatically rather than
+  // showing a message the visitor has to dismiss and start again.
+  const MAX_ATTEMPTS = 3;
+  const RETRY_DELAY = 1200;
+
   async function run() {
     const query = input.value.trim();
     lastQuery = query;
@@ -263,12 +306,6 @@ function searchDialog() {
     const ticket = ++sequence;
     loading = true;
 
-    // Shown immediately, before the engine is even asked for.
-    if (!Search.isModelLoaded()) {
-      renderLoading('Loading model… this happens once per browser');
-      setStatus('');
-    }
-
     const onProgress = (message) => {
       if (ticket !== sequence || !message) return;
       renderLoading(message);
@@ -276,13 +313,34 @@ function searchDialog() {
     };
 
     try {
-      const rows = await Search.rank(query, onProgress);
-      if (ticket !== sequence || queued) return;
-      render(rows);
-    } catch (err) {
-      if (ticket === sequence) {
-        results.innerHTML = '<li class="search__empty">Search unavailable.</li>';
-        setStatus('The model could not be loaded.');
+      for (let attempt = 0; ; attempt++) {
+        // Shown immediately, before the engine is even asked for.
+        if (!Search.isModelLoaded()) {
+          renderLoading(
+            attempt
+              ? 'Connection lost — downloading the model again…'
+              : 'Loading model… this happens once per browser',
+          );
+          setStatus('');
+        }
+
+        try {
+          const rows = await Search.rank(query, onProgress);
+          if (ticket !== sequence || queued) return;
+          render(rows);
+          return;
+        } catch (err) {
+          console.warn('Search attempt failed:', err);
+          if (ticket !== sequence) return;
+          if (attempt < MAX_ATTEMPTS - 1) {
+            // Clear the backstop so this retry really re-downloads.
+            Search.resetFailures();
+            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+            continue;
+          }
+          renderRetry();
+          return;
+        }
       }
     } finally {
       loading = false;
