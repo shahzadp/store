@@ -403,33 +403,28 @@ h2 {
    Search
    ========================================================================== */
 
-/* Header trigger — sits right of the nav on desktop */
-.search-trigger {
+/* Search, as a plain icon sitting in the nav row beside the links on
+   desktop. It used to be a bordered "Search / Ctrl K" button in the header,
+   which was heavy and — because the header wraps — tended to drop onto its
+   own line under the store name. Hidden inside the mobile drawer, where the
+   header already carries its own icon next to the hamburger. */
+.nav__search {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 14px;
-  min-height: 40px;
-  background: transparent;
-  border: 1px solid var(--line);
-  color: var(--ink);
-  font: inherit;
-  font-size: 14px;
-  letter-spacing: 0.04em;
+  justify-content: center;
+  align-self: center;
+  width: 40px;
+  height: 40px;
+  margin-left: -14px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
   cursor: pointer;
 }
 
-.search-trigger:hover {
-  border-color: var(--ink-accent);
+.nav__search:hover {
   color: var(--ink-accent);
-}
-
-.search-trigger__key {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-muted);
-  border: 1px solid var(--line);
-  padding: 1px 5px;
 }
 
 /* Overlay */
@@ -1220,8 +1215,9 @@ h2 {
     color: var(--ink-accent);
   }
 
-  /* The header trigger is redundant next to the drawer entry */
-  .search-trigger {
+  /* The drawer already has its own search icon beside the hamburger, so the
+   desktop copy would just be a duplicate inside the panel. */
+  .nav__search {
     display: none;
   }
 
@@ -1430,24 +1426,28 @@ h2 {
     width: 100%;
   }
 }
+
 /* ==========================================================================
-   Very narrow phones
+   Small phones (<= 420px)
    ==========================================================================
 
-   Declared last on purpose. The 820px block above forces a two-up grid, and
-   both rules have the same specificity, so this one has to come after it to
-   win. Below ~380px two columns leave under 90px for the button label, which
-   "Buy on WhatsApp" needs about 105px of at 14px, so the grid drops to a
-   single column. At 390px and up the two-up layout fits with room to spare.
+   The desktop gutter is 40px a side, which on a 360px screen leaves the
+   two-up grid only ~132px per card — too little for "Buy on WhatsApp" at
+   14px. Tightening the gutter buys 20px a side without touching the grid.
 */
-@media (max-width: 380px) {
-  .products {
-    grid-template-columns: 1fr;
+@media (max-width: 420px) {
+  :root {
+    --gutter: 20px;
   }
 
   .product__actions .btn,
   .product__actions .share {
-    font-size: 15px;
-    padding: 13px 12px;
+    padding: 11px 6px;
+    font-size: 13px;
+    gap: 6px;
+  }
+
+  .products {
+    gap: 24px 12px;
   }
 }
