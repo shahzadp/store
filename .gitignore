@@ -4,6 +4,13 @@ Thumbs.db
 
 *.log
 
+# Scratch files: throwaway Node patch scripts, one-off measurement harnesses
+# and commit-message files written to disk to dodge shell quoting. These keep
+# being swept into commits by `git add -A`, so they are ignored explicitly.
+_*.js
+_*.html
+_msg*.txt
+
 # Nothing else needs ignoring — the site is static.
 # (No node_modules: there is no build step. sql.js is vendored in vendor/,
 # so nothing is fetched from a CDN at runtime either.)
