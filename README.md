@@ -202,8 +202,50 @@ published) or is read live from the catalog. No founding year, no
 inventing them on a page whose whole job is building trust would defeat
 the point. To add them, edit the copy in `about.html` directly.
 
-The four stat tiles and the category list in `about.js` are computed from
-SQLite on load, so they cannot drift away from the catalog.
+`about.js` holds only bootstrap calls — it renders no content of its own. It
+does call `Store.init()`, which is load-bearing even on a page with no
+product list: that is what fills the announcement bar and rewrites every
+`[data-whatsapp-general]` href. Skipping it leaves the page looking fine
+while every WhatsApp link on it is `href="#"`.
+
+## Journal page
+
+`journal.html` exists because the nav carried a `Journal` item pointing at
+`./index.html#journal` — an anchor that has never existed, so the link was
+dead on every page. It is a real page now, currently empty.
+
+The empty state is deliberate: it says "Nothing published yet" and links to
+the catalog. A blank section reads as a broken page, and inventing posts to
+fill it would be the same mistake as writing unverifiable About copy.
+
+It has its own `journal.js` with the same bootstrap as `about.js`. There is
+no journal table in SQLite yet — entries are meant to be static copy in
+`journal.html` like the About page. If you want them editable in the admin
+panel, that needs a schema change and is a separate piece of work.
+
+## Analytics
+
+GoatCounter is on every public page (`index`, `shop`, `collections`,
+`about`, `product`, `journal`):
+
+```html
+<script data-goatcounter="https://mystore.goatcounter.com/count"
+        async src="https://gc.zgo.at/count.js"></script>
+```
+
+It is `async`, so it never blocks rendering, and it is the only third-party
+request on a page — the catalog itself is vendored.
+
+Two deliberate choices:
+
+- **The scheme is written out** (`https://gc.zgo.at/count.js`) rather than
+  the protocol-relative `//gc.zgo.at/count.js`. Protocol-relative resolves
+  to `http://` on a plain-http host, where the request is downgraded or
+  blocked, so the tracker would silently record nothing when previewing
+  locally.
+- **`admin.html` is excluded.** It is the catalog editor, its only visitor
+  is you, and counting it would just add noise. Say the word if you would
+  rather track it — it would also show you if anything else reaches it.
 
 ### Button labels
 

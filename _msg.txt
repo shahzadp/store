@@ -1,0 +1,16 @@
+Add a Journal page and GoatCounter analytics
+
+- journal.html replaces the nav's dead ./index.html#journal anchor, which
+  never existed on any page. The page is empty on purpose: it says so and
+  links to the catalog rather than showing a blank section or inventing
+  posts to fill it.
+- journal.js mirrors about.js. It calls Store.init() even though the page
+  renders no product list, because that is what fills the announcement bar
+  and resolves the [data-whatsapp-general] hrefs.
+- GoatCounter on every public page, async so it cannot block rendering.
+  Written with an explicit https scheme instead of the protocol-relative
+  //gc.zgo.at, which would resolve to http on a plain-http host and silently
+  record nothing when previewing locally. admin.html is excluded; its only
+  visitor is the owner.
+- Correct a stale README line that described About stat tiles which were
+  removed several commits ago.

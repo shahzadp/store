@@ -1556,3 +1556,26 @@ h2 {
     max-height: 180px;
   }
 }
+/* ==========================================================================
+   Journal empty state
+
+   The Journal has no posts yet. An empty section reads as a broken page, so
+   it says plainly that there is nothing here and offers the catalog instead
+   of leaving the reader at a blank screen.
+   ========================================================================== */
+.journal-empty {
+  padding: 48px 0 64px;
+  max-width: 52ch;
+}
+
+.journal-empty__line {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.journal-empty__note {
+  margin: 0 0 28px;
+  color: var(--ink-body);
+}
