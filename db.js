@@ -182,6 +182,7 @@ ON CONFLICT (slug) DO UPDATE SET
   image_url   = excluded.image_url,
   tint        = excluded.tint,
   sort_order  = excluded.sort_order;
+${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\nINSERT INTO product_vectors (slug, vector, model) VALUES\n${vectorLines}\nON CONFLICT (slug) DO UPDATE SET\n  vector = excluded.vector,\n  model  = excluded.model;\n` : ''}`;
   }
 
   /** Persists the current database as this browser's unpublished draft. */
@@ -329,7 +330,7 @@ ON CONFLICT (slug) DO UPDATE SET
   }
 
   function slugTaken(table, slug, exceptId = null) {
-    // 'table' is never user input — only the literals 'products'/'collections'.
+    // `table` is never user input — only the literals 'products'/'collections'.
     const row = exceptId
       ? one(`SELECT id FROM ${table} WHERE slug = ? AND id <> ?`, [slug, exceptId])
       : one(`SELECT id FROM ${table} WHERE slug = ?`, [slug]);
@@ -373,62 +374,63 @@ ON CONFLICT (slug) DO UPDATE SET
     saveDraft();
   }
 
-  /* ---------------------------------------------------- semantic search */
-
-// SPLADE-tiny: sparse lexical expansion model. Vectors are precomputed
-// in the admin panel and shipped in catalog.sql; visitors only embed
-// their own query. Gated repo — requires HF token if 401.
+  /* ---------------------------------------------------- semantic search */
+
+// Full Hugging Face repo id — the org prefix is required or the hub 401s.
+// SPLADE-tiny: sparse lexical expansion over a BERT-tiny encoder, 768-dim.
+// Product vectors are precomputed in the admin panel and shipped in
+// catalog.sql; visitors only embed their own query.
 const SEARCH_MODEL = 'naver/splade-tiny';
 const SEARCH_DIMS = 768;
-
-function base64ToFloat32(b64) {
-    const binary = atob(b64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return new Float32Array(bytes.buffer);
-  }
-
-  function float32ToBase64(vector) {
-    const bytes = new Uint8Array(vector.buffer, vector.byteOffset, vector.byteLength);
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    return btoa(binary);
-  }
-
-  /** Embeddings for products, keyed by slug. Empty until an index is built. */
-  function getVectors() {
-    const out = new Map();
-    for (const row of all('SELECT slug, vector, model FROM product_vectors')) {
-      out.set(row.slug, { vector: base64ToFloat32(row.vector), model: row.model });
-    }
-    return out;
-  }
-
-  /** True when every product has a vector from the model we expect. */
-  function indexIsComplete(model = SEARCH_MODEL) {
-    const products = all('SELECT slug FROM products');
-    if (!products.length) return false;
-
-    const rows = all('SELECT slug, model FROM product_vectors');
-    const bySlug = new Map(rows.map((r) => [r.slug, r.model]));
-
-    return products.every((p) => bySlug.get(p.slug) === model);
-  }
-
-  /** Replaces the whole index so it can never drift out of sync. */
-  function replaceVectors(entries, model = SEARCH_MODEL) {
-    run('DELETE FROM product_vectors');
-    for (const { slug, vector } of entries) {
-      run('INSERT INTO product_vectors (slug, vector, model) VALUES (?, ?, ?)', [
-        slug,
-        float32ToBase64(vector),
-        model,
-      ]);
-    }
-    saveDraft();
-  }
-
-  /* ------------------------------------------------------- collections */
+
+function base64ToFloat32(b64) {
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Float32Array(bytes.buffer);
+  }
+
+  function float32ToBase64(vector) {
+    const bytes = new Uint8Array(vector.buffer, vector.byteOffset, vector.byteLength);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  /** Embeddings for products, keyed by slug. Empty until an index is built. */
+  function getVectors() {
+    const out = new Map();
+    for (const row of all('SELECT slug, vector, model FROM product_vectors')) {
+      out.set(row.slug, { vector: base64ToFloat32(row.vector), model: row.model });
+    }
+    return out;
+  }
+
+  /** True when every product has a vector from the model we expect. */
+  function indexIsComplete(model = SEARCH_MODEL) {
+    const products = all('SELECT slug FROM products');
+    if (!products.length) return false;
+
+    const rows = all('SELECT slug, model FROM product_vectors');
+    const bySlug = new Map(rows.map((r) => [r.slug, r.model]));
+
+    return products.every((p) => bySlug.get(p.slug) === model);
+  }
+
+  /** Replaces the whole index so it can never drift out of sync. */
+  function replaceVectors(entries, model = SEARCH_MODEL) {
+    run('DELETE FROM product_vectors');
+    for (const { slug, vector } of entries) {
+      run('INSERT INTO product_vectors (slug, vector, model) VALUES (?, ?, ?)', [
+        slug,
+        float32ToBase64(vector),
+        model,
+      ]);
+    }
+    saveDraft();
+  }
+
+  /* ------------------------------------------------------- collections */
 
   function createCollection(input) {
     const { ok, errors, value } = validateCollection(input);
@@ -475,29 +477,29 @@ function base64ToFloat32(b64) {
     saveDraft();
   }
 
-  return {
-    init,
-    listProducts,
-    listCollections,
-    getSetting,
-    slugify,
-    createProduct,
-    updateProduct,
-    deleteProduct,
-    createCollection,
-    updateCollection,
-    deleteCollection,
-    getVectors,
-    indexIsComplete,
-    replaceVectors,
-    SEARCH_MODEL,
-    SEARCH_DIMS,
-    setSetting,
-    toSql,
-    saveDraft,
-    clearDraft,
-    hasDraft,
-  };
+  return {
+    init,
+    listProducts,
+    listCollections,
+    getSetting,
+    slugify,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    createCollection,
+    updateCollection,
+    deleteCollection,
+    getVectors,
+    indexIsComplete,
+    replaceVectors,
+    SEARCH_MODEL,
+    SEARCH_DIMS,
+    setSetting,
+    toSql,
+    saveDraft,
+    clearDraft,
+    hasDraft,
+  };
 })();
 
 
