@@ -193,6 +193,7 @@ function searchDialog() {
   let lastQuery = '';
   let sequence = 0;
   let loading = false;
+  let queued = false;
 
   function setStatus(message, kind = '') {
     status.textContent = message;
@@ -247,9 +248,17 @@ function searchDialog() {
       return;
     }
 
-    const ticket = ++sequence;
+    // A request landing mid-search must not bump `sequence`: that would
+    // invalidate the in-flight run while `loading` blocks this one from
+    // starting, so nothing would ever render — which is exactly what
+    // happens if the visitor keeps typing while the model downloads.
+    // Queue it instead; the in-flight run hands over below.
+    if (loading) {
+      queued = true;
+      return;
+    }
 
-    if (loading) return;
+    const ticket = ++sequence;
     loading = true;
 
     const onProgress = (file, loaded, total) => {
@@ -260,7 +269,7 @@ function searchDialog() {
 
     try {
       const rows = await Search.rank(query, onProgress);
-      if (ticket !== sequence) return;
+      if (ticket !== sequence || queued) return;
       render(rows);
     } catch (err) {
       if (ticket === sequence) {
@@ -269,6 +278,10 @@ function searchDialog() {
       }
     } finally {
       loading = false;
+      if (queued) {
+        queued = false;
+        run();
+      }
     }
   }
 
