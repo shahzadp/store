@@ -27,12 +27,13 @@ const Search = (() => {
     if (enginePromise) return enginePromise;
 
     enginePromise = (async () => {
-      if (onProgress) onProgress('Loading engine');
+      if (onProgress) onProgress('Loading model…');
       const mod = await import(TERNLIGHT_ENGINE);
 
       // The default export is wasm-bindgen's init(): it fetches and
-      // instantiates tern_engine_bg.wasm (~10 MB raw, ~7 MB gzipped).
-      if (onProgress) onProgress('Downloading engine (~7 MB)');
+      // instantiates tern_engine_bg.wasm, which carries the model weights
+      // and the tokenizer (~10 MB raw, ~7 MB gzipped).
+      if (onProgress) onProgress('Downloading model (~7 MB) — first search only');
       await mod.default();
 
       engine = mod;
@@ -225,6 +226,20 @@ function searchDialog() {
     setStatus(`${rows.length} match${rows.length === 1 ? '' : 'es'} by meaning.`);
   }
 
+  /**
+   * First search on a cold cache spends real time downloading the engine —
+   * measured at ~160 s on a slow link — so the results area must say so
+   * rather than sitting empty and looking broken. The engine reports no
+   * progress events, so this is an indeterminate indicator.
+   */
+  function renderLoading(message) {
+    results.innerHTML = `
+      <li class="search__loading" role="status" aria-live="polite">
+        <span class="search__spinner" aria-hidden="true"></span>
+        <span class="search__loading-text">${Store.escapeHtml(message)}</span>
+      </li>`;
+  }
+
   async function run() {
     const query = input.value.trim();
     lastQuery = query;
@@ -248,9 +263,16 @@ function searchDialog() {
     const ticket = ++sequence;
     loading = true;
 
+    // Shown immediately, before the engine is even asked for.
+    if (!Search.isModelLoaded()) {
+      renderLoading('Loading model… this happens once per browser');
+      setStatus('');
+    }
+
     const onProgress = (message) => {
       if (ticket !== sequence || !message) return;
-      setStatus(message);
+      renderLoading(message);
+      setStatus('');
     };
 
     try {

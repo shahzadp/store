@@ -103,6 +103,34 @@ there would be nothing to rank against. The prefetch shares
 `loadEngine()`'s memoised promise with a real search, so whichever starts
 first, the other just awaits the same download.
 
+## How the index is maintained
+
+Product vectors are **precomputed, and the step is manual**. Embedding runs
+in the admin panel's browser — there is no server doing it — but nothing
+triggers it automatically.
+
+1. Edit or add products in `/admin.html`. Changes go to a local draft, not
+   to `catalog.sql`.
+2. Click **Build search index**. This embeds every product with the current
+   engine and calls `replaceVectors`, which rewrites the whole
+   `product_vectors` table so it cannot drift out of sync.
+3. Click **Download catalog.sql** and replace the repo copy, then push.
+
+Only after step 3 do visitors get the new vectors — they ship inside
+`catalog.sql`.
+
+There is a sharp edge worth knowing about. `indexIsComplete()` returns true
+only when *every* product has a vector tagged with the current model, and
+`rank()` bails out returning `[]` when it does not. So publishing a
+`catalog.sql` containing a product that was never indexed does not merely
+hide that one product from search — it silently returns **zero results for
+every query**. The admin panel warns about this via the index note, but
+nothing stops a publish from going out stale.
+
+Rebuilding after a product edit also matters for quality, not just
+coverage: the vector is built from `name. category. description`, so an
+edited description is not reflected in search until the index is rebuilt.
+
 ## How the WhatsApp hand-off works
 
 Buy links are plain `wa.me` deep links, so they work with no WhatsApp app
