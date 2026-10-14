@@ -230,6 +230,14 @@ const Store = (() => {
       );
     });
 
+    // This text is longer than the static placeholder and wraps the bar onto a
+    // second line on narrow screens (35px -> 54px at 390px wide). The sticky
+    // chrome is positioned and the hero is sized from those measurements, so
+    // they have to be re-taken here or the header docks under the bar and the
+    // hero runs past the bottom of the first screen. sticky.js is not loaded
+    // on every page, hence the guard.
+    if (typeof syncStickyOffsets === 'function') syncStickyOffsets();
+
     return { storeName, whatsappNumber };
   }
 
