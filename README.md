@@ -37,10 +37,20 @@ through the `en-PK` locale as `Rs 7,800`.
 
 ## Changing the catalog
 
+> **Adding or updating a product? Read [CATALOG-GUIDE.md](CATALOG-GUIDE.md)
+> first.** It covers the step that fails silently — rebuilding the semantic
+> search index — plus field rules, slug identity, verification and a
+> symptom-to-cause table. This section is the short version.
+
 **1. Edit visually.** Open https://shahzadp.github.io/store/admin.html, add or
 edit products, then click **Download catalog.sql**.
 
-**2. Publish.** Replace `catalog.sql` in the repo with that file and push.
+**2. Rebuild the index first** if you changed any product's name, category or
+description. Those three fields are the entire text that gets embedded. Skipping
+it leaves search matching against the old wording — or, for a new product,
+makes every search return nothing at all.
+
+**3. Publish.** Replace `catalog.sql` in the repo with that file and push.
 
 ```bash
 git add catalog.sql

@@ -1555,6 +1555,18 @@ h2 {
     min-height: 70px;
     max-height: 180px;
   }
+
+  /* Two stacked buttons leave nothing for the illustration at this height,
+     which pushed the hero 4px past the bottom of the screen. */
+  .hero__actions {
+    gap: 8px;
+  }
+
+  .hero__actions .btn {
+    min-height: 44px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
 }
 /* ==========================================================================
    Journal empty state
@@ -1578,4 +1590,33 @@ h2 {
 .journal-empty__note {
   margin: 0 0 28px;
   color: var(--ink-body);
+}
+/* Android app CTA.
+
+   Present but inert: there is no backend to serve an APK from yet, and a
+   dead link would be worse than an honest disabled control. aria-disabled
+   rather than the disabled attribute so the button stays in the tab order
+   and keeps its tooltip -- a fully disabled control is invisible to keyboard
+   users and tells them nothing.
+
+   Deliberately NOT .btn-outline: the mobile hero hides .btn-outline, and
+   this button belongs on mobile too. */
+.btn-download {
+  gap: 10px;
+  padding: 14px 22px;
+  border: 1.5px solid var(--surface-dark);
+  background: none;
+  color: var(--ink);
+}
+
+.btn-download[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* The icon sits right of the label and must not be squeezed by the flex
+   line, or it distorts. */
+.btn__icon {
+  flex: none;
+  display: block;
 }
