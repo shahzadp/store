@@ -5,4 +5,5 @@ Thumbs.db
 *.log
 
 # Nothing else needs ignoring — the site is static.
-# (No node_modules: the browser loads sql.js from a CDN and there is no build.)
+# (No node_modules: there is no build step. sql.js is vendored in vendor/,
+# so nothing is fetched from a CDN at runtime either.)

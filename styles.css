@@ -864,10 +864,22 @@ h2 {
   min-width: 0;
 }
 
+/* Uniform cards.
+
+   Grid items stretch to the tallest in their row by default, so the <li>
+   boxes were already equal height — but `.product` did not fill them, so
+   everything below the description sat wherever the text happened to end.
+   One product with an extra description line pushed its price and buttons
+   down and left the row looking broken.
+
+   Two changes fix it: the card fills its stretched grid item, and the
+   auto margin on the price absorbs whatever slack the shorter cards have,
+   pinning price + buttons to the same baseline across the row. */
 .product {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  height: 100%;
 }
 
 .product__img {
@@ -882,14 +894,25 @@ h2 {
   line-height: 1.2;
 }
 
+/* Descriptions vary from one to four lines depending on card width.
+   Clamping to three with a matching min-height reserves the same block
+   everywhere, so the description band never shifts. Anything longer is cut
+   with an ellipsis; the full text is always on the product page. */
 .product__desc {
   margin: 2px 0 0;
   font-size: 13px;
   line-height: 1.45;
   color: var(--ink-body);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(3 * 1.45em);
 }
 
 .product__price {
+  margin-top: auto;
   font-size: 15px;
   color: var(--ink);
   font-weight: 600;

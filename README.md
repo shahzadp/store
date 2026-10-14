@@ -60,6 +60,18 @@ experiment without touching the live site. **Visitors never see your draft** —
 they always get the published `catalog.sql`. The admin panel shows a banner
 when local edits are pending, and **Discard local edits** reverts.
 
+## Vendored dependencies
+
+`vendor/sql-wasm.js` and `vendor/sql-wasm.wasm` are committed copies of
+sql.js 1.10.3's `dist/` build, unchanged. `db.js` points `locateFile()` at
+`./vendor/` and every page loads `./vendor/sql-wasm.js` instead of a CDN
+URL, so there is **no CDN in the critical path** — the catalog is the
+entire site content, and when this was a jsDelivr fetch, a slow or blocked
+request left the storefront blank with no error.
+
+Verify the vendored copies against the published hashes recorded in
+`db.js`.
+
 ## Search
 
 The search icon (or `Ctrl`/`Cmd` + `K`) opens a dialog that embeds

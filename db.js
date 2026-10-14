@@ -6,8 +6,16 @@
    with the site. There is no server: catalog.sql IS the source of truth.
    ========================================================================== */
 
-const SQLJS_VERSION = '1.10.3';
-const SQLJS_BASE = `https://cdn.jsdelivr.net/npm/sql.js@${SQLJS_VERSION}/dist/`;
+// sql.js is vendored in ./vendor rather than pulled from a CDN. The whole
+// catalog depends on this one file: if the CDN is slow, blocked by a proxy
+// or ad blocker, or rate-limited, initSqlJs() never settles and the
+// storefront renders empty with no error at all. Serving it ourselves
+// removes that single point of failure.
+//
+// Vendored from sql.js@1.10.3, dist/ - unchanged:
+//   sql-wasm.js   sha256 558a72c3ab3415d0e6d243cfd23f9d61543600d59054b4b7b8da3cd65f6b9fd4
+//   sql-wasm.wasm sha256 d7e61b828523001f26ce0b3f88dabcf6c12e5e6edf80eb4f08b26ac7b946ff88
+const SQLJS_BASE = './vendor/';
 const CATALOG_URL = './catalog.sql';
 
 // v2: the schema dropped the per-product currency column. Bumping the key
