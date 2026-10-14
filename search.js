@@ -1,14 +1,9 @@
 /* ==========================================================================
    Search
-   Semantic only — embeds the query with paraphrase-MiniLM-L3-v2
-   running in the browser (ONNX via Transformers.js), then ranks by
-   cosine similarity against precomputed vectors stored in SQLite.
-
-   The model is ~66 MB (384-dim). It is never loaded until the visitor
-   opens search, and it is then cached in IndexedDB — so the cost is
-   once per browser, not per search. (bekko-embedding-v1-a8m is the
-   multilingual alternative: 124 MB but covers 100+ languages;
-   MiniLM-L3-v2 is English-only.)
+   SPLADE-tiny — a sparse lexical expansion model. Product vectors are
+   precomputed in the admin panel and shipped in catalog.sql; visitors
+   only embed their own query. Ranks by dot product against the
+   precomputed vectors.
    ========================================================================== */
 
 // jsDelivr's `+esm` build is used rather than `dist/transformers.web.js`:
@@ -33,8 +28,6 @@ const Search = (() => {
       env.allowLocalModels = false;
       env.useBrowserCache = true;
 
-      // WASM is the safe denominator: WebGPU ONNX support is spotty
-      // across browsers, and the model is small enough that WASM is fine.
       extractor = await pipeline('feature-extraction', Catalog.SEARCH_MODEL, {
         dtype: 'fp32',
         device: 'wasm',
@@ -85,7 +78,7 @@ const Search = (() => {
 
   /* ------------------------------------------------------------ ranking */
 
-  /** Cosine similarity. Both sides are already L2-normalised. */
+  /** Dot product. SPLADE vectors are sparse and non-negative. */
   function similarity(a, b) {
     let dot = 0;
     for (let i = 0; i < a.length; i++) dot += a[i] * b[i];
@@ -100,7 +93,6 @@ const Search = (() => {
     const trimmed = query.trim();
     if (!trimmed) return [];
 
-    // The published index is missing or was built with a different model.
     if (loadError) return [];
     if (!Catalog.indexIsComplete()) return [];
 
@@ -157,8 +149,6 @@ function searchDialog() {
       return;
     }
 
-    // Raw cosine on short text is not a calibrated confidence score, so it is
-    // shown as a bar relative to the best hit rather than a percentage.
     const floor = Math.min(...rows.map((r) => r.score));
     const top = rows[0].score || 1;
     const span = top - floor || 1;
@@ -202,7 +192,7 @@ function searchDialog() {
 
     const ticket = ++sequence;
 
-    if (loading) return; // a load is already in flight; its result will re-render
+    if (loading) return;
     loading = true;
 
     const onProgress = (file, loaded, total) => {
@@ -218,7 +208,7 @@ function searchDialog() {
     } catch (err) {
       if (ticket === sequence) {
         results.innerHTML = '<li class="search__empty">Search unavailable.</li>';
-        setStatus('The embedding model could not be loaded.');
+        setStatus('The model could not be loaded.');
       }
     } finally {
       loading = false;

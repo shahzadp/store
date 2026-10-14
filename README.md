@@ -63,31 +63,15 @@ when local edits are pending, and **Discard local edits** reverts.
 ## Search
 
 The search icon (or `Ctrl`/`Cmd` + `K`) opens a dialog that embeds
-your query with [paraphrase-MiniLM-L3-v2](https://huggingface.co/sentence-transformers/paraphrase-MiniLM-L3-v2)
-running in the browser, then ranks products by cosine similarity
-against precomputed vectors stored in SQLite.
+your query with [naver/splade-tiny](https://huggingface.co/naver/splade-tiny)
+running in the browser, then ranks products by dot product against
+precomputed SPLADE vectors stored in SQLite.
 
-The embedding model is **~66 MB** (fp32, 384-dim). It is **never loaded
-until you open search**, and it is then cached in IndexedDB — you
-download it once per browser, not once per search.
-
-> **Why not smaller?** The ~16.7 MB qint8 variants use native
-> AVX/arm64 kernels that don't run under WASM, so the browser loads
-> the fp32 `model.onnx`. 66 MB is the genuine floor for a model that
-> loads in the browser.
-
-> **Language tradeoff.** paraphrase-MiniLM-L3-v2 is **English-only**.
-> If Urdu or Roman-Urdu queries matter more than the smaller download,
-> swap `SEARCH_MODEL` in `db.js` to
-> `hotchpotch/bekko-embedding-v1-a8m` (124 MB, multilingual, 100+
-> languages) and rebuild the index — the two are not interchangeable,
-> so switching models always means re-running **Build search index**
-> and republishing `catalog.sql`.
-
-The product vectors are precomputed at publish time: in the admin
-panel, **Build search index** embeds every product and the resulting
+Product vectors are precomputed at publish time: in the admin panel,
+**Build search index** embeds every product and the resulting
 `catalog.sql` ships with the vectors baked in, so visitors only ever
-embed their own query — never the catalog.
+embed their own query — never the catalog. The model is downloaded
+once per browser, then cached in IndexedDB.
 
 ## How the WhatsApp hand-off works
 

@@ -171,12 +171,11 @@
   </section>
 
   <section class="card">
-    <h2>Semantic search index</h2>
+    <h2>Search index</h2>
     <p class="muted">
-      Precomputes a 384-dimension embedding for every product so visitors never
+      Precomputes a SPLADE-tiny vector for every product so visitors never
       run the model on the catalog — only on their own query.
-      The <code>bekko-embedding-v1-a8m</code> model is ~65 MB (fp16 checkpoint) and is
-      downloaded to this browser only.
+      The <code>naver/splade-tiny</code> model is downloaded to this browser only.
     </p>
     <div class="form-actions">
       <button class="btn btn-solid" type="button" id="build-index">Build search index</button>
@@ -203,9 +202,9 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
-<script src="./db.js?v=11"></script>
-<script src="./common.js?v=11"></script>
-<script src="./search.js?v=11"></script>
-<script src="./admin.js?v=11"></script>
+<script src="./db.js?v=13"></script>
+<script src="./common.js?v=13"></script>
+<script src="./search.js?v=13"></script>
+<script src="./admin.js?v=13"></script>
 </body>
 </html>
