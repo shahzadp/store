@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Source+Sans+3:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
-<link rel="stylesheet" href="./styles.css?v=21">
+<link rel="stylesheet" href="./styles.css?v=22">
 </head>
 <body>
 
@@ -16,9 +16,14 @@
 
 <header class="header">
   <div class="header__inner">
-    <button class="icon-link" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-nav" aria-label="Menu">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"></path></svg>
-    </button>
+    <div class="header__tools">
+      <button class="icon-link" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-nav" aria-label="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"></path></svg>
+      </button>
+      <button class="icon-link" type="button" data-search-open aria-label="Search products">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg>
+      </button>
+    </div>
 
     <a class="logo" href="./">Alex Store</a>
 
@@ -30,12 +35,6 @@
       <a href="./collections.html" aria-current="page">Collections</a>
       <a href="./index.html#journal">Journal</a>
       <a href="./index.html#about">About</a>
-      <button class="nav__search" type="button" data-search-open>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-          <circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path>
-        </svg>
-        Search
-      </button>
       <div class="nav__footer">
         <div class="cat">Questions?</div>
         <a class="nav__wa" data-whatsapp-general href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
@@ -105,11 +104,11 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
-<script src="./db.js?v=21"></script>
-<script src="./common.js?v=21"></script>
-<script src="./drawer.js?v=21"></script>
-<script src="./sticky.js?v=21"></script>
-<script src="./search.js?v=21"></script>
-<script src="./collections.js?v=21"></script>
+<script src="./db.js?v=22"></script>
+<script src="./common.js?v=22"></script>
+<script src="./drawer.js?v=22"></script>
+<script src="./sticky.js?v=22"></script>
+<script src="./search.js?v=22"></script>
+<script src="./collections.js?v=22"></script>
 </body>
 </html>
