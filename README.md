@@ -62,27 +62,21 @@ when local edits are pending, and **Discard local edits** reverts.
 
 ## Search
 
-The search icon (or `Ctrl`/`Cmd` + `K`) opens a dialog with two modes:
+The search icon (or `Ctrl`/`Cmd` + `K`) opens a dialog that embeds
+your query with [paraphrase-MiniLM-L3-v2](https://huggingface.co/sentence-transformers/paraphrase-MiniLM-L3-v2)
+running in the browser, then ranks products by cosine similarity
+against precomputed vectors stored in SQLite.
 
-- **Text (default)** — instant, no download. Matches against the
-  product name, category and description.
-- **Semantic (opt-in)** — a **Semantic** toggle in the dialog embeds
-  your query with [paraphrase-albert-small-v2](https://huggingface.co/sentence-transformers/paraphrase-albert-small-v2)
-  running in the browser, then ranks products by cosine similarity
-  against precomputed vectors stored in SQLite.
+The embedding model is **~66 MB** (fp32, 384-dim). It is **never loaded
+until you open search**, and it is then cached in IndexedDB — you
+download it once per browser, not once per search.
 
-The embedding model is **~42 MB** (fp32, 768-dim) — the smallest
-retrieval-trained embedding model that runs in browser WASM. It is
-**never loaded until you turn Semantic on**, and it is then cached
-in IndexedDB — you download it once per browser, not once per
-search. Text search always stays available and instant.
+> **Why not smaller?** The ~16.7 MB qint8 variants use native
+> AVX/arm64 kernels that don't run under WASM, so the browser loads
+> the fp32 `model.onnx`. 66 MB is the genuine floor for a model that
+> loads in the browser.
 
-> **Why not smaller?** The ~30 MB ONNX variants (e5-small qint8,
-> albert qint8) use native AVX/arm64 kernels that don't run under
-> WASM, and `BAAI/bge-micro-v2` is gated. 42 MB is the genuine
-> floor for a model that loads in the browser.
-
-> **Language tradeoff.** paraphrase-albert-small-v2 is **English-only**.
+> **Language tradeoff.** paraphrase-MiniLM-L3-v2 is **English-only**.
 > If Urdu or Roman-Urdu queries matter more than the smaller download,
 > swap `SEARCH_MODEL` in `db.js` to
 > `hotchpotch/bekko-embedding-v1-a8m` (124 MB, multilingual, 100+

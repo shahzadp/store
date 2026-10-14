@@ -377,12 +377,11 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
   /* ---------------------------------------------------- semantic search */
 
 // Full Hugging Face repo id — the org prefix is required or the hub 401s.
-// paraphrase-albert-small-v2: 42.5 MB fp32, 768-dim, Apache-2.0 — the
-// smallest retrieval-trained embedding model that runs in browser WASM
-// (the ~30 MB ONNX variants use native AVX/arm64 kernels and won't run
-// under WASM; bge-micro-v2 is gated). English-only.
-const SEARCH_MODEL = 'sentence-transformers/paraphrase-albert-small-v2';
-const SEARCH_DIMS = 768;
+// paraphrase-MiniLM-L3-v2: 65.8 MB fp32, 384-dim, Apache-2.0, 3 layers.
+// The ~16.7 MB qint8 variants are native-only (arm64/avx512) and won't run
+// under WASM, so the browser loads model.onnx. English-only.
+const SEARCH_MODEL = 'sentence-transformers/paraphrase-MiniLM-L3-v2';
+const SEARCH_DIMS = 384;
 
 function base64ToFloat32(b64) {
     const binary = atob(b64);

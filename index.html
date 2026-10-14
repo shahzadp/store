@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Source+Sans+3:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
-<link rel="stylesheet" href="./styles.css?v=10">
+<link rel="stylesheet" href="./styles.css?v=11">
 </head>
 <body>
 
@@ -62,19 +62,11 @@
       <input id="search-input" type="search" autocomplete="off"
              placeholder="Search products — try &lsquo;something warm for a table&rsquo;"
              aria-label="Search products">
-      <button class="search__semantic" id="search-semantic" type="button"
-              aria-pressed="false"
-              title="Search by meaning. Downloads a 124 MB model once, then caches it.">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-          <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"></path>
-        </svg>
-        <span>Semantic</span>
-      </button>
       <button class="search__close" type="button" data-search-close aria-label="Close search">&times;</button>
     </form>
     <p class="search__status" id="search-status" role="status" aria-live="polite"></p>
     <ul class="search__results" id="search-results"></ul>
-    <p class="search__hint">Text search is instant. Turn on <b>Semantic</b> to search by meaning — the model downloads once, then is cached.</p>
+    <p class="search__hint">Search by meaning — the model downloads once, then is cached.</p>
   </div>
 </div>
 
@@ -144,11 +136,11 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
-<script src="./db.js?v=10"></script>
-<script src="./common.js?v=10"></script>
-<script src="./drawer.js?v=10"></script>
-<script src="./sticky.js?v=10"></script>
-<script src="./search.js?v=10"></script>
-<script src="./app.js?v=10"></script>
+<script src="./db.js?v=11"></script>
+<script src="./common.js?v=11"></script>
+<script src="./drawer.js?v=11"></script>
+<script src="./sticky.js?v=11"></script>
+<script src="./search.js?v=11"></script>
+<script src="./app.js?v=11"></script>
 </body>
 </html>

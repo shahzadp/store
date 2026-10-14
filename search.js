@@ -1,21 +1,14 @@
 /* ==========================================================================
    Search
-   Two modes:
-
-   Text (default) — instant, no download. Matches against product
-   name, category and description.
-
-   Semantic (opt-in) — embeds the query with paraphrase-albert-small-v2
+   Semantic only — embeds the query with paraphrase-MiniLM-L3-v2
    running in the browser (ONNX via Transformers.js), then ranks by
    cosine similarity against precomputed vectors stored in SQLite.
 
-   The model is ~42 MB (768-dim) — the smallest retrieval-trained
-   embedding model that runs in browser WASM. It is never loaded
-   until the visitor explicitly asks for semantic search, and it is
-   then cached in IndexedDB — so the cost is once per browser, not
-   per search. (bekko-embedding-v1-a8m is the multilingual
-   alternative: 124 MB but covers 100+ languages; ALBERT-small is
-   English-only.)
+   The model is ~66 MB (384-dim). It is never loaded until the visitor
+   opens search, and it is then cached in IndexedDB — so the cost is
+   once per browser, not per search. (bekko-embedding-v1-a8m is the
+   multilingual alternative: 124 MB but covers 100+ languages;
+   MiniLM-L3-v2 is English-only.)
    ========================================================================== */
 
 // jsDelivr's `+esm` build is used rather than `dist/transformers.web.js`:
@@ -99,45 +92,17 @@ const Search = (() => {
     return dot;
   }
 
-  /** Plain substring ranking. Always available, always instant. */
-  function keywordRank(products, query) {
-    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-
-    return products
-      .map((product) => {
-        const haystack = `${product.name} ${product.category} ${product.description || ''}`.toLowerCase();
-        const score = terms.reduce(
-          (total, term) => (haystack.includes(term) ? total + 1 : total),
-          0,
-        );
-        return { product, score };
-      })
-      .filter((row) => row.score > 0)
-      .sort((a, b) => b.score - a.score);
-  }
-
   /**
-   * mode: 'keyword' (default, instant) or 'semantic' (loads the model).
-   * Returns rows of { product, score, mode, reason? }.
+   * Semantic ranking. Returns rows of { product, score }.
    */
-  async function rank(query, mode = 'keyword', onProgress) {
+  async function rank(query, onProgress) {
     const products = Catalog.listProducts();
     const trimmed = query.trim();
     if (!trimmed) return [];
 
-    if (mode === 'keyword') {
-      return keywordRank(products, trimmed).map((row) => ({ ...row, mode: 'keyword' }));
-    }
-
-    // Semantic was requested but the published index is missing or was
-    // built with a different model — search against noise is worse than
-    // an honest text match.
-    if (loadError) {
-      return keywordRank(products, trimmed).map((row) => ({ ...row, mode: 'keyword', reason: 'model-failed' }));
-    }
-    if (!Catalog.indexIsComplete()) {
-      return keywordRank(products, trimmed).map((row) => ({ ...row, mode: 'keyword', reason: 'no-index' }));
-    }
+    // The published index is missing or was built with a different model.
+    if (loadError) return [];
+    if (!Catalog.indexIsComplete()) return [];
 
     try {
       const [queryVector] = await embed([trimmed], onProgress);
@@ -147,14 +112,14 @@ const Search = (() => {
         .map((product) => {
           const entry = index.get(product.slug);
           if (!entry || entry.vector.length !== queryVector.length) return null;
-          return { product, score: similarity(queryVector, entry.vector), mode: 'semantic' };
+          return { product, score: similarity(queryVector, entry.vector) };
         })
         .filter(Boolean)
         .sort((a, b) => b.score - a.score);
     } catch (err) {
-      console.warn('Semantic search unavailable, using keyword match:', err);
+      console.warn('Semantic search unavailable:', err);
       loadError = err;
-      return keywordRank(products, trimmed).map((row) => ({ ...row, mode: 'keyword', reason: 'model-failed' }));
+      return [];
     }
   }
 
@@ -175,11 +140,9 @@ function searchDialog() {
   const results = document.getElementById('search-results');
   const status = document.getElementById('search-status');
   const form = document.getElementById('search-form');
-  const toggle = document.getElementById('search-semantic');
 
   let lastQuery = '';
   let sequence = 0;
-  let semanticWanted = false;
   let loading = false;
 
   function setStatus(message, kind = '') {
@@ -202,9 +165,9 @@ function searchDialog() {
 
     results.innerHTML = rows
       .slice(0, 8)
-      .map(({ product, score, mode, reason }, index) => {
+      .map(({ product, score }, index) => {
         const price = Store.formatPrice(product.price_cents);
-        const strength = mode === 'keyword' ? 100 : Math.round(((score - floor) / span) * 100);
+        const strength = Math.round(((score - floor) / span) * 100);
         const meta = index === 0 ? 'best match' : '';
 
         return `
@@ -224,18 +187,7 @@ function searchDialog() {
       })
       .join('');
 
-    const first = rows[0];
-    if (first.mode === 'keyword') {
-      setStatus(
-        first.reason === 'no-index'
-          ? 'Text matches — the semantic index is not published yet.'
-          : first.reason === 'model-failed'
-            ? 'Text matches — the embedding model could not be loaded.'
-            : `${rows.length} text match${rows.length === 1 ? '' : 'es'}.`,
-      );
-    } else {
-      setStatus(`${rows.length} match${rows.length === 1 ? '' : 'es'} by meaning.`);
-    }
+    setStatus(`${rows.length} match${rows.length === 1 ? '' : 'es'} by meaning.`);
   }
 
   async function run() {
@@ -250,16 +202,8 @@ function searchDialog() {
 
     const ticket = ++sequence;
 
-    // Text mode is the default and never touches the model.
-    if (!semanticWanted) {
-      render(await Search.rank(query, 'keyword'));
-      return;
-    }
-
-    // Semantic mode: load the model on demand, with visible progress.
     if (loading) return; // a load is already in flight; its result will re-render
     loading = true;
-    toggle.classList.add('search__semantic--loading');
 
     const onProgress = (file, loaded, total) => {
       if (ticket !== sequence) return;
@@ -268,29 +212,17 @@ function searchDialog() {
     };
 
     try {
-      const rows = await Search.rank(query, 'semantic', onProgress);
+      const rows = await Search.rank(query, onProgress);
       if (ticket !== sequence) return;
       render(rows);
     } catch (err) {
       if (ticket === sequence) {
-        render(await Search.rank(query, 'keyword'));
-        setStatus('Text matches — the embedding model could not be loaded.');
+        results.innerHTML = '<li class="search__empty">Search unavailable.</li>';
+        setStatus('The embedding model could not be loaded.');
       }
     } finally {
       loading = false;
-      toggle.classList.remove('search__semantic--loading');
-      toggle.setAttribute('aria-pressed', String(semanticWanted));
     }
-  }
-
-  function toggleSemantic() {
-    semanticWanted = !semanticWanted;
-    toggle.setAttribute('aria-pressed', String(semanticWanted));
-
-    if (semanticWanted && !Search.isModelLoaded()) {
-      setStatus('Semantic search on — the model downloads once, then is cached.');
-    }
-    if (lastQuery) run();
   }
 
   function open() {
@@ -323,11 +255,6 @@ function searchDialog() {
     event.preventDefault();
     run();
   });
-
-  if (toggle) {
-    toggle.setAttribute('aria-pressed', 'false');
-    toggle.addEventListener('click', toggleSemantic);
-  }
 
   let debounce;
   input.addEventListener('input', () => {
