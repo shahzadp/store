@@ -376,26 +376,51 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
 
   /* ---------------------------------------------------- semantic search */
 
-// Full Hugging Face repo id — the org prefix is required or the hub 401s.
-// SPLADE-tiny: sparse lexical expansion over a BERT-tiny encoder, 768-dim.
-// Product vectors are precomputed in the admin panel and shipped in
-// catalog.sql; visitors only embed their own query.
-const SEARCH_MODEL = 'naver/splade-tiny';
-const SEARCH_DIMS = 768;
-
-function base64ToFloat32(b64) {
-    const binary = atob(b64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return new Float32Array(bytes.buffer);
-  }
-
-  function float32ToBase64(vector) {
-    const bytes = new Uint8Array(vector.buffer, vector.byteOffset, vector.byteLength);
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    return btoa(binary);
-  }
+// SPLADE-tiny: a BERT-tiny encoder with a masked-LM head. ReLU + max
+// pooling over the vocabulary yields a 30522-dim sparse vector, of which
+// only ~0.3% is non-zero — so rows are stored as [count][indices][values]
+// rather than dense, which would add ~150 KB of base64 per product.
+// Vectors are precomputed in the admin panel and shipped in catalog.sql;
+// visitors only embed their own query.
+const SEARCH_MODEL = 'sparse-encoder-testing/splade-bert-tiny-nq-onnx';
+const SEARCH_DIMS = 30522;
+
+  /** Sparse row -> base64: uint32 count, uint32 indices, float32 values. */
+  function float32ToBase64(vector) {
+    const nonzero = [];
+    for (let i = 0; i < vector.length; i++) {
+      if (vector[i] !== 0) nonzero.push(i);
+    }
+
+    const bytes = new Uint8Array(4 + nonzero.length * 8);
+    const view = new DataView(bytes.buffer);
+
+    view.setUint32(0, nonzero.length, true);
+    nonzero.forEach((index, i) => {
+      view.setUint32(4 + i * 4, index, true);
+      view.setFloat32(4 + nonzero.length * 4 + i * 4, vector[index], true);
+    });
+
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  /** base64 -> dense Float32Array(SEARCH_DIMS); the zeros are just refilled. */
+  function base64ToFloat32(b64) {
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+    const view = new DataView(bytes.buffer);
+    const count = view.getUint32(0, true);
+    const vector = new Float32Array(SEARCH_DIMS);
+
+    for (let i = 0; i < count; i++) {
+      vector[view.getUint32(4 + i * 4, true)] = view.getFloat32(4 + count * 4 + i * 4, true);
+    }
+    return vector;
+  }
 
   /** Embeddings for products, keyed by slug. Empty until an index is built. */
   function getVectors() {
