@@ -91,14 +91,17 @@ body {
 /* The word "WhatsApp" inside a phrase. Kept as a span rather than a class
    on the parent so only that word is tinted, and so it survives in
    button labels where the rest of the text must stay white. */
+/* Default assumes a LIGHT background, which is the common case, so any new
+   use of .wa-word in body copy is legible without extra thought. Dark and
+   purple surfaces override it below. */
 .wa-word {
-  color: var(--wa-green);
+  color: var(--wa-green-on-light);
 }
 
-/* The drawer link sits on the light page background, where the mid-tone
-   brand green would be unreadable. */
-.nav__wa .wa-word {
-  color: var(--wa-green-on-light);
+/* On the dark announce bar and footer the light green would be unreadable. */
+.announce .wa-word,
+.footer .wa-word {
+  color: var(--wa-green);
 }
 
 /* On the purple buttons the green needs to be lighter to clear 4.5:1. */
@@ -860,6 +863,12 @@ h2 {
   list-style: none;
 }
 
+/* Grid items default to min-width:auto, which lets wide content (a
+   nowrap button label) push the track past the viewport. */
+.products > li {
+  min-width: 0;
+}
+
 .product {
   display: flex;
   flex-direction: column;
@@ -1041,32 +1050,6 @@ h2 {
    About
    ========================================================================== */
 
-.about-facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin: 8px 0 56px;
-}
-
-.fact {
-  padding: 20px;
-  background: var(--surface-light);
-  border: 1px solid var(--line);
-}
-
-.fact__value {
-  font-family: var(--font-display);
-  font-size: 34px;
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.fact__label {
-  margin-top: 4px;
-  font-size: 13px;
-  color: var(--ink-muted);
-}
-
 .steps {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -1102,26 +1085,6 @@ h2 {
   font-size: 15px;
   line-height: 1.6;
   color: var(--ink-body);
-}
-
-.about-cta {
-  margin: 64px 0 24px;
-  padding: 32px;
-  background: var(--section);
-  border: 1px solid var(--line);
-}
-
-.about-cta__title {
-  margin: 0 0 6px;
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 600;
-}
-
-.about-cta__text {
-  margin: 0 0 16px;
-  color: var(--ink-body);
-  max-width: 52ch;
 }
 
 /* ==========================================================================
@@ -1383,9 +1346,24 @@ h2 {
     font-size: 15px;
   }
 
+  /* minmax(0, 1fr) rather than 1fr: a bare 1fr is minmax(auto, 1fr), whose
+     automatic minimum is the track's min-content size. With the button
+     labels set to white-space:nowrap that minimum is the full label, so
+     the tracks grew past the viewport and the grid scrolled sideways.
+     The zero minimum lets the tracks shrink to the available width. */
   .products {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 28px 16px;
+  }
+
+  /* Two columns on a phone leave roughly 145px per card, so the buttons
+     need a slightly smaller type size to keep "Buy on WhatsApp" on one
+     line rather than wrapping mid-phrase. */
+  .product__actions .btn,
+  .product__actions .share {
+    padding: 12px 8px;
+    font-size: 14px;
+    gap: 6px;
   }
 
   .notes {
@@ -1450,5 +1428,26 @@ h2 {
 
   .footer__inner .btn {
     width: 100%;
+  }
+}
+/* ==========================================================================
+   Very narrow phones
+   ==========================================================================
+
+   Declared last on purpose. The 820px block above forces a two-up grid, and
+   both rules have the same specificity, so this one has to come after it to
+   win. Below ~380px two columns leave under 90px for the button label, which
+   "Buy on WhatsApp" needs about 105px of at 14px, so the grid drops to a
+   single column. At 390px and up the two-up layout fits with room to spare.
+*/
+@media (max-width: 380px) {
+  .products {
+    grid-template-columns: 1fr;
+  }
+
+  .product__actions .btn,
+  .product__actions .share {
+    font-size: 15px;
+    padding: 13px 12px;
   }
 }

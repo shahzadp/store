@@ -84,7 +84,12 @@ const Store = (() => {
    * mobile-only and its title/body cannot be asserted.
    */
   function shareButton(product, extraClass = '') {
-    const label = `Share ${typeof product === 'string' ? '' : escapeHtml(product.name) || ''} link`.trim();
+    const name = typeof product === 'string' ? '' : escapeHtml(product.name);
+
+    // The visible label ("Share link") has to appear inside the accessible
+    // name, so it is used as the prefix rather than being buried mid-string.
+    const label = name ? `Share link: ${name}` : 'Share link';
+
     return `<button class="share ${extraClass}" type="button" data-share-slug="${escapeHtml(product.slug)}"
               aria-label="${escapeHtml(label)}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -173,10 +178,17 @@ const Store = (() => {
 
     // The card opens the product's own page; WhatsApp stays a distinct,
     // explicit action rather than being what an image click happens to do.
+    //
+    // The image link is aria-hidden and removed from the tab order: it points
+    // at the same place as the title link directly beneath it, and when a
+    // product has no image it wraps an aria-hidden tint block, which left the
+    // link with no accessible name at all — Lighthouse flagged every one of
+    // them as a nameless link. One link per destination is also kinder to
+    // screen reader users than announcing the same target twice.
     return `
       <li>
         <article class="product">
-          <a class="product__link" href="${escapeHtml(detail)}">${media}</a>
+          <a class="product__link" href="${escapeHtml(detail)}" aria-hidden="true" tabindex="-1">${media}</a>
           <div class="cat">${escapeHtml(product.category)}</div>
           <h3 class="product__name"><a href="${escapeHtml(detail)}">${escapeHtml(product.name)}</a></h3>
           ${product.description
