@@ -397,6 +397,25 @@ h2 {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   flex-wrap: wrap;
+  /* Without this the rows stretch to the tallest child, so the links were
+     sized by the drawer footer and the icon button never matched them. */
+  align-items: center;
+}
+
+/* One height for every nav item. The links are inline-flex boxes of exactly
+   the same height as .nav__search, so the icon sits on the same line as the
+   text rather than 2px off it. Stated explicitly rather than left to flex
+   stretch, which silently picked up the drawer footer as its tallest child. */
+.nav > a {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Drawer-only. Without this the panel's "Questions? / Order on WhatsApp"
+   block rendered in the desktop top bar after the search icon. */
+.nav__footer {
+  display: none;
 }
 
 /* ==========================================================================
@@ -1226,6 +1245,7 @@ h2 {
   }
 
   .nav a {
+    height: auto;
     padding: 14px 0;
     border-bottom: 1px solid var(--line);
   }
@@ -1333,8 +1353,8 @@ h2 {
   .hero {
     flex-direction: column;
     align-items: stretch;
-    justify-content: flex-start;
-    gap: 16px;
+    justify-content: center;
+    gap: 28px;
     padding: 24px 20px;
   }
 
