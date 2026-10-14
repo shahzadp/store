@@ -24,6 +24,12 @@ CREATE TABLE IF NOT EXISTS products (
 
 
   price_cents INTEGER NOT NULL CHECK (price_cents >= 0),
+  -- Long-form copy for the product page. `description` stays the one-line
+  -- version used on cards, in search and in the WhatsApp message.
+  details  TEXT,
+  -- JSON object of label -> value for the specifications box, e.g.
+  -- {"Dimensions":"9 cm high x 8 cm wide","Weight":"320 g"}
+  specs    TEXT,
 
 
   image_url   TEXT,
@@ -127,43 +133,27 @@ INSERT OR IGNORE INTO settings (key, value) VALUES
 
 
 
-INSERT INTO products (slug, name, description, category, price_cents, image_url, tint, in_stock, sort_order) VALUES
+INSERT INTO products (slug, name, description, details, specs, category, price_cents, image_url, tint, in_stock, sort_order) VALUES
 
-
-  ('stoneware-mug', 'Stoneware Mug', 'Glazed stoneware, holds heat well and goes in the dishwasher.', 'Kitchen', 780000, NULL, '#D9CCEA', 1, 10),
-  ('linen-throw', 'Linen Throw', 'Woven European flax, softens with every wash.', 'Textiles', 1780000, NULL, '#E8DDF2', 1, 20),
-  ('glass-carafe', 'Glass Carafe', 'Borosilicate glass with a cork stopper, pours without dripping.', 'Kitchen', 1170000, NULL, '#CFC3E3', 1, 30),
-  ('soy-candle', 'Soy Candle', 'Rapeseed and coconut wax, unscented, about 40 hours of burn.', 'Candles', 670000, NULL, '#E3D6EE', 1, 40),
-  ('ceramic-vase', 'Ceramic Vase', 'Wheel-thrown stoneware with a matte white glaze.', 'Decor', 1560000, NULL, '#E3D6EE', 1, 50),
-  ('wool-cushion', 'Wool Cushion', 'Lambswool cover with a feather-down insert, 45cm square.', 'Textiles', 1330000, NULL, '#CFC3E3', 1, 60),
-  ('serving-bowl', 'Serving Bowl', 'Shallow glazed bowl, nests with the others to save shelf space.', 'Kitchen', 1000000, NULL, '#E8DDF2', 1, 70),
-  ('brass-tray', 'Brass Tray', 'Unlacquered brass that darkens to a deeper patina over time.', 'Decor', 1450000, NULL, '#D9CCEA', 1, 80)
-
+  ('stoneware-mug', 'Stoneware Mug', 'Glazed stoneware, holds heat well and goes in the dishwasher.', 'Thrown in small batches and glazed inside and out, so it holds heat as well as it looks doing it. The foot is left unglazed, which stops it sticking to a shelf or a table. The handle is pulled rather than attached, so there is no seam to crack.', '{"Capacity":"350 ml","Dimensions":"9 cm high x 8 cm wide","Weight":"320 g","Material":"Glazed stoneware","Care":"Dishwasher and microwave safe"}', 'Kitchen', 780000, NULL, '#D9CCEA', 1, 10),
+  ('linen-throw', 'Linen Throw', 'Woven European flax, softens with every wash.', 'Woven from European flax and washed before it leaves us, so it arrives already soft rather than needing a break-in period. Heavy enough to sit over the back of a chair without sliding. The selvedge is finished by hand.', '{"Dimensions":"130 x 180 cm","Weight":"1.1 kg","Material":"100% European flax linen","Care":"Machine wash at 40C, line dry"}', 'Textiles', 1780000, NULL, '#E8DDF2', 1, 20),
+  ('glass-carafe', 'Glass Carafe', 'Borosilicate glass with a cork stopper, pours without dripping.', 'Borosilicate, so it survives a hot liquid being poured straight into it. The cork is a natural stopper with a silicone ring underneath to keep it watertight. The spout is narrow enough to pour clean without running down the side.', '{"Capacity":"1 litre","Dimensions":"28 cm high x 9 cm wide","Weight":"480 g","Material":"Borosilicate glass, natural cork","Care":"Dishwasher safe, hand wash the cork"}', 'Kitchen', 1170000, NULL, '#CFC3E3', 1, 30),
+  ('soy-candle', 'Soy Candle', 'Rapeseed and coconut wax, unscented, about 40 hours of burn.', 'Unscented, so it does not compete with a room or a meal. The wick is cotton and lead-free, and the wax is a rapeseed and coconut blend rather than paraffin, which burns cleaner and keeps its shape in a warm room.', '{"Burn time":"Approx. 40 hours","Net weight":"220 g","Dimensions":"8 cm high x 7 cm diameter","Material":"Rapeseed and coconut wax, cotton wick","Care":"Trim the wick to 5 mm before each burn"}', 'Candles', 670000, NULL, '#E3D6EE', 1, 40),
+  ('ceramic-vase', 'Ceramic Vase', 'Wheel-thrown stoneware with a matte white glaze.', 'Wheel-thrown, so no two are identical in a small way: the rim will not be perfectly even, and that is the point of it. Matte white glaze outside, unglazed foot. Holds a full bunch of cut flowers or a single branch.', '{"Height":"26 cm","Mouth diameter":"9 cm","Weight":"740 g","Material":"Stoneware, matte white glaze","Care":"Wipe with a damp cloth"}', 'Decor', 1560000, NULL, '#E3D6EE', 1, 50),
+  ('wool-cushion', 'Wool Cushion', 'Lambswool cover with a feather-down insert, 45cm square.', 'Lambswool cover with a feather-down insert, filled firm enough to sit upright on a chair rather than slumping. The cover unzips at the back for washing. The feather is washable, so it can be refilled rather than replaced.', '{"Dimensions":"45 x 45 cm","Weight":"900 g","Fill":"Feather down","Cover":"Lambswool, removable","Care":"Cover dry clean, fluff by hand"}', 'Textiles', 1330000, NULL, '#CFC3E3', 1, 60),
+  ('serving-bowl', 'Serving Bowl', 'Shallow glazed bowl, nests with the others to save shelf space.', 'Wide and shallow, which is what makes it a serving bowl rather than a mixing bowl: the food stays visible and easy to reach across a table. Glazed inside, so it takes a sauce without soaking it in. Nests with the others.', '{"Capacity":"2.5 litres","Dimensions":"9 cm high x 28 cm wide","Weight":"1.3 kg","Material":"Glazed stoneware","Care":"Dishwasher safe"}', 'Kitchen', 1000000, NULL, '#E8DDF2', 1, 70),
+  ('brass-tray', 'Brass Tray', 'Unlacquered brass that darkens to a deeper patina over time.', 'Unlacquered brass, left uncoated so it darkens to a deeper patina as it is handled instead of staying permanently shiny. Made for keys, a watch, or a small pile of odds and ends. It will not return to bright.', '{"Dimensions":"28 x 18 cm","Weight":"640 g","Material":"Unlacquered brass","Care":"Dry wipe, the patina is intended"}', 'Decor', 1450000, NULL, '#D9CCEA', 1, 80)
 
 ON CONFLICT (slug) DO UPDATE SET
-
-
   name        = excluded.name,
-
-
   description = excluded.description,
-
-
+  details     = excluded.details,
+  specs       = excluded.specs,
   category    = excluded.category,
-
-
   price_cents = excluded.price_cents,
-
-
   image_url   = excluded.image_url,
-
-
   tint        = excluded.tint,
-
-
   in_stock    = excluded.in_stock,
-
-
   sort_order  = excluded.sort_order;
 
 

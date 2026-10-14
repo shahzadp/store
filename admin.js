@@ -119,6 +119,8 @@ $('#product-form').addEventListener('submit', (event) => {
   const payload = {
     name: $('#f-name').value,
     description: $('#f-description').value,
+    details: $('#f-details').value,
+    specs: $('#f-specs').value,
     category: $('#f-category').value,
     price_cents: priceCents,
     slug: $('#f-slug').value,
@@ -272,7 +274,11 @@ $('#product-list').addEventListener('click', (event) => {
 
   $('#f-id').value = product.id;
   $('#f-name').value = product.name;
-  $('#f-description').value = product.description || '';
+  $('#f-description').value = product.description || '';
+  $('#f-details').value = product.details || '';
+  $('#f-specs').value = Catalog.specPairs(product.specs)
+    .map(([label, value]) => `${label}: ${value}`)
+    .join('\n');
   $('#f-category').value = product.category;
   $('#f-price').value = (product.price_cents / 100).toFixed(2);
   $('#f-slug').value = product.slug;

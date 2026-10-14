@@ -205,12 +205,50 @@ link, and the WhatsApp message. Changing it orphans the vector row and breaks
 existing links. If you must change it, rebuild the index and accept the broken
 links.
 
+### The three description fields
+
+A product has **three** separate text fields. Confusing them is the most common
+mistake here, because only one of them affects search.
+
+| Field | Where it shows | Searchable? | In the WhatsApp message? |
+| --- | --- | --- | --- |
+| `description` | product cards, and in the "Full description" box only if `details` is empty | **Yes** — it is the bulk of the embedded text | **Yes** |
+| `details` | the "Full description" box on the product page | No | No |
+| `specs` | the "Specifications" box on the product page | No | No |
+
+So `description` stays a single plain factual line and carries the search
+signal. `details` is where the longer write-up lives. `specs` is structured
+label/value data, entered in the admin as one `Label: value` per line and
+stored as a JSON object:
+
+```
+Dimensions: 9 cm high x 8 cm wide
+Weight: 320 g
+Material: Glazed stoneware
+Care: Dishwasher and microwave safe
+```
+
+Capped at 12 rows; labels are truncated at 40 characters and values at 120.
+Malformed lines are dropped rather than blocking the save. A product with no
+`specs` simply renders without a specifications box.
+
+The spec values currently in `catalog.sql` are **placeholders** written to fill
+the layout. Replace them with measured facts before the goods are listed.
+
+### Rebuild scope
+
+`description` changes need an index rebuild (section 1). **`details` and
+`specs` changes do not** — neither is part of the embedded text. Editing a
+product's long description or its measurements requires no rebuild.
+
 ### Field reference
 
 | Field | Required | Rule |
 | --- | --- | --- |
 | `name` | yes | max 120 chars |
 | `description` | by house rule | max 300 chars, **silently truncated** |
+| `details` | no | max 4000 chars |
+| `specs` | no | JSON object, max 12 label/value pairs |
 | `category` | no | max 60 chars, defaults to `General` |
 | `price_cents` | yes | whole paisa, `>= 0`, integer |
 | `slug` | no | auto from name; see rules above |
@@ -218,6 +256,28 @@ links.
 | `tint` | no | hex colour used for the placeholder tile |
 | `in_stock` | no | `1` or `0`; anything not `0` is treated as in stock |
 | `sort_order` | no | integer, lower sorts first |
+
+### Adding a column: four places, not one
+
+A schema change must be mirrored in **all** of these or it fails quietly:
+
+1. `catalog.sql` — the `CREATE TABLE`.
+2. `db.js` → `toSql()` → the `CREATE TABLE` **inside the template literal**.
+   This is a *copy*, not a reference. Miss it and every export declares a
+   table without the column its own `INSERT` fills, and the exported file
+   fails to import.
+3. `db.js` → `toSql()` → the `INSERT INTO products (...)` column list. Also a
+   hardcoded string.
+4. `db.js` → `validate()` plus the `INSERT`/`UPDATE` in `createProduct` and
+   `updateProduct`.
+
+Verify with a round trip rather than by reading the diff: open the admin, press
+**Download catalog.sql**, then replay the exported string into a fresh
+sql.js database. If it throws, a column list is out of step.
+
+Bump `DRAFT_KEY` in `db.js` when adding a column. A draft saved before the
+change still parses but throws the moment a query references the new column,
+which locks the admin out; bumping the key discards it cleanly.
 
 ---
 

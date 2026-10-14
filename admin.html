@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Catalog — Alex Store</title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="./admin.css?v=45">
+<meta name="description" content="Catalog editor for Alex Store.">
+<link rel="stylesheet" href="./admin.css?v=46">
 </head>
 <body>
 
@@ -71,7 +72,25 @@
           <label for="f-description">Description</label>
           <textarea id="f-description" name="description" rows="2"
                     placeholder="One line, plain and factual — material, size, how it behaves. No marketing language."></textarea>
-          <small>Shown between the name and the price. Keep it to a sentence or two.</small>
+          <small>Shown between the name and the price. This is also the text the
+            search engine matches, so name the materials and the use plainly.</small>
+        </div>
+
+        <div class="field field--wide">
+          <label for="f-details">Full description</label>
+          <textarea id="f-details" name="details" rows="5"
+                    placeholder="The longer write-up shown on the product page."></textarea>
+          <small>Long-form copy for the product page only. Not shown on cards, not
+            searched, and not included in the WhatsApp message.</small>
+        </div>
+
+        <div class="field field--wide">
+          <label for="f-specs">Specifications</label>
+          <textarea id="f-specs" name="specs" rows="5"
+                    placeholder="Dimensions: 9 cm high x 8 cm wide&#10;Weight: 320 g&#10;Material: Glazed stoneware&#10;Care: Dishwasher safe"></textarea>
+          <small>One per line, as <code>Label: value</code>. Shown in the
+            specifications box. Up to 12 lines — dimensions, weight, capacity,
+            material and care are the ones people look for first.</small>
         </div>
 
         <div class="field">
@@ -199,10 +218,10 @@
 
 </main>
 
-<script src="./vendor/sql-wasm.js?v=45"></script>
-<script src="./db.js?v=45"></script>
-<script src="./common.js?v=45"></script>
-<script src="./search.js?v=45"></script>
-<script src="./admin.js?v=45"></script>
+<script src="./vendor/sql-wasm.js?v=46"></script>
+<script src="./db.js?v=46"></script>
+<script src="./common.js?v=46"></script>
+<script src="./search.js?v=46"></script>
+<script src="./admin.js?v=46"></script>
 </body>
 </html>

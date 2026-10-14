@@ -74,42 +74,94 @@ function renderNotFound() {
     </div>`;
 }
 
+/**
+ * Renders the scrollable copy regions.
+ *
+ * A scrollable box that is not keyboard-scrollable is a trap: a keyboard user
+ * can focus it and arrow-key nowhere. tabindex is therefore only added when
+ * the content actually overflows, so a short description does not create a
+ * dead tab stop.
+ */
+function markScrollable() {
+  view.querySelectorAll('[data-scroll]').forEach((el) => {
+    if (el.scrollHeight > el.clientHeight + 1) {
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('role', 'region');
+    } else {
+      el.removeAttribute('tabindex');
+      el.removeAttribute('role');
+    }
+  });
+}
+
 function render(product) {
   const price = Store.formatPrice(product.price_cents);
   const media = product.image_url
     ? `<img class="product-detail__img" src="${Store.escapeHtml(product.image_url)}" alt="${Store.escapeHtml(product.name)}">`
     : `<div class="product-detail__img placeholder" style="background:${Store.escapeHtml(product.tint || '#D9CCEA')}" aria-hidden="true"></div>`;
 
+  const specs = Catalog.specPairs(product.specs);
+
+  const specsBox = specs.length
+    ? `<aside class="product-detail__box product-detail__box--specs" aria-labelledby="specs-heading">
+         <h2 class="product-detail__box-title" id="specs-heading">Specifications</h2>
+         <dl class="specs">
+           ${specs
+             .map(
+               ([label, value]) => `
+             <div class="specs__row">
+               <dt class="specs__label">${Store.escapeHtml(label)}</dt>
+               <dd class="specs__value">${Store.escapeHtml(value)}</dd>
+             </div>`,
+             )
+             .join('')}
+         </dl>
+       </aside>`
+    : '';
+
+  // The long-form copy when there is any, otherwise the one-line description,
+  // so the box is never empty on a product that has not been given details.
+  const full = product.details || product.description;
+  const fullBox = `
+    <section class="product-detail__box product-detail__box--full" aria-labelledby="full-heading">
+      <h2 class="product-detail__box-title" id="full-heading">Full description</h2>
+      <div class="product-detail__copy" data-scroll>
+        ${
+          full
+            ? `<p>${Store.escapeHtml(full)}</p>`
+            : '<p class="product-detail__desc--empty">No description for this product yet.</p>'
+        }
+      </div>
+    </section>`;
+
   view.innerHTML = `
     <div class="product-detail">
-      <div class="product-detail__media">${media}</div>
+      <div class="product-detail__main">
+        <div class="product-detail__media">${media}</div>
 
-      <div class="product-detail__body">
-        <div class="cat">${Store.escapeHtml(product.category)}</div>
-        <h1 class="product-detail__name">${Store.escapeHtml(product.name)}</h1>
+        <div class="product-detail__body">
+          <div class="cat">${Store.escapeHtml(product.category)}</div>
+          <h1 class="product-detail__name">${Store.escapeHtml(product.name)}</h1>
 
-        <div class="product-detail__price">${Store.escapeHtml(price)}</div>
+          <div class="product-detail__price">${Store.escapeHtml(price)}</div>
 
-        ${product.description
-          ? `<p class="product-detail__desc">${Store.escapeHtml(product.description)}</p>`
-          : '<p class="product-detail__desc product-detail__desc--empty">No description for this product yet.</p>'}
-
-        <div class="product-detail__actions">
-          <a class="btn btn-solid" href="${Store.escapeHtml(Store.productLink(product))}"
-             target="_blank" rel="noopener" ${product.in_stock ? '' : 'aria-disabled="true"'}>
-            <span class="btn__label">${product.in_stock ? Store.highlightWhatsApp('Buy on WhatsApp') : 'Sold out'}</span>
-          </a>
-          ${Store.shareButton(product, 'share--lg')}
+          <div class="product-detail__actions">
+            <a class="btn btn-solid" href="${Store.escapeHtml(Store.productLink(product))}"
+               target="_blank" rel="noopener" ${product.in_stock ? '' : 'aria-disabled="true"'}>
+              <span class="btn__label">${product.in_stock ? Store.highlightWhatsApp('Buy on WhatsApp') : 'Sold out'}</span>
+            </a>
+            ${Store.shareButton(product, 'share--lg')}
+          </div>
         </div>
-
-        <p class="product-detail__note">
-          Share the link above to send this exact product to someone.
-        </p>
       </div>
+
+      ${specsBox}
+      ${fullBox}
     </div>`;
 
   renderCrumbs(product);
   syncMeta(product);
+  markScrollable();
 }
 
 async function start() {

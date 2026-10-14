@@ -21,7 +21,7 @@ const CATALOG_URL = './catalog.sql';
 // v2: the schema dropped the per-product currency column. Bumping the key
 // means a stale USD draft in someone's browser is ignored rather than
 // silently reappearing.
-const DRAFT_KEY = 'alexstore.catalogDraft.v2';
+const DRAFT_KEY = 'alexstore.catalogDraft.v3';
 
 const Catalog = (() => {
   let db = null;
@@ -98,7 +98,8 @@ const Catalog = (() => {
       .map(
         (p) =>
           `  (${escape(p.slug)}, ${escape(p.name)}, ${escape(p.description)}, ` +
-          `${escape(p.category)}, ${p.price_cents}, ${escape(p.image_url)}, ` +
+          `${escape(p.details)}, ${escape(p.specs)}, ${escape(p.category)}, ` +
+          `${p.price_cents}, ${escape(p.image_url)}, ` +
           `${escape(p.tint)}, ${p.in_stock ? 1 : 0}, ${p.sort_order})`,
       )
       .join(',\n');
@@ -137,6 +138,11 @@ CREATE TABLE IF NOT EXISTS products (
   description TEXT    NOT NULL DEFAULT '',
   category    TEXT    NOT NULL DEFAULT 'General',
   price_cents INTEGER NOT NULL CHECK (price_cents >= 0),
+  -- Long-form copy for the product page. The description column stays the
+  -- one-line version used on cards, in search and in the WhatsApp message.
+  details     TEXT,
+  -- JSON object of label -> value for the specifications box.
+  specs       TEXT,
   image_url   TEXT,
   tint        TEXT,
   in_stock    INTEGER NOT NULL DEFAULT 1 CHECK (in_stock IN (0, 1)),
@@ -170,7 +176,7 @@ CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 INSERT OR IGNORE INTO settings (key, value) VALUES
 ${settingLines};
 
-INSERT INTO products (slug, name, description, category, price_cents, image_url, tint, in_stock, sort_order) VALUES
+INSERT INTO products (slug, name, description, details, specs, category, price_cents, image_url, tint, in_stock, sort_order) VALUES
 ${productLines}
 ON CONFLICT (slug) DO UPDATE SET
   name        = excluded.name,
@@ -254,7 +260,72 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
       .slice(0, 80);
   }
 
-  /** Validates a payload; returns {ok:true, value} or {ok:false, errors}. */
+  /**
+   * Accepts either a JSON string or an array/object of pairs and returns a
+   * canonical JSON object string. Labels are capped and the list is capped so
+   * a runaway textarea cannot bloat every catalog.sql export.
+   */
+  function normaliseSpecs(input) {
+    const MAX_LINES = 12;
+    const MAX_LABEL = 40;
+    const MAX_VALUE = 120;
+
+    let pairs = [];
+
+    if (typeof input === 'string' && input.trim()) {
+      const raw = input.trim();
+      // The admin form submits "Label: value" lines; already-stored JSON is
+      // passed straight back through on edit.
+      if (raw.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            pairs = Object.entries(parsed);
+          }
+        } catch {
+          pairs = [];
+        }
+      }
+      if (!pairs.length) {
+        pairs = raw
+          .split('\n')
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((line) => {
+            const at = line.indexOf(':');
+            return at === -1 ? null : [line.slice(0, at).trim(), line.slice(at + 1).trim()];
+          })
+          .filter((pair) => pair && pair[0] && pair[1]);
+      }
+    } else if (Array.isArray(input)) {
+      pairs = input.map((row) => [row && row.label, row && row.value]);
+    } else if (input && typeof input === 'object') {
+      pairs = Object.entries(input);
+    }
+
+    const out = {};
+    for (const [label, value] of pairs.slice(0, MAX_LINES)) {
+      const k = String(label || '').trim().slice(0, MAX_LABEL);
+      const v = String(value === null || value === undefined ? '' : value).trim().slice(0, MAX_VALUE);
+      if (k && v) out[k] = v;
+    }
+
+    return Object.keys(out).length ? JSON.stringify(out) : null;
+  }
+
+  /** Parses the stored specs JSON into ordered [label, value] pairs. */
+  function specPairs(raw) {
+    if (!raw) return [];
+    try {
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return [];
+      return Object.entries(parsed).filter(([k, v]) => k && v);
+    } catch {
+      return [];
+    }
+  }
+
+  /** Validates a payload; returns {ok:true, value} or {ok:false, errors}. */
   function validate(input) {
     const errors = {};
 
@@ -264,6 +335,17 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
     const description =
       typeof input.description === 'string' ? input.description.trim().slice(0, 300) : '';
 
+    // Long-form copy for the product page. Not searchable, not shown on cards,
+    // not part of the WhatsApp message.
+    const details =
+      typeof input.details === 'string' ? input.details.trim().slice(0, 4000) : '';
+
+    // Specifications arrive from the admin as "Label: value" lines and are
+    // stored as a JSON object so the page can render them as a definition list
+    // without re-parsing text. Bad lines are dropped rather than rejected: a
+    // half-typed row should not block saving the rest of the product.
+    const specs = normaliseSpecs(input.specs);
+
     const price = Number(input.price_cents);
     if (!Number.isInteger(price) || price < 0) {
       errors.price_cents = 'Must be whole paisa, e.g. 780000 for Rs 7,800';
@@ -288,10 +370,12 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
 
     return {
       ok: true,
-      value: {
-        slug,
-        name,
-        description,
+      value: {
+        slug,
+        name,
+        description,
+        details,
+        specs,
         category,
         price_cents: price,
         image_url: imageUrl,
@@ -351,10 +435,12 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
     if (slugTaken('products', value.slug)) return { ok: false, errors: { slug: 'Already in use' } };
 
     run(
-      `INSERT INTO products (slug, name, description, category, price_cents, image_url, tint, in_stock, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [value.slug, value.name, value.description, value.category, value.price_cents,
-       value.image_url, value.tint, value.in_stock, value.sort_order],
+      `INSERT INTO products
+         (slug, name, description, details, specs, category, price_cents, image_url, tint, in_stock, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [value.slug, value.name, value.description, value.details, value.specs,
+       value.category, value.price_cents, value.image_url, value.tint,
+       value.in_stock, value.sort_order],
     );
     saveDraft();
     return { ok: true, value };
@@ -366,12 +452,14 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
     if (slugTaken('products', value.slug, id)) return { ok: false, errors: { slug: 'Already in use' } };
 
     run(
-      `UPDATE products
-          SET slug = ?, name = ?, description = ?, category = ?, price_cents = ?,
-              image_url = ?, tint = ?, in_stock = ?, sort_order = ?
-        WHERE id = ?`,
-      [value.slug, value.name, value.description, value.category, value.price_cents,
-       value.image_url, value.tint, value.in_stock, value.sort_order, id],
+      `UPDATE products
+          SET slug = ?, name = ?, description = ?, details = ?, specs = ?,
+              category = ?, price_cents = ?, image_url = ?, tint = ?,
+              in_stock = ?, sort_order = ?
+        WHERE id = ?`,
+      [value.slug, value.name, value.description, value.details, value.specs,
+       value.category, value.price_cents, value.image_url, value.tint,
+       value.in_stock, value.sort_order, id],
     );
     saveDraft();
     return { ok: true, value };
@@ -510,6 +598,7 @@ const SEARCH_DIMS = 384;
     getVectors,
     indexIsComplete,
     replaceVectors,
+    specPairs,
     SEARCH_MODEL,
     SEARCH_DIMS,
     setSetting,
