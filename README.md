@@ -63,36 +63,37 @@ when local edits are pending, and **Discard local edits** reverts.
 ## Search
 
 The search icon (or `Ctrl`/`Cmd` + `K`) opens a dialog that embeds
-your query with [sparse-encoder-testing/splade-bert-tiny-nq-onnx](https://huggingface.co/sparse-encoder-testing/splade-bert-tiny-nq-onnx)
-running in the browser, then ranks products against precomputed SPLADE
-vectors stored in SQLite. There is one search mode — no keyword/semantic
-toggle.
+your query with [ternlight](https://github.com/soycaporal/ternlight)
+running in the browser, then ranks products against precomputed vectors
+stored in SQLite. There is one search mode — no keyword/semantic toggle.
 
-The model is a BERT-tiny encoder with a masked-LM head. Pooling follows
-sentence-transformers' `SpladePooling`: `log1p(relu(logits))` per token,
-then max over the sequence, which yields a 30522-dimensional vector that
-is ~0.3% non-zero. `transformers.js` exposes neither `max` pooling nor an
-activation, so `search.js` takes the raw logits with `pooling: 'none'` and
-applies both itself, encoding one text at a time so a padded position
-cannot win the max.
+ternlight is a 1.58-bit BitNet-style sentence encoder distilled from
+`all-MiniLM-L6-v2`. It is **not an ONNX model** — it ships no `.onnx`
+graph and does not run on ONNX Runtime. The weights are a proprietary
+packed binary and inference is a hand-written Rust engine compiled to
+WebAssembly with SIMD, reimplementing `BitLinear.forward()`. Model,
+tokenizer and engine are all embedded in one self-contained `.wasm`
+(~10 MB raw, ~7 MB gzipped), so there is no separate weights download
+and no runtime initialisation step beyond fetching that file.
 
-Ranking is an IDF-weighted dot product. A plain SPLADE dot product counts
-`.` / `and` / `,` as heavily as `tea`, and those appear in every document,
-so the ranking drifts toward "expands to the most terms wins". Each
-vocabulary slot is weighted by BM25's `log(1 + (N - df + 0.5) / (df + 0.5))`
-computed from the indexed documents; on a 16-query store-specific set that
-moved hit@1 from 5/16 to 7/16 and hit@3 from 11/16 to 12/16 (random is
+`search.js` loads the `pkg-web` build rather than the package's default
+entry. The default entry wraps the bundler target, which imports the
+`.wasm` as an ESM asset and needs Vite or webpack to resolve it; `pkg-web`
+resolves the sibling `.wasm` against `import.meta.url`, so a plain
+`<script type="module">` on a static host loads it with no build step.
+
+Embedding is synchronous once the engine is up: 384-dim, already
+L2-normalised, capped at 128 tokens (~95 words). Ranking is therefore a
+plain dot product — cosine similarity without the sqrt or the division.
+On a 16-query store-specific set this scores hit@1 8/16 and hit@3 15/16,
+against 7/16 and 12/16 for the SPLADE-tiny encoder it replaced (random is
 2/16 and 6/16).
 
 Product vectors are precomputed at publish time: in the admin panel,
 **Build search index** embeds every product and the resulting
 `catalog.sql` ships with the vectors baked in, so visitors only ever
-embed their own query — never the catalog. The model is downloaded
-once per browser, then cached in IndexedDB.
-
-`naver/splade-tiny`, the obvious id for this, is gated on the hub (the API
-returns 401) and ships no ONNX export — as does every Naver SPLADE. The
-model above is a real SPLADE, non-gated, with an ONNX graph, at 32 MB.
+embed their own query — never the catalog. The engine is cached by the
+browser after the first fetch.
 
 ## How the WhatsApp hand-off works
 
@@ -134,12 +135,12 @@ precomputed embedding per product for search, built by the admin panel's
 records which encoder produced each vector so a stale index is never
 silently mixed with a different model's vectors.
 
-`vector` is stored **sparsely** — `uint32 count`, then `count` `uint32`
-indices, then `count` `float32` weights. Dense storage would be 30522
-floats, ~150 KB of base64 per product and ~1.3 MB of `catalog.sql`
-fetched by every visitor; the sparse form keeps it at ~23 KB. `db.js`
-refills the zeros on read, so `getVectors()` still hands back a dense
-`Float32Array` and the ranking loop stays a plain array scan.
+`vector` is base64-encoded float32, 384 dimensions, dense — about 2 KB
+per product, so the whole vector table adds ~16 KB to `catalog.sql`. No
+sparse encoding is needed: the earlier SPLADE encoder emitted a
+30522-dimensional vector that was only ~0.3% non-zero and had to be
+stored sparsely to stay shippable, but 384 dense floats are small enough
+to store as-is.
 
 `settings` — free-form `key`/`value`:
 | Key | Meaning |

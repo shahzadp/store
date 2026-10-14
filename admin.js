@@ -379,11 +379,12 @@ $('#build-index').addEventListener('click', async () => {
   );
 
   try {
-    out.textContent = 'Loading model (one time)';
-    const vectors = await Search.embed(texts, (done, total) => {
-      out.textContent = `Embedding ${done}/${total}…`;
+    out.textContent = 'Loading engine (one time)';
+    const vectors = await Search.embed(texts, (message) => {
+      if (message) out.textContent = `${message}…`;
     });
 
+    out.textContent = `Embedding ${products.length} products…`;
     Catalog.replaceVectors(
       products.map((p, i) => ({ slug: p.slug, vector: vectors[i] })),
     );

@@ -1,91 +1,71 @@
 /* ==========================================================================
    Search
-   SPLADE-tiny — a sparse lexical expansion model. Product vectors are
-   precomputed in the admin panel and shipped in catalog.sql; visitors
-   only embed their own query. Ranks by dot product against the
-   precomputed vectors.
+   ternlight — a 1.58-bit BitNet-style sentence encoder distilled from
+   all-MiniLM-L6-v2. Model, tokenizer and inference engine live in one
+   WebAssembly module, so there is nothing to fetch beyond that single
+   `.wasm`. Product vectors are precomputed in the admin panel and shipped
+   in catalog.sql; visitors only embed their own query and rank it by dot
+   product against those vectors.
    ========================================================================== */
 
-// jsDelivr's `+esm` build is used rather than `dist/transformers.web.js`:
-// the raw dist file imports "onnxruntime-web" as a bare specifier, which a
-// browser cannot resolve. `+esm` rewrites those to CDN URLs.
-const TRANSFORMERS_CDN =
-  'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.1/+esm';
+// The `pkg-web` build is used rather than the package's default entry:
+// that one wraps the bundler target, which imports the `.wasm` as an ESM
+// asset and needs Vite/webpack to resolve. `pkg-web` fetches the sibling
+// `tern_engine_bg.wasm` relative to `import.meta.url`, so a plain
+// `<script type="module">` on a static host can load it with no build step.
+const TERNLIGHT_ENGINE =
+  'https://cdn.jsdelivr.net/npm/@ternlight/base@0.1.1/pkg-web/tern_engine.js';
 
 const Search = (() => {
-  let extractorPromise = null;
-  let extractor = null;
+  let enginePromise = null;
+  let engine = null;
   let loadError = null;
 
   /* ----------------------------------------------------------- loading */
 
-  function loadExtractor(onProgress) {
-    if (extractorPromise) return extractorPromise;
+  function loadEngine(onProgress) {
+    if (enginePromise) return enginePromise;
 
-    extractorPromise = (async () => {
-      const { pipeline, env } = await import(TRANSFORMERS_CDN);
+    enginePromise = (async () => {
+      if (onProgress) onProgress('Loading engine');
+      const mod = await import(TERNLIGHT_ENGINE);
 
-      env.allowLocalModels = false;
-      env.useBrowserCache = true;
+      // The default export is wasm-bindgen's init(): it fetches and
+      // instantiates tern_engine_bg.wasm (~10 MB raw, ~7 MB gzipped).
+      if (onProgress) onProgress('Downloading engine (~7 MB)');
+      await mod.default();
 
-      extractor = await pipeline('feature-extraction', Catalog.SEARCH_MODEL, {
-        dtype: 'fp32',
-        device: 'wasm',
-        progress_callback: (info) => {
-          if (onProgress && info && info.status === 'progress' && info.file) {
-            onProgress(info.file, info.loaded, info.total);
-          }
-        },
-      });
-
-      return extractor;
+      engine = mod;
+      if (onProgress) onProgress(null);
+      return mod;
     })().catch((err) => {
       loadError = err;
-      extractorPromise = null;
+      enginePromise = null;
       throw err;
     });
 
-    return extractorPromise;
+    return enginePromise;
   }
 
   function isModelLoaded() {
-    return Boolean(extractor);
+    return Boolean(engine);
   }
 
   /* --------------------------------------------------------- embeddings */
 
   /**
-   * SPLADE pooling, matching sentence-transformers' SpladePooling:
-   * `log1p(relu(logits))` per token, then max over the sequence.
-   * The `log1p` matters — without it the raw MLM logits of frequent
-   * tokens (`.`, `and`, `,`) swamp the informative ones and ranking
-   * degrades to "longest description wins".
-   *
-   * transformers.js exposes neither `max` pooling nor an activation, so
-   * we take `[1, L, V]` with `pooling: 'none'` and do both ourselves.
-   * Texts are encoded one at a time: batching pads the sequence, and a
-   * padded position would otherwise win the max.
+   * ternlight's `embed()` is synchronous once the engine is up and returns
+   * a 384-dim L2-normalised Float32Array, so there is nothing to pool or
+   * normalise on this side. Text is capped at 128 tokens (~95 words)
+   * inside the engine; product blurbs are well under that.
    */
   async function embed(texts, onProgress) {
-    const pipe = await loadExtractor(onProgress);
+    const mod = await loadEngine(onProgress);
+
     const out = [];
-
     for (let i = 0; i < texts.length; i++) {
-      const tensor = await pipe(texts[i], { pooling: 'none', normalize: false });
-      const [, tokens, vocab] = tensor.dims;
-      const data = tensor.data;
-
-      const vector = new Float32Array(vocab);
-      for (let t = 0; t < tokens; t++) {
-        const base = t * vocab;
-        for (let v = 0; v < vocab; v++) {
-          const weight = data[base + v] > 0 ? Math.log1p(data[base + v]) : 0;
-          if (weight > vector[v]) vector[v] = weight;
-        }
-      }
-
-      out.push(vector);
-      if (onProgress) onProgress(i + 1, texts.length);
+      out.push(mod.embed(texts[i]));
+      if (onProgress) onProgress(null);
     }
 
     return out;
@@ -95,49 +75,13 @@ const Search = (() => {
 
   /**
    * IDF over the indexed documents, one weight per vocabulary slot.
-   *
-   * A raw SPLADE dot product counts `.` / `and` / `,` as heavily as `tea`,
-   * and those sit in every document — so the query's punctuation matches
-   * everything and the ranking collapses toward "expands to the most
-   * terms wins". Down-weighting terms by document frequency (BM25's
-   * `log(1 + (N - df + 0.5) / (df + 0.5))`) measured better on a
-   * 16-query store-specific set: hit@1 5/16 -> 7/16, hit@3 11/16 -> 12/16.
-   *
-   * One slot is enough: `getVectors()` returns a fresh Map each call, and
-   * the underlying vectors only change on an index rebuild — a page reload.
+   /**
+   * Cosine similarity. ternlight embeddings are already L2-normalised, so
+   * this is just a dot product — no sqrt, no division.
    */
-  let idfCache = null;
-
-  function idfWeights(index) {
-    if (idfCache) return idfCache;
-
-    const entries = [...index.values()];
-    const count = new Uint16Array(Catalog.SEARCH_DIMS);
-
-    for (const entry of entries) {
-      for (let i = 0; i < entry.vector.length; i++) {
-        if (entry.vector[i] > 0) count[i]++;
-      }
-    }
-
-    const idf = new Float32Array(Catalog.SEARCH_DIMS);
-    for (let i = 0; i < idf.length; i++) {
-      idf[i] = count[i]
-        ? Math.log(1 + (entries.length - count[i] + 0.5) / (count[i] + 0.5))
-        : 1;
-    }
-
-    idfCache = idf;
-    return idf;
-  }
-
-  /**
-   * IDF-weighted dot product. Only ~0.3% of a SPLADE vector is non-zero,
-   * so the scan is effectively free.
-   */
-  function similarity(a, b, idf) {
+  function similarity(a, b) {
     let dot = 0;
-    for (let i = 0; i < a.length; i++) dot += a[i] * b[i] * idf[i];
+    for (let i = 0; i < a.length; i++) dot += a[i] * b[i];
     return dot;
   }
 
@@ -155,13 +99,12 @@ const Search = (() => {
     try {
       const [queryVector] = await embed([trimmed], onProgress);
       const index = Catalog.getVectors();
-      const idf = idfWeights(index);
 
       return products
         .map((product) => {
           const entry = index.get(product.slug);
           if (!entry || entry.vector.length !== queryVector.length) return null;
-          return { product, score: similarity(queryVector, entry.vector, idf) };
+          return { product, score: similarity(queryVector, entry.vector) };
         })
         .filter(Boolean)
         .sort((a, b) => b.score - a.score);
@@ -172,7 +115,7 @@ const Search = (() => {
     }
   }
 
-  return { rank, embed, isModelLoaded, loadExtractor };
+  return { rank, embed, isModelLoaded, loadEngine };
 })();
 
 /* ==========================================================================
@@ -261,10 +204,9 @@ function searchDialog() {
     const ticket = ++sequence;
     loading = true;
 
-    const onProgress = (file, loaded, total) => {
-      if (ticket !== sequence) return;
-      const pct = total ? Math.round((loaded / total) * 100) : 0;
-      setStatus(Search.isModelLoaded() ? 'Embedding…' : `Loading model — ${pct}%`);
+    const onProgress = (message) => {
+      if (ticket !== sequence || !message) return;
+      setStatus(message);
     };
 
     try {
