@@ -150,6 +150,24 @@ A backstop stops a genuinely dead network from retrying on every keystroke:
 after 3 consecutive failures `loadEngine()` refuses until `resetFailures()`
 is called, which the **Try again** button does.
 
+## Typography
+
+System fonts only — Georgia for display, the platform UI sans for body,
+the platform monospace for code. **No webfont is fetched.**
+
+The site previously loaded Cormorant Garamond / Source Sans 3 / IBM Plex
+Mono from Google Fonts with `display=swap`. On a cold cache that meant the
+first paint rendered in the fallback stack and then visibly reflowed once
+the webfont arrived: the hero title measured 691px wide in Georgia versus
+534px in Cormorant, a 29% shift, and the heavier fallback is what read as
+a bold flash followed by a settle.
+
+Dropping the network font removes the swap entirely, so first and later
+visits are identical and the page stops depending on a third party. The
+trade is the typeface: headings are now Georgia rather than Cormorant
+Garamond. Headings are noticeably wider, so line breaks on any fixed-size
+headline may differ from the old design — worth a look on each page.
+
 ## How the WhatsApp hand-off works
 
 Buy links are plain `wa.me` deep links, so they work with no WhatsApp app

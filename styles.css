@@ -34,9 +34,14 @@
   --tint-4: #E3D6EE;
 
   /* Type */
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-body: 'Source Sans 3', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  /* System fonts only — no webfont is fetched, so there is nothing to swap
+     in mid-render. Loading Cormorant/Source Sans over the network made the
+     first paint render in the fallback stack (Georgia, which reads heavier)
+     and then visibly reflow to the webfont. These stacks are identical on
+     first and later visits. */
+  --font-display: Georgia, 'Times New Roman', Times, serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
   /* Layout */
   --container: 1200px;
