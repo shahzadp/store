@@ -97,7 +97,7 @@ function render(product) {
         <div class="product-detail__actions">
           <a class="btn btn-solid" href="${Store.escapeHtml(Store.productLink(product))}"
              target="_blank" rel="noopener" ${product.in_stock ? '' : 'aria-disabled="true"'}>
-            ${product.in_stock ? 'Buy on WhatsApp' : 'Sold out'}
+            ${product.in_stock ? Store.highlightWhatsApp('Buy on WhatsApp') : 'Sold out'}
           </a>
           ${Store.shareButton(product, 'share--lg')}
         </div>

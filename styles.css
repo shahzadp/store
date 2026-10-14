@@ -43,6 +43,15 @@
   --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
+  /* Greens for the word "WhatsApp" inside otherwise-white or purple text.
+     One green cannot serve every surface: a mid-tone brand green scores
+     7.3:1 on the dark announce bar but only 1.65:1 on the light page
+     background, so each context gets its own value. All are >= 4.5:1
+     against the surface they sit on. */
+  --wa-green: #25D366;         /* on dark surfaces — announce bar, footer */
+  --wa-green-on-light: #0F6B36; /* on the light page background */
+  --wa-green-on-accent: #5CEB8F; /* on the purple solid buttons, 4.54:1 */
+
   /* Layout */
   --container: 1200px;
   --gutter: 40px;
@@ -69,6 +78,24 @@ body {
   font-family: var(--font-body);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+}
+
+/* The word "WhatsApp" inside a phrase. Kept as a span rather than a class
+   on the parent so only that word is tinted, and so it survives in
+   button labels where the rest of the text must stay white. */
+.wa-word {
+  color: var(--wa-green);
+}
+
+/* The drawer link sits on the light page background, where the mid-tone
+   brand green would be unreadable. */
+.nav__wa .wa-word {
+  color: var(--wa-green-on-light);
+}
+
+/* On the purple buttons the green needs to be lighter to clear 4.5:1. */
+.btn-solid .wa-word {
+  color: var(--wa-green-on-accent);
 }
 
 img {

@@ -210,6 +210,33 @@ Is it available?
 The number is stored in the catalog's `settings` table (editable in the admin
 panel), stored as country code + number with no `+`, spaces or dashes.
 
+### The green "WhatsApp" word
+
+The word "WhatsApp" is wrapped in `<span class="wa-word">` wherever it
+appears in storefront text — the announcement bar, the drawer link, the
+footer heading and button, and every Buy on WhatsApp button. Only that word
+is tinted; the rest of each phrase keeps its own colour, so the buttons
+stay white-on-purple. Static markup carries the span directly; text built in
+JS goes through `Store.highlightWhatsApp()`, which escapes first and then
+wraps the word (the announcement bar uses this, so it needs `innerHTML`
+rather than `textContent`).
+
+Three greens are defined, because one green cannot be legible on all three
+surfaces these sit on:
+
+| Token | Value | Used on | Contrast |
+| --- | --- | --- | --- |
+| `--wa-green` | `#25D366` | announce bar, footer heading (dark) | 7.30:1 |
+| `--wa-green-on-light` | `#0F6B36` | drawer link (light page background) | 5.50:1 |
+| `--wa-green-on-accent` | `#5CEB8F` | purple solid buttons | 4.54:1 |
+
+The brand green alone scores **1.65:1** on the light page background — well
+under the 4.5:1 AA threshold — which is why the drawer link uses a darker
+green instead. All three clear AA for normal text on their own background.
+
+The admin panel is excluded: its "WhatsApp number" entry is a form label,
+not a call to action, and it was never white.
+
 ## Data model
 
 `products` — `id`, `slug` (unique), `name`, `description`, `category`,

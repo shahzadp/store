@@ -54,6 +54,15 @@ const Store = (() => {
   }
 
   /**
+   * Escapes `text`, then wraps the word "WhatsApp" so it can be tinted
+   * green while the rest of the phrase keeps its own colour. Input is
+   * escaped first, so callers may pass raw catalog values.
+   */
+  function highlightWhatsApp(text) {
+    return escapeHtml(text).replace(/WhatsApp/g, '<span class="wa-word">WhatsApp</span>');
+  }
+
+  /**
    * The shareable address of a product. Relative so it resolves correctly
    * whether the page is served from the site root or a subpath; absolute
    * URLs are built from it at share time by `shareUrl()`.
@@ -177,7 +186,7 @@ const Store = (() => {
           <div class="product__actions">
             <a class="btn btn-solid btn-buy" href="${escapeHtml(href)}" target="_blank" rel="noopener"
                ${product.in_stock ? '' : 'aria-disabled="true"'}>
-              ${product.in_stock ? 'Buy on WhatsApp' : 'Sold out'}
+              ${product.in_stock ? highlightWhatsApp('Buy on WhatsApp') : 'Sold out'}
             </a>
             ${shareButton(product)}
           </div>
@@ -198,13 +207,15 @@ const Store = (() => {
     });
 
     // Stored in paisa, same as product prices, so the banner and the catalog
-    // can never drift apart on units.
+    // can never drift apart on units. innerHTML rather than textContent so
+    // the "WhatsApp" word can be tinted; the values are escaped first.
     const threshold = Number(Catalog.getSetting('free_delivery_over_paisa'));
     document.querySelectorAll('[data-free-delivery]').forEach((el) => {
-      el.textContent =
+      el.innerHTML = highlightWhatsApp(
         Number.isFinite(threshold) && threshold > 0
           ? `Free delivery on orders over ${formatPrice(threshold)} · Order on WhatsApp`
-          : 'Order on WhatsApp';
+          : 'Order on WhatsApp',
+      );
     });
 
     return { storeName, whatsappNumber };
@@ -223,5 +234,6 @@ const Store = (() => {
     shareUrl,
     shareButton,
     initShare,
+    highlightWhatsApp,
   };
 })();
