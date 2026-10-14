@@ -186,7 +186,7 @@ const Store = (() => {
           <div class="product__actions">
             <a class="btn btn-solid btn-buy" href="${escapeHtml(href)}" target="_blank" rel="noopener"
                ${product.in_stock ? '' : 'aria-disabled="true"'}>
-              ${product.in_stock ? highlightWhatsApp('Buy on WhatsApp') : 'Sold out'}
+              <span class="btn__label">${product.in_stock ? highlightWhatsApp('Buy on WhatsApp') : 'Sold out'}</span>
             </a>
             ${shareButton(product)}
           </div>

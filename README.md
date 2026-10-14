@@ -174,6 +174,32 @@ That is what makes a pasted link preview sensibly in WhatsApp and Slack.
 An unknown or missing `?slug=` renders a "we couldn't find that product"
 panel with a link back to the catalog, rather than a blank page.
 
+## About page
+
+`about.html` carries the trust content: who the shop is, how ordering
+works in three steps, and six reasons to buy with confidence. It is a real
+page now — the nav previously pointed at `./index.html#about`, an anchor
+that never existed.
+
+**The credibility copy deliberately states only what is verifiable.** Every
+claim on that page is either true of how this store actually works
+(ordering is a WhatsApp conversation with a person, prices are fixed in
+PKR, sold-out products are labelled, the free-delivery threshold is
+published) or is read live from the catalog. No founding year, no
+"family-owned", no sourcing story — those are the owner's to supply, and
+inventing them on a page whose whole job is building trust would defeat
+the point. To add them, edit the copy in `about.html` directly.
+
+The four stat tiles and the category list in `about.js` are computed from
+SQLite on load, so they cannot drift away from the catalog.
+
+### Button labels
+
+Button labels live in a `.btn__label` wrapper. `.btn` is `display:inline-flex`,
+so a bare text node sitting beside the `.wa-word` span becomes its own
+anonymous flex item and its trailing space is collapsed — which rendered
+"Buy onWhatsApp". One wrapper element keeps the space as ordinary text.
+
 ## Typography
 
 System fonts only — Georgia for display, the platform UI sans for body,

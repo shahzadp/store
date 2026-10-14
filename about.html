@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — Alex Store</title>
+<meta name="description" content="Who runs Alex Store, how ordering works, and why you can buy from us with confidence. Order on WhatsApp.">
+<link rel="stylesheet" href="./styles.css?v=26">
+</head>
+<body>
+
+<div class="announce" data-free-delivery>Order on WhatsApp</div>
+
+<header class="header">
+  <div class="header__inner">
+    <div class="header__tools">
+      <button class="icon-link" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-nav" aria-label="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"></path></svg>
+      </button>
+      <button class="icon-link" type="button" data-search-open aria-label="Search products">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg>
+      </button>
+    </div>
+
+    <a class="logo" href="./">Alex Store</a>
+
+    <nav class="nav" id="mobile-nav" aria-label="Main">
+      <button class="nav__close" type="button" data-menu-close aria-label="Close menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+      <a href="./shop.html">Products</a>
+      <a href="./collections.html">Collections</a>
+      <a href="./index.html#journal">Journal</a>
+      <a href="./about.html" aria-current="page">About</a>
+      <div class="nav__footer">
+        <div class="cat">Questions?</div>
+        <a class="nav__wa" data-whatsapp-general href="#" target="_blank" rel="noopener">Order on <span class="wa-word">WhatsApp</span></a>
+      </div>
+    </nav>
+    <button class="search-trigger" type="button" data-search-open aria-label="Search products">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path>
+      </svg>
+      <span class="search-trigger__label">Search</span>
+      <kbd class="search-trigger__key">Ctrl K</kbd>
+    </button>
+  </div>
+  <div class="nav-backdrop" data-menu-close hidden></div>
+</header>
+
+<!-- search dialog -->
+<div class="search" id="search-dialog" role="dialog" aria-modal="true" aria-label="Search products" hidden>
+  <div class="search__panel">
+    <form class="search__bar" id="search-form" role="search">
+      <svg class="search__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path>
+      </svg>
+      <input id="search-input" type="search" autocomplete="off"
+             placeholder="Search products — try &lsquo;something warm for a table&rsquo;"
+             aria-label="Search products">
+      <button class="search__close" type="button" data-search-close aria-label="Close search">&times;</button>
+    </form>
+    <p class="search__status" id="search-status" role="status" aria-live="polite"></p>
+    <ul class="search__results" id="search-results"></ul>
+    <p class="search__hint">Search by meaning — the engine downloads once, then is cached.</p>
+  </div>
+</div>
+
+<main>
+  <section class="page-head container">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="./">Home</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">About</span>
+    </nav>
+    <div class="cat">About us</div>
+    <h1 class="page-head__title">A small shop, run by one person.</h1>
+    <p class="page-head__lede">
+      Alex Store is an independent shop, not a marketplace. There is no
+      third-party seller between you and the person who picks and packs your
+      order, and no checkout queue — ordering is a WhatsApp conversation.
+    </p>
+  </section>
+
+  <section class="shop shop--flush">
+    <div class="container">
+
+      <div class="about-facts" id="about-facts">
+        <p class="catalog-status">Loading store details&hellip;</p>
+      </div>
+
+      <div class="section-head">
+        <h2>How ordering works</h2>
+      </div>
+
+      <ol class="steps">
+        <li class="step">
+          <div class="step__num">1</div>
+          <h3 class="step__title">Find what you want</h3>
+          <p class="step__text">
+            Browse the catalog, or search by meaning — describing what you
+            need in your own words works better than guessing keywords.
+          </p>
+        </li>
+        <li class="step">
+          <div class="step__num">2</div>
+          <h3 class="step__title">Message us on WhatsApp</h3>
+          <p class="step__text">
+            Tap <em>Buy on <span class="wa-word">WhatsApp</span></em> and the
+            product, its price and its description are already written into
+            the message. Nothing is sent anywhere except to our number.
+          </p>
+        </li>
+        <li class="step">
+          <div class="step__num">3</div>
+          <h3 class="step__title>We confirm and arrange delivery</h3>
+          <p class="step__text">
+            You get a reply from a person, usually within a few hours. We
+            confirm availability, agree a delivery time and take payment
+            however is easiest for you.
+          </p>
+        </li>
+      </ol>
+
+      <div class="section-head">
+        <h2>Why you can buy with confidence</h2>
+      </div>
+
+      <div class="notes">
+        <div>
+          <div class="cat">You deal with a person</div>
+          <p>
+            There is no automated support queue and no third-party seller.
+            Your message reaches the shop, and the reply comes from the shop.
+          </p>
+        </div>
+        <div>
+          <div class="cat">Prices are plain rupees</div>
+          <p>
+            Everything is listed in PKR at a fixed price. There is no
+            currency conversion, no checkout surprise and no payment page
+            collecting card details.
+          </p>
+        </div>
+        <div>
+          <div class="cat">Descriptions are specifications</div>
+          <p>
+            Each product carries one short factual line — material, capacity,
+            care instructions. It is written to tell you whether the thing
+            suits you, not to sell it to you.
+          </p>
+        </div>
+        <div>
+          <div class="cat">Availability is stated honestly</div>
+          <p>
+            Sold-out products say <em>Sold out</em> rather than staying in the
+            catalog pretending to be purchasable.
+          </p>
+        </div>
+        <div>
+          <div class="cat">A deliberately small range</div>
+          <p>
+            We stock a short, edited list rather than everything. Categories
+            right now: <span id="about-cats">—</span>.
+          </p>
+        </div>
+        <div>
+          <div class="cat">Free delivery over the threshold</div>
+          <p>
+            Orders above the stated threshold ship free. The figure is shown
+            at the top of every page and never changes between checkout and
+            delivery.
+          </p>
+        </div>
+      </div>
+
+      <div class="about-cta">
+        <h2 class="about-cta__title">Still deciding?</h2>
+        <p class="about-cta__text">
+          Ask anything on WhatsApp before you order. No purchase needed to
+          start a conversation.
+        </p>
+        <p>
+          <a class="btn btn-solid" data-whatsapp-general href="#" target="_blank" rel="noopener">
+            <span class="btn__label">Chat on <span class="wa-word">WhatsApp</span></span>
+          </a>
+        </p>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__title">Order on <span class="wa-word">WhatsApp</span></div>
+      <div class="footer__meta">Replies within a few hours &middot; +92 328 8304524</div>
+    </div>
+    <div>
+      <a class="btn btn-solid" data-whatsapp-general href="#" target="_blank" rel="noopener">
+        <span class="btn__label">Chat on <span class="wa-word">WhatsApp</span></span>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+<script src="./db.js?v=26"></script>
+<script src="./common.js?v=26"></script>
+<script src="./drawer.js?v=26"></script>
+<script src="./sticky.js?v=26"></script>
+<script src="./search.js?v=26"></script>
+<script src="./about.js?v=26"></script>
+</body>
+</html>
