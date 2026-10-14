@@ -150,6 +150,30 @@ A backstop stops a genuinely dead network from retrying on every keystroke:
 after 3 consecutive failures `loadEngine()` refuses until `resetFailures()`
 is called, which the **Try again** button does.
 
+## Product pages and sharing
+
+Every product has its own page at `product.html?slug=<slug>`, and that URL
+is the canonical, shareable address — paste it anywhere and the same
+product loads. The product card's image and title link there; **Buy on
+WhatsApp** stays a separate, explicit action rather than being what an
+image click happens to do.
+
+Each card and each product page carries a **Share link** button. It copies
+the product's absolute URL (`Store.shareUrl()`) and shows "Link copied" for
+two seconds. It deliberately does *not* use `navigator.share`: that is
+mobile-only and its title/body cannot be verified in a test, whereas
+clipboard-copy behaves identically everywhere. A hidden-textarea fallback
+covers browsers that refuse the async Clipboard API.
+
+`product.js` also syncs document metadata per product — `document.title`,
+the description, and `og:title` / `og:description` / `og:type` /
+`og:url`, plus `og:image` when the catalog actually has an image URL (the
+placeholder tints are colours, not URLs, so they are not advertised).
+That is what makes a pasted link preview sensibly in WhatsApp and Slack.
+
+An unknown or missing `?slug=` renders a "we couldn't find that product"
+panel with a link back to the catalog, rather than a blank page.
+
 ## Typography
 
 System fonts only — Georgia for display, the platform UI sans for body,

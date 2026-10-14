@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alex Store</title>
+<meta name="description" content="Product details from Alex Store. Order on WhatsApp.">
+<link rel="stylesheet" href="./styles.css?v=24">
+</head>
+<body>
+
+<div class="announce" data-free-delivery>Order on WhatsApp</div>
+
+<header class="header">
+  <div class="header__inner">
+    <div class="header__tools">
+      <button class="icon-link" type="button" data-menu-toggle aria-expanded="false" aria-controls="mobile-nav" aria-label="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"></path></svg>
+      </button>
+      <button class="icon-link" type="button" data-search-open aria-label="Search products">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg>
+      </button>
+    </div>
+
+    <a class="logo" href="./">Alex Store</a>
+
+    <nav class="nav" id="mobile-nav" aria-label="Main">
+      <button class="nav__close" type="button" data-menu-close aria-label="Close menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+      <a href="./shop.html">Products</a>
+      <a href="./collections.html">Collections</a>
+      <a href="./index.html#journal">Journal</a>
+      <a href="./index.html#about">About</a>
+      <div class="nav__footer">
+        <div class="cat">Questions?</div>
+        <a class="nav__wa" data-whatsapp-general href="#" target="_blank" rel="noopener">Order on WhatsApp</a>
+      </div>
+    </nav>
+    <button class="search-trigger" type="button" data-search-open aria-label="Search products">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path>
+      </svg>
+      <span class="search-trigger__label">Search</span>
+      <kbd class="search-trigger__key">Ctrl K</kbd>
+    </button>
+  </div>
+  <div class="nav-backdrop" data-menu-close hidden></div>
+</header>
+
+<!-- search dialog -->
+<div class="search" id="search-dialog" role="dialog" aria-modal="true" aria-label="Search products" hidden>
+  <div class="search__panel">
+    <form class="search__bar" id="search-form" role="search">
+      <svg class="search__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path>
+      </svg>
+      <input id="search-input" type="search" autocomplete="off"
+             placeholder="Search products — try &lsquo;something warm for a table&rsquo;"
+             aria-label="Search products">
+      <button class="search__close" type="button" data-search-close aria-label="Close search">&times;</button>
+    </form>
+    <p class="search__status" id="search-status" role="status" aria-live="polite"></p>
+    <ul class="search__results" id="search-results"></ul>
+    <p class="search__hint">Search by meaning — the engine downloads once, then is cached.</p>
+  </div>
+</div>
+
+<main>
+  <section class="page-head page-head--tight container">
+    <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
+  </section>
+
+  <section class="shop shop--flush">
+    <div class="container">
+      <div id="product-view" aria-live="polite">
+        <p class="catalog-status">Loading product&hellip;</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__title">Order on WhatsApp</div>
+      <div class="footer__meta">Replies within a few hours &middot; +92 328 8304524</div>
+    </div>
+    <div>
+      <a class="btn btn-solid" data-whatsapp-general href="#" target="_blank" rel="noopener">Chat on WhatsApp</a>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+<script src="./db.js?v=24"></script>
+<script src="./common.js?v=24"></script>
+<script src="./drawer.js?v=24"></script>
+<script src="./sticky.js?v=24"></script>
+<script src="./search.js?v=24"></script>
+<script src="./product.js?v=24"></script>
+</body>
+</html>

@@ -231,7 +231,7 @@ function searchDialog() {
 
         return `
           <li class="search__row">
-            <a class="search__hit" href="./shop.html?q=${encodeURIComponent(product.name)}">
+            <a class="search__hit" href="${Store.escapeHtml(Store.productUrl(product))}">
               <span class="search__thumb" style="background:${Store.escapeHtml(product.tint || '#D9CCEA')}"></span>
               <span class="search__body">
                 <span class="search__name">${Store.escapeHtml(product.name)}</span>

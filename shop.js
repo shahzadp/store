@@ -72,6 +72,7 @@ async function start() {
   activeCategory = readCategoryFromUrl();
   renderFilters();
   render();
+  Store.initShare();
 }
 
 start().catch((err) => {

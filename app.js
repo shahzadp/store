@@ -32,6 +32,8 @@ async function start() {
   if (Catalog.hasDraft()) {
     console.info('Showing a local draft catalog — published catalog.sql is unchanged.');
   }
+
+  Store.initShare();
 }
 
 start().catch((err) => {

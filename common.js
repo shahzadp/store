@@ -53,6 +53,88 @@ const Store = (() => {
     }[c]));
   }
 
+  /**
+   * The shareable address of a product. Relative so it resolves correctly
+   * whether the page is served from the site root or a subpath; absolute
+   * URLs are built from it at share time by `shareUrl()`.
+   */
+  function productUrl(product) {
+    const slug = typeof product === 'string' ? product : product.slug;
+    return `./product.html?slug=${encodeURIComponent(slug)}`;
+  }
+
+  /** Absolute, canonical URL for a product — what gets copied on share. */
+  function shareUrl(product) {
+    return new URL(productUrl(product), window.location.href).href;
+  }
+
+  /**
+   * Share control. Copies the product's absolute URL rather than opening a
+   * platform share sheet, so it behaves identically on desktop and mobile
+   * and is testable. `navigator.share` is deliberately not used: it is
+   * mobile-only and its title/body cannot be asserted.
+   */
+  function shareButton(product, extraClass = '') {
+    const label = `Share ${typeof product === 'string' ? '' : escapeHtml(product.name) || ''} link`.trim();
+    return `<button class="share ${extraClass}" type="button" data-share-slug="${escapeHtml(product.slug)}"
+              aria-label="${escapeHtml(label)}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.6" aria-hidden="true">
+                <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>
+                <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"></path>
+              </svg>
+              <span class="share__label">Share link</span>
+            </button>`;
+  }
+
+  /**
+   * Wires every [data-share-slug] button in the document. Uses the async
+   * Clipboard API, falling back to a hidden textarea for browsers that
+   * refuse it (non-secure origins, older Safari).
+   */
+  function initShare() {
+    document.addEventListener('click', async (event) => {
+      const button = event.target.closest('[data-share-slug]');
+      if (!button) return;
+
+      const product = Catalog.listProducts().find((p) => p.slug === button.dataset.shareSlug);
+      if (!product) return;
+
+      const url = shareUrl(product);
+      const label = button.querySelector('.share__label');
+      const original = label ? label.textContent : '';
+
+      let copied = false;
+      try {
+        await navigator.clipboard.writeText(url);
+        copied = true;
+      } catch {
+        // Fallback for insecure contexts / denied clipboard permission.
+        const scratch = document.createElement('textarea');
+        scratch.value = url;
+        scratch.setAttribute('readonly', '');
+        scratch.style.position = 'fixed';
+        scratch.style.opacity = '0';
+        document.body.appendChild(scratch);
+        scratch.select();
+        try {
+          copied = document.execCommand('copy');
+        } catch {
+          copied = false;
+        }
+        scratch.remove();
+      }
+
+      button.classList.toggle('share--done', copied);
+      if (label) label.textContent = copied ? 'Link copied' : 'Copy failed';
+
+      setTimeout(() => {
+        button.classList.remove('share--done');
+        if (label) label.textContent = original;
+      }, 2000);
+    });
+  }
+
   /** Editorial card. Collections aren't for sale, so this is never a link. */
   function collectionCard(collection) {
     const media = collection.image_url
@@ -73,27 +155,33 @@ const Store = (() => {
 
   function productCard(product) {
     const href = productLink(product);
+    const detail = productUrl(product);
     const price = formatPrice(product.price_cents);
 
     const media = product.image_url
       ? `<img class="product__img" src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" loading="lazy">`
       : `<div class="product__img placeholder" style="background:${escapeHtml(product.tint || '#D9CCEA')}" aria-hidden="true"></div>`;
 
+    // The card opens the product's own page; WhatsApp stays a distinct,
+    // explicit action rather than being what an image click happens to do.
     return `
       <li>
-        <div class="product">
-          <a class="product__link" href="${escapeHtml(href)}" target="_blank" rel="noopener">${media}</a>
+        <article class="product">
+          <a class="product__link" href="${escapeHtml(detail)}">${media}</a>
           <div class="cat">${escapeHtml(product.category)}</div>
-          <div class="product__name">${escapeHtml(product.name)}</div>
+          <h3 class="product__name"><a href="${escapeHtml(detail)}">${escapeHtml(product.name)}</a></h3>
           ${product.description
             ? `<p class="product__desc">${escapeHtml(product.description)}</p>`
             : ''}
           <div class="product__price">${escapeHtml(price)}</div>
-          <a class="btn btn-solid btn-buy" href="${escapeHtml(href)}" target="_blank" rel="noopener"
-             ${product.in_stock ? '' : 'aria-disabled="true"'}>
-            ${product.in_stock ? 'Buy on WhatsApp' : 'Sold out'}
-          </a>
-        </div>
+          <div class="product__actions">
+            <a class="btn btn-solid btn-buy" href="${escapeHtml(href)}" target="_blank" rel="noopener"
+               ${product.in_stock ? '' : 'aria-disabled="true"'}>
+              ${product.in_stock ? 'Buy on WhatsApp' : 'Sold out'}
+            </a>
+            ${shareButton(product)}
+          </div>
+        </article>
       </li>`;
   }
 
@@ -131,5 +219,9 @@ const Store = (() => {
     escapeHtml,
     productCard,
     collectionCard,
+    productUrl,
+    shareUrl,
+    shareButton,
+    initShare,
   };
 })();
