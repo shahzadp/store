@@ -1032,7 +1032,10 @@ h2 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 32px 48px;
-  align-items: start;
+  /* stretch, not start: the image and the specifications box are grid
+     siblings, so letting the row height decide makes both end on the same
+     line instead of leaving the shorter one floating. */
+  align-items: stretch;
   padding: 24px 0 64px;
 }
 
@@ -1040,12 +1043,19 @@ h2 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 48px;
-  align-items: start;
+  align-items: stretch;
+}
+
+.product-detail__media {
+  position: relative;
+  min-height: 0;
 }
 
 .product-detail__img {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  aspect-ratio: 4 / 5;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
@@ -1199,6 +1209,16 @@ h2 {
   .product-detail__main {
     grid-template-columns: 1fr;
     gap: 24px;
+  }
+
+  .product-detail__media {
+    position: static;
+  }
+
+  .product-detail__img {
+    position: static;
+    height: auto;
+    aspect-ratio: 4 / 5;
   }
 
   .product-detail__name {
@@ -1720,14 +1740,17 @@ h2 {
 .btn-download {
   gap: 10px;
   padding: 14px 22px;
-  border: 1.5px solid var(--surface-dark);
-  background: none;
-  color: var(--ink);
+  /* The icon is a light green, which cannot carry contrast on the page's
+     pale background. A dark surface solves it and sits beside the purple
+     primary without competing: same value, different hue. */
+  border: 1.5px solid transparent;
+  background: var(--surface-dark);
+  color: var(--ink-on-dark);
 }
 
 .btn-download[aria-disabled='true'] {
   cursor: not-allowed;
-  opacity: 0.5;
+  color: var(--ink-on-dark-muted);
 }
 
 /* The icon sits right of the label and must not be squeezed by the flex
