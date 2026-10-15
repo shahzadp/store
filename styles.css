@@ -1342,13 +1342,6 @@ h2 {
     padding: 8px 12px;
   }
 
-  /* Keeps the announcement bar on one line at every phone width. The
-     WhatsApp prompt is redundant here anyway: the drawer and the footer
-     both carry it. */
-  .announce__cta {
-    display: none;
-  }
-
   .header {
     padding: 12px 20px;
   }

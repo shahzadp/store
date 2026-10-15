@@ -223,15 +223,19 @@ const Store = (() => {
     // the "WhatsApp" word can be tinted; the values are escaped first.
     const threshold = Number(Catalog.getSetting('free_delivery_over_paisa'));
     document.querySelectorAll('[data-free-delivery]').forEach((el) => {
-      // Split so the CTA can be dropped on narrow screens. Measured at
-      // 320/360/390/412/430px, the full sentence wraps the bar onto a
-      // second line (35px -> 54px) all the way up to 390px wide, which
-      // also pushed the hero past the bottom of the first screen. The
-      // threshold alone fits on one line at every width measured.
-      el.innerHTML = Number.isFinite(threshold) && threshold > 0
-        ? `Free delivery over ${formatPrice(threshold)}<span class="announce__cta">` +
-            ` &middot; Order on ${highlightWhatsApp('WhatsApp')}</span>`
-        : highlightWhatsApp('Order on WhatsApp');
+      // The bar states the free-delivery threshold and nothing else.
+      // Ordering is a WhatsApp conversation everywhere on this site
+      // already - every product button, the drawer and the footer all
+      // say so - so the instruction was repeated noise, and the longer
+      // sentence also wrapped onto a second line on phones.
+      if (Number.isFinite(threshold) && threshold > 0) {
+        el.textContent = `Free delivery over ${formatPrice(threshold)}`;
+      } else {
+        // Nothing to announce, so remove the bar rather than leave an
+        // empty dark strip. syncStickyOffsets() below re-measures and the
+        // header docks to the top.
+        el.remove();
+      }
     });
 
     // This text is longer than the static placeholder and wraps the bar onto a
