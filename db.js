@@ -521,9 +521,24 @@ const SEARCH_DIMS = 384;
    * The same catalog as plain JSON, for clients that cannot run SQLite.
    *
    * The Flutter app fetches catalog.json from the site; it does not embed
-   * sql.js or parse catalog.sql. Deliberately excludes product_vectors: those
-   * are ternlight embeddings for the browser's own search and are useless to a
-   * Dart client, and they would roughly triple the payload.
+   * sql.js or parse catalog.sql, so this is the only file it can read.
+   *
+   * product_vectors ARE included, as base64 on each product as `vector`.
+   * The app embeds its own queries with the same ternlight model compiled
+   * natively via flutter_rust_bridge — Dart cannot host a WASM runtime, so it
+   * cannot run the engine the way a browser does, but it does not need to: it
+   * only needs the precomputed product side, which is this. Without them the
+   * app has no way to rank anything.
+   *
+   * `vector` is null when that product has no embedding, or when the stored
+   * one was built by a different encoder. Null is a meaningful value, not a
+   * gap: the app checks it and refuses to search rather than silently
+   * comparing vectors from two different models, which produces a plausible
+   * but entirely wrong ranking. See CATALOG-GUIDE.md section 1.
+   *
+   * `search_model` at the top level names the encoder these vectors belong to.
+   * It is the same string as SEARCH_MODEL and the `model` column, so all three
+   * can be cross-checked.
    *
    * price_cents stays an integer. Formatting "Rs 7,800" is a presentation rule
    * and duplicating it here means two places to change when it moves.
@@ -531,6 +546,33 @@ const SEARCH_DIMS = 384;
   function toJson() {
     const settings = {};
     for (const row of all('SELECT key, value FROM settings')) settings[row.key] = row.value;
+
+    const vectorBySlug = new Map(
+      all('SELECT slug, vector, model FROM product_vectors').map((r) => [r.slug, r]),
+    );
+
+    /**
+     * This product's precomputed embedding as base64, or null.
+     *
+     * Null covers three cases that must not be conflated:
+     *   - no vector row at all (the index was never built, or was built before
+     *     this product was added) — indexIsComplete() is false and search is
+     *     dead site-wide until you rebuild;
+     *   - a vector built by a previous SEARCH_MODEL — completeness still reads
+     *     true, so search silently matches the old text. This is the one that
+     *     bites;
+     *   - a blob that does not decode to SEARCH_DIMS floats, which means it is
+     *     not a ternlight d384 vector at all.
+     *
+     * The length check is the cheap one. Decoding a foreign vector and shipping
+     * it would let the app rank against numbers that mean something else.
+     */
+    function vectorFor(slug) {
+      const row = vectorBySlug.get(slug);
+      if (!row || row.model !== SEARCH_MODEL) return null;
+      if (base64ToFloat32(row.vector).length !== SEARCH_DIMS) return null;
+      return row.vector;
+    }
 
     const products = all('SELECT * FROM products ORDER BY sort_order ASC, id ASC').map((p) => ({
       slug: p.slug,
@@ -546,6 +588,7 @@ const SEARCH_DIMS = 384;
       }, {}),
       image_url: p.image_url || null,
       tint: p.tint || null,
+      vector: vectorFor(p.slug),
     }));
 
     const collections = all('SELECT * FROM collections ORDER BY sort_order ASC, id ASC').map((c) => ({
@@ -567,6 +610,7 @@ const SEARCH_DIMS = 384;
         },
         products,
         collections,
+        search_model: SEARCH_MODEL,
       },
       null,
       2,

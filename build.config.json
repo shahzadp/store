@@ -1,5 +1,5 @@
 {
-  "version": "56",
+  "version": "57",
   "apkUrl": "",
   "_apkUrlNote": "Empty means the hero download button renders as an inert, aria-disabled control - correct while there is no APK. Set it to the release asset URL and run `node build.mjs` to turn it into a real link. Use the `latest` tag so the URL never has to change again: https://github.com/shahzadp/alex-store-app/releases/download/latest/apk/alex-store.apk"
 }

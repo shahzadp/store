@@ -202,16 +202,18 @@ WhatsApp link resolves, Lighthouse a11y 1.0.
 
 **App**
 
-- [ ] Create `shahzadp/alex-store-app` (separate repo: Flutter brings its own
-      toolchain, CI and release cadence, and F-Droid wants its own repo).
+- [x] Create `shahzadp/alex-store-app` (separate repo: Flutter brings its own
+      toolchain, CI and release cadence, and F-Droid wants its own repo). Done —
+      the repo exists and the app is written, but **not yet shipped**: see the
+      note on search below before treating it as usable.
 - [ ] Publish `v1.0`, then set `apkUrl` in `build.config.json` and rebuild. The
       hero button is currently correctly inert.
-- [ ] Decide app search. Vectors are excluded from `catalog.json` (~2 KB each,
-      ~16 KB total) — cheap to add back. The engine is 9.75 MB of WebAssembly
-      and **Dart cannot run WASM**, so on-device embedding needs either native
-      Rust via `flutter_rust_bridge` or a different (ONNX) model, which forces
-      a full reindex. For a small catalog, lexical search over `catalog.json`
-      is the better trade.
+- [x] Decide app search. Vectors are back in `catalog.json` (base64, ~3 KB each)
+      and the app embeds **natively** via `flutter_rust_bridge` rather than
+      running the 9.75 MB WASM, which Dart cannot host. The engine is the same
+      one `search.js` loads, so no reindex was needed. **Caveat:** the app's
+      vectors do not yet match the ones published here — the app must not ship
+      until its parity test passes. See `../alex-store-app/MEMORY.md` §3.
 
 **Housekeeping**
 
