@@ -213,7 +213,10 @@ h2 {
 }
 
 .page-head__title {
-  font-size: 56px;
+  /* Was 56px. 46px is the site standard: shop, collections and the home
+     sections are all .section-head h2 at 46px. A whole sentence set at 56px
+     is the loudest thing on a page whose job is to reassure. */
+  font-size: 46px;
   line-height: 1.04;
   max-width: 16ch;
 }
@@ -1654,6 +1657,20 @@ h2 {
     gap: 24px 12px;
   }
 }
+/* The About page nests .section-head h2 inside a page that already has a
+   .page-head__title above it, so those two are different levels and must not
+   share a size. Scoped so the home, shop and collections page titles - which
+   use .section-head h2 as their only heading - are untouched. */
+.about-body .section-head h2 {
+  font-size: 30px;
+}
+
+/* 15px here against 16px for body copy everywhere else. Same rule as the
+   title: identical to the rest of the site. */
+.about-body .step__text {
+  font-size: 16px;
+}
+
 /* ==========================================================================
    Short viewports
 

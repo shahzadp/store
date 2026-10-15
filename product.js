@@ -54,10 +54,10 @@ function syncMeta(product) {
 function renderCrumbs(product) {
   crumbs.innerHTML = `
     <a href="./">Home</a>
-    <span aria-hidden="true">/</span>
+    <span aria-hidden="true">&gt;</span>
     <a href="./shop.html">Products</a>
     ${product
-      ? `<span aria-hidden="true">/</span><span aria-current="page">${Store.escapeHtml(product.name)}</span>`
+      ? `<span aria-hidden="true">&gt;</span><span aria-current="page">${Store.escapeHtml(product.name)}</span>`
       : ''}`;
 }
 
