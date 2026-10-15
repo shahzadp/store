@@ -1342,6 +1342,13 @@ h2 {
     padding: 8px 12px;
   }
 
+  /* Keeps the announcement bar on one line at every phone width. The
+     WhatsApp prompt is redundant here anyway: the drawer and the footer
+     both carry it. */
+  .announce__cta {
+    display: none;
+  }
+
   .header {
     padding: 12px 20px;
   }
@@ -1578,8 +1585,11 @@ h2 {
     padding: 40px 20px;
   }
 
+  /* Was `padding: 40px 20px 0` - no bottom padding at all, which left the
+     collections flush against the footer. The desktop 64px does not apply
+     here because this block overrides it; 40px is the mobile rhythm. */
   .editorial {
-    padding: 40px 20px 0;
+    padding: 40px 20px;
   }
 
   .page-head {
