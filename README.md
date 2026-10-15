@@ -134,8 +134,9 @@ through the `en-PK` locale as `Rs 7,800`.
 
 ## Changing the catalog
 
-> **Adding or updating a product? Read [CATALOG-GUIDE.md](CATALOG-GUIDE.md)
-> first.** It covers the step that fails silently — rebuilding the semantic
+> **Read [MEMORY.md](MEMORY.md) first** for current state, key decisions and
+> open work, then [CATALOG-GUIDE.md](CATALOG-GUIDE.md) for the procedure.
+> The guide covers the step that fails silently — rebuilding the semantic
 > search index — plus field rules, slug identity, verification and a
 > symptom-to-cause table. This section is the short version.
 

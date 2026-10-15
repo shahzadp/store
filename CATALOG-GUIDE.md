@@ -3,6 +3,8 @@
 Operational guide for changing the catalog. Written for whoever does it next,
 including an agent with no prior context on this repo.
 
+For current state, key decisions and open work, see [MEMORY.md](MEMORY.md).
+
 Read section 1 before anything else. It is the failure that has actually
 happened here and it fails silently.
 
