@@ -57,6 +57,29 @@ there and re-run the build whenever you change any `.js` or `.css`. It is
 injected into every stylesheet and script tag across all six pages, so it
 cannot be missed on one page.
 
+### The APK download button
+
+`build.config.json` also holds `apkUrl`. It is empty by default, which renders
+the hero button as an inert `aria-disabled` control — correct while there is no
+APK. Set it to a release asset URL and re-run the build to turn it into a real
+link:
+
+```json
+"apkUrl": "https://github.com/shahzadp/alex-store-app/releases/download/latest/apk/alex-store.apk"
+```
+
+The two states are genuinely different elements, not the same element with an
+attribute flipped: a link with an empty `href` navigates to the current page,
+and a button is not middle-clickable or long-press-savable. So the build emits
+a `<button>` when the URL is empty and an `<a>` when it is not.
+
+Use the **`latest`** release tag. GitHub lets an asset be replaced under the
+same name, so that URL always serves the newest build and the site never needs
+editing again. A versioned URL (`v1.0/apk/alex-store-1.0.apk`) means editing the
+site on every single release.
+
+The icon lives in `src/_android-icon.svg` so both variants share one copy.
+
 Next.js was considered and rejected. GitHub Pages can only host a static
 export, which forfeits SSR, ISR, server actions and middleware — the actual
 reasons to want a framework here. This gets the deduplication benefit with zero

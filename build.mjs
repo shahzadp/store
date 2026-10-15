@@ -24,7 +24,11 @@
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-const config = JSON.parse(readFileSync('build.config.json', 'utf8'));
+// Strip a UTF-8 BOM if one is present. Windows PowerShell's `Set-Content
+// -Encoding utf8` writes one, and JSON.parse then rejects the file with an
+// error pointing at an invisible character.
+const rawConfig = readFileSync('build.config.json', 'utf8').replace(/^\uFEFF/, '');
+const config = JSON.parse(rawConfig);
 const SRC = 'src';
 const OUT = '.';
 
@@ -55,6 +59,50 @@ function buildNav(currentKey) {
   }).join('\n');
 }
 
+/**
+ * The Android download button.
+ *
+ * Two different elements, because a link and a disabled control are not
+ * interchangeable. A link with an empty href navigates to the current page; a
+ * button that pretends to be a link is not keyboard reachable in the same way.
+ * So the URL lives in build.config.json and decides which element is emitted,
+ * and flipping the button live is a config change plus a rebuild rather than
+ * an edit inside markup.
+ *
+ * `latest` is the recommended tag so the URL never has to change again:
+ *   https://github.com/<owner>/<repo>/releases/download/latest/apk/alex-store.apk
+ */
+function buildApkButton(config) {
+  const icon = readFileSync(join(SRC, '_android-icon.svg'), 'utf8')
+    .trim()
+    .replace(/\r*\n\s*/g, ' ')
+    .replace(/> <svg/g, '><svg');
+
+  if (config.apkUrl) {
+    return (
+      `<a class="btn btn-download" href="${config.apkUrl}">\n` +
+      `          <span class="btn__label">Download APK</span>\n` +
+      `          ${icon}\n` +
+      `        </a>`
+    );
+  }
+
+  return (
+    `<button class="btn btn-download" type="button" aria-disabled="true"\n` +
+    `                title="The Android app is not available yet">\n` +
+    `          <span class="btn__label">Download APK</span>\n` +
+    `          ${icon}\n` +
+    `        </button>`
+  );
+}
+
+/** Replaces the @apk-button marker. Errors if it is missing, so a hand-edit
+ *  to a source page cannot silently drop the button. */
+function resolveApkButton(html, config) {
+  if (!html.includes('@apk-button')) return html;
+  return html.replace('<!-- @apk-button -->', buildApkButton(config));
+}
+
 const layout = readFileSync(join(SRC, '_layout.html'), 'utf8').replace(/\r*\n/g, '\n');
 
 const sources = readdirSync(SRC)
@@ -83,9 +131,15 @@ for (const file of sources) {
     .replace(/\{\{page_script\}\}/g, pageScript)
     .replace(/\{\{version\}\}/g, config.version);
 
-  if (html.includes('{{')) {
-    const left = html.match(/\{\{\w+\}\}/g);
-    throw new Error(`${file}: layout placeholder never replaced: ${[...new Set(left)].join(', ')}`);
+  const resolved = resolveApkButton(html, config);
+
+  if (body.includes('@apk-button') && resolved === html) {
+    throw new Error(`${file}: found @apk-button but resolveApkButton did nothing`);
+  }
+
+  if (resolved.includes('{{') || resolved.includes('@apk-button')) {
+    const left = resolved.match(/\{\{\w+\}\}|@apk-button/g);
+    throw new Error(`${file}: placeholder never replaced: ${[...new Set(left)].join(', ')}`);
   }
 
   const target = join(OUT, file);
@@ -96,7 +150,7 @@ for (const file of sources) {
     /* new file */
   }
 
-  if (current === html) {
+  if (current === resolved) {
     console.log(`${file}: up to date`);
     continue;
   }
@@ -105,8 +159,8 @@ for (const file of sources) {
     stale += 1;
     continue;
   }
-  writeFileSync(target, html, 'utf8');
-  console.log(`${file}: written`);
+  writeFileSync(target, resolved, 'utf8');
+  console.log(`${file}: written${config.apkUrl ? ' (apk link enabled)' : ''}`);
 }
 
 if (check && stale) process.exit(1);
