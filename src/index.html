@@ -1,0 +1,53 @@
+<!--
+  Source for index.html. Edit this file, not the generated one in the
+  repo root - `node build.mjs` regenerates that from here plus
+  src/_layout.html.
+
+  page: index
+  title: Alex Store
+  description: One store, multiple products. Explore a growing collection across several categories, all in one place. Order on WhatsApp.
+-->
+<main>
+  <section class="hero container">
+    <div class="hero__copy">
+      <div class="cat">New Season</div>
+      <h1 class="hero__title">One Store, Multiple Products.</h1>
+      <p class="hero__lede">Find what you need, Explore a growing collection of products across several categories, all in one place.</p>
+      <div class="hero__actions">
+        <a class="btn btn-solid" href="./shop.html">Shop all products</a>
+        <button class="btn btn-download" type="button" aria-disabled="true"
+                title="The Android app is not available yet">
+          <span class="btn__label">Download APK</span>
+          <svg class="btn__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0.03 112.41 512 287.17" width="32" height="18" aria-hidden="true" focusable="false">
+            <path d="m447.9 460.9 42.5-73.6c2.4-4.1.9-9.4-3.1-11.8-4.1-2.4-9.4-1-11.7 3.1l-43 74.5c-32.8-15-69.8-23.4-109.5-23.4s-76.7 8.4-109.5 23.4l-43-74.5c-2.4-4.1-7.6-5.5-11.8-3.1-4.1 2.4-5.5 7.6-3.1 11.8l42.5 73.6C124.8 500.6 75.2 574.7 67 661.5h512c-8.2-86.8-57.8-160.9-131.1-200.6M205.4 589.6c-11.9 0-21.5-9.6-21.5-21.5s9.6-21.5 21.5-21.5 21.5 9.6 21.5 21.5c0 11.8-9.6 21.5-21.5 21.5m235.1 0c-11.9 0-21.5-9.6-21.5-21.5s9.6-21.5 21.5-21.5 21.5 9.6 21.5 21.5c0 11.8-9.6 21.5-21.5 21.5" fill="#32de84" transform="translate(-66.97 -261.92)"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="hero__media">
+      <img class="hero__img" src="./hero-still-life.svg"
+           alt="Ceramic vase with dried stems, a glass carafe, a mug and a candle on a table">
+    </div>
+  </section>
+
+  <section class="shop" id="shop">
+    <div class="container">
+      <div class="section-head">
+        <h2>Featured Products</h2>
+        <a class="section-head__link" href="./shop.html">View all &rarr;</a>
+      </div>
+
+      <ul class="products" id="products" aria-busy="true">
+        <li class="catalog-status">Loading catalog&hellip;</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="editorial container">
+    <div class="section-head">
+      <h2>Collections</h2>
+      <a class="section-head__link" href="./collections.html">See all &rarr;</a>
+    </div>
+    <div class="collections" id="home-collections" aria-busy="true"></div>
+  </section>
+</main>

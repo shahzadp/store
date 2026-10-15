@@ -341,20 +341,36 @@ vectors decode to the wrong length and ranking silently degrades.
 
 ```bash
 # 1. Admin panel: Build search index, then Download catalog.sql
-# 2. Replace the repo copy
+#    AND Download catalog.json
+# 2. Replace both repo copies
 cp ~/Downloads/catalog.sql ./catalog.sql
+cp ~/Downloads/catalog.json ./catalog.json
 
-# 3. Bump the cache buster if you touched any .js or .css  (section 10)
+# 3. If you touched any .js or .css, bump version in build.config.json and:
+node build.mjs
+
 # 4. Commit and push
-git add catalog.sql
+git add catalog.sql catalog.json build.config.json
 git commit -m "Add walnut cutting board; rebuild search index"
 git push
 ```
 
 GitHub Pages rebuilds in roughly a minute.
 
+**Two files, not one.** `catalog.sql` is what the site reads. `catalog.json` is
+the same data as plain JSON and is what the Android app fetches — the app
+cannot run sql.js, so it has nothing else to read. They are generated from the
+same database by the same click, so they cannot disagree, but they are two
+separate files in the repo and both must be committed.
+
 Do not hand-write into `product_vectors`. It is generated data; a bad blob is
 indistinguishable from a good one until ranking quietly goes wrong.
+
+### Editing pages
+
+The six storefront HTML files in the repo root are **generated**. Edit the file
+in `src/` instead and run `node build.mjs`. See the README section on building
+the pages.
 
 ---
 
@@ -393,15 +409,16 @@ Then, by hand:
 ### The cache buster
 
 Every local `<script>` and `<link>` carries `?v=NN`. **Bump `NN` whenever you
-change any `.js` or `.css` file**, or returning visitors keep the old file
-and you will spend an hour debugging a fix that is already deployed.
+change any `.js` or `.css` file**, or returning visitors keep the old file and
+you will spend an hour debugging a fix that is already deployed.
 
 ```
-./styles.css?v=45   ./db.js?v=45   ./common.js?v=45
+./styles.css?v=55   ./db.js?v=55   ./common.js?v=55
 ```
 
-Bump it on **all** pages at once — they are separate files with separate tags.
-`admin.css` had been missed once.
+The version lives in **`build.config.json`** and is injected into all six pages
+by `node build.mjs`, so it can no longer be missed on one page. Bump it there,
+run the build, commit both.
 
 ### `db.js` line endings
 

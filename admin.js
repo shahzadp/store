@@ -305,15 +305,27 @@ $('#save-settings').addEventListener('click', () => {
 
 /* --------------------------------------------------------------- publish */
 
-$('#export').addEventListener('click', () => {
-  const blob = new Blob([Catalog.toSql()], { type: 'text/plain;charset=utf-8' });
+/** Downloads a generated file and clicks it, with the right MIME type. */
+function downloadFile(name, contents, type) {
+  const blob = new Blob([contents], { type });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'catalog.sql';
+  link.download = name;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+$('#export').addEventListener('click', () => {
+  downloadFile('catalog.sql', Catalog.toSql(), 'text/plain;charset=utf-8');
   status('Downloaded catalog.sql — replace the repo copy and push', 'ok');
+});
+
+// The Android app fetches this file, so it must be committed next to
+// catalog.sql or the app has nothing to read.
+$('#export-json').addEventListener('click', () => {
+  downloadFile('catalog.json', Catalog.toJson(), 'application/json');
+  status('Downloaded catalog.json — replace the repo copy and push', 'ok');
 });
 
 $('#discard').addEventListener('click', async () => {

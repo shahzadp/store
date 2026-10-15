@@ -1,0 +1,33 @@
+<!--
+  Source for shop.html. Edit this file, not the generated one in the
+  repo root - `node build.mjs` regenerates that from here plus
+  src/_layout.html.
+
+  page: shop
+  title: Products — Alex Store
+  description: Browse the full Alex Store catalog across every category. Order on WhatsApp.
+-->
+<main>
+  <section class="page-head page-head--tight container">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="./">Home</a>
+      <span aria-hidden="true">&gt;</span>
+      <span aria-current="page">Products</span>
+    </nav>
+  </section>
+
+  <section class="shop shop--flush">
+    <div class="container">
+      <div class="section-head">
+        <h2>Products</h2>
+        <span class="catalog-count" id="count" aria-live="polite"></span>
+      </div>
+
+      <div class="filters" id="filters" role="group" aria-label="Filter by category"></div>
+
+      <ul class="products" id="products" aria-busy="true">
+        <li class="catalog-status">Loading catalog&hellip;</li>
+      </ul>
+    </div>
+  </section>
+</main>

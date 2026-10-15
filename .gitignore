@@ -11,6 +11,10 @@ _*.js
 _*.html
 _msg*.txt
 
+# src/ IS committed: it holds the page sources the build reads.
+# The generated HTML in the root is committed too, because Pages serves it
+# directly with no build step.
+
 # Nothing else needs ignoring — the site is static.
 # (No node_modules: there is no build step. sql.js is vendored in vendor/,
 # so nothing is fetched from a CDN at runtime either.)

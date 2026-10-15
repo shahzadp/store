@@ -1,0 +1,31 @@
+<!--
+  Source for collections.html. Edit this file, not the generated one in the
+  repo root - `node build.mjs` regenerates that from here plus
+  src/_layout.html.
+
+  page: collections
+  title: Collections — Alex Store
+  description: Browse Alex Store by collection — kitchen, textiles, candles and more.
+-->
+<main>
+  <section class="page-head page-head--tight container">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="./">Home</a>
+      <span aria-hidden="true">&gt;</span>
+      <span aria-current="page">Collections</span>
+    </nav>
+  </section>
+
+  <section class="shop shop--flush">
+    <div class="container">
+      <div class="section-head">
+        <h2>Collections</h2>
+        <span class="catalog-count" id="count" aria-live="polite"></span>
+      </div>
+
+      <div class="collections" id="collections" aria-busy="true">
+        <p class="catalog-status">Loading collections&hellip;</p>
+      </div>
+    </div>
+  </section>
+</main>

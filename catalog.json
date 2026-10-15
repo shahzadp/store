@@ -1,0 +1,176 @@
+{
+  "generated_at": "2026-10-15T00:50:09.125Z",
+  "store": {
+    "name": "Alex Store",
+    "whatsapp": "923288304524",
+    "free_delivery_over_paisa": 600000,
+    "currency": "PKR"
+  },
+  "products": [
+    {
+      "slug": "stoneware-mug",
+      "name": "Stoneware Mug",
+      "category": "Kitchen",
+      "price_cents": 780000,
+      "in_stock": true,
+      "description": "Glazed stoneware, holds heat well and goes in the dishwasher.",
+      "details": "Thrown in small batches and glazed inside and out, so it holds heat as well as it looks doing it. The foot is left unglazed, which stops it sticking to a shelf or a table. The handle is pulled rather than attached, so there is no seam to crack.",
+      "specs": {
+        "Capacity": "350 ml",
+        "Dimensions": "9 cm high x 8 cm wide",
+        "Weight": "320 g",
+        "Material": "Glazed stoneware",
+        "Care": "Dishwasher and microwave safe"
+      },
+      "image_url": null,
+      "tint": "#D9CCEA"
+    },
+    {
+      "slug": "linen-throw",
+      "name": "Linen Throw",
+      "category": "Textiles",
+      "price_cents": 1780000,
+      "in_stock": true,
+      "description": "Woven European flax, softens with every wash.",
+      "details": "Woven from European flax and washed before it leaves us, so it arrives already soft rather than needing a break-in period. Heavy enough to sit over the back of a chair without sliding. The selvedge is finished by hand.",
+      "specs": {
+        "Dimensions": "130 x 180 cm",
+        "Weight": "1.1 kg",
+        "Material": "100% European flax linen",
+        "Care": "Machine wash at 40C, line dry"
+      },
+      "image_url": null,
+      "tint": "#E8DDF2"
+    },
+    {
+      "slug": "glass-carafe",
+      "name": "Glass Carafe",
+      "category": "Kitchen",
+      "price_cents": 1170000,
+      "in_stock": true,
+      "description": "Borosilicate glass with a cork stopper, pours without dripping.",
+      "details": "Borosilicate, so it survives a hot liquid being poured straight into it. The cork is a natural stopper with a silicone ring underneath to keep it watertight. The spout is narrow enough to pour clean without running down the side.",
+      "specs": {
+        "Capacity": "1 litre",
+        "Dimensions": "28 cm high x 9 cm wide",
+        "Weight": "480 g",
+        "Material": "Borosilicate glass, natural cork",
+        "Care": "Dishwasher safe, hand wash the cork"
+      },
+      "image_url": null,
+      "tint": "#CFC3E3"
+    },
+    {
+      "slug": "soy-candle",
+      "name": "Soy Candle",
+      "category": "Candles",
+      "price_cents": 670000,
+      "in_stock": true,
+      "description": "Rapeseed and coconut wax, unscented, about 40 hours of burn.",
+      "details": "Unscented, so it does not compete with a room or a meal. The wick is cotton and lead-free, and the wax is a rapeseed and coconut blend rather than paraffin, which burns cleaner and keeps its shape in a warm room.",
+      "specs": {
+        "Burn time": "Approx. 40 hours",
+        "Net weight": "220 g",
+        "Dimensions": "8 cm high x 7 cm diameter",
+        "Material": "Rapeseed and coconut wax, cotton wick",
+        "Care": "Trim the wick to 5 mm before each burn"
+      },
+      "image_url": null,
+      "tint": "#E3D6EE"
+    },
+    {
+      "slug": "ceramic-vase",
+      "name": "Ceramic Vase",
+      "category": "Decor",
+      "price_cents": 1560000,
+      "in_stock": true,
+      "description": "Wheel-thrown stoneware with a matte white glaze.",
+      "details": "Wheel-thrown, so no two are identical in a small way: the rim will not be perfectly even, and that is the point of it. Matte white glaze outside, unglazed foot. Holds a full bunch of cut flowers or a single branch.",
+      "specs": {
+        "Height": "26 cm",
+        "Mouth diameter": "9 cm",
+        "Weight": "740 g",
+        "Material": "Stoneware, matte white glaze",
+        "Care": "Wipe with a damp cloth"
+      },
+      "image_url": null,
+      "tint": "#E3D6EE"
+    },
+    {
+      "slug": "wool-cushion",
+      "name": "Wool Cushion",
+      "category": "Textiles",
+      "price_cents": 1330000,
+      "in_stock": true,
+      "description": "Lambswool cover with a feather-down insert, 45cm square.",
+      "details": "Lambswool cover with a feather-down insert, filled firm enough to sit upright on a chair rather than slumping. The cover unzips at the back for washing. The feather is washable, so it can be refilled rather than replaced.",
+      "specs": {
+        "Dimensions": "45 x 45 cm",
+        "Weight": "900 g",
+        "Fill": "Feather down",
+        "Cover": "Lambswool, removable",
+        "Care": "Cover dry clean, fluff by hand"
+      },
+      "image_url": null,
+      "tint": "#CFC3E3"
+    },
+    {
+      "slug": "serving-bowl",
+      "name": "Serving Bowl",
+      "category": "Kitchen",
+      "price_cents": 1000000,
+      "in_stock": true,
+      "description": "Shallow glazed bowl, nests with the others to save shelf space.",
+      "details": "Wide and shallow, which is what makes it a serving bowl rather than a mixing bowl: the food stays visible and easy to reach across a table. Glazed inside, so it takes a sauce without soaking it in. Nests with the others.",
+      "specs": {
+        "Capacity": "2.5 litres",
+        "Dimensions": "9 cm high x 28 cm wide",
+        "Weight": "1.3 kg",
+        "Material": "Glazed stoneware",
+        "Care": "Dishwasher safe"
+      },
+      "image_url": null,
+      "tint": "#E8DDF2"
+    },
+    {
+      "slug": "brass-tray",
+      "name": "Brass Tray",
+      "category": "Decor",
+      "price_cents": 1450000,
+      "in_stock": true,
+      "description": "Unlacquered brass that darkens to a deeper patina over time.",
+      "details": "Unlacquered brass, left uncoated so it darkens to a deeper patina as it is handled instead of staying permanently shiny. Made for keys, a watch, or a small pile of odds and ends. It will not return to bright.",
+      "specs": {
+        "Dimensions": "28 x 18 cm",
+        "Weight": "640 g",
+        "Material": "Unlacquered brass",
+        "Care": "Dry wipe, the patina is intended"
+      },
+      "image_url": null,
+      "tint": "#D9CCEA"
+    }
+  ],
+  "collections": [
+    {
+      "slug": "the-quiet-edit",
+      "title": "The Quiet Edit",
+      "description": "A restrained palette of stoneware, linen and brass chosen to sit easily in an already-lived room.",
+      "image_url": null,
+      "tint": "#D9CCEA"
+    },
+    {
+      "slug": "table-and-tide",
+      "title": "Table & Tide",
+      "description": "Pieces for the everyday table — mugs, carafes and bowls made to be used daily and washed often.",
+      "image_url": null,
+      "tint": "#CFC3E3"
+    },
+    {
+      "slug": "soft-light",
+      "title": "Soft Light",
+      "description": "Candles and objects that catch a low, late light. Best near a window at the end of the day.",
+      "image_url": null,
+      "tint": "#E3D6EE"
+    }
+  ]
+}

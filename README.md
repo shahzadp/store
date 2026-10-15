@@ -11,20 +11,94 @@ a backend, because there is no backend.
 | File | Role |
 | --- | --- |
 | `catalog.sql` | The catalog. Plain text SQLite that seeds the browser database. |
+| `catalog.json` | The same catalog as JSON, for the Android app. Generated, committed. |
+| `build.mjs` / `build.config.json` | Regenerates the storefront HTML from `src/`. Zero dependencies. |
+| `src/` | Page sources + `_layout.html`. **Edit these, not the root HTML.** |
 | `hero-still-life.svg` | Hero illustration. |
 | `db.js` | Boots SQLite, runs `catalog.sql`, exposes queries and edits. |
 | `common.js` | PKR formatting, WhatsApp links, product cards. |
 | `drawer.js` | Mobile navigation drawer. |
 | `sticky.js` | Keeps the announcement bar and header pinned on scroll. |
 | `search.js` | Search dialog: a single semantic search mode, no toggle. |
-| `index.html` / `styles.css` / `app.js` | Homepage. |
-| `shop.html` / `shop.js` | Products page with category filters. |
-| `collections.html` / `collections.js` | Collections — editorial, not for sale. |
-| `admin.html` / `admin.css` / `admin.js` | Catalog editor. |
+| `index.html` / `styles.css` / `app.js` | Homepage. **Generated** — edit `src/index.html`. |
+| `shop.html` / `shop.js` | Products page with category filters. **Generated.** |
+| `collections.html` / `collections.js` | Collections — editorial, not for sale. **Generated.** |
+| `about.html` / `about.js`, `journal.html` / `journal.js` | Static copy pages. **Generated.** |
+| `product.html` / `product.js` | Per-product page. **Generated.** |
+| `admin.html` / `admin.css` / `admin.js` | Catalog editor. Hand-written, not part of the build. |
 | `README.md` | This file. |
 
 Live at https://shahzadp.github.io/store/
 (products: `/shop.html`, collections: `/collections.html`, admin: `/admin.html`).
+
+## Building the pages
+
+The header, nav, search dialog, footer and script tags were hand-copied into
+six pages — about 414 lines maintained in six places, so a nav change meant six
+edits and the cache buster had to be bumped seven times by hand.
+
+`build.mjs` regenerates those six files from `src/` plus `src/_layout.html`.
+
+```bash
+node build.mjs            # regenerate the root HTML
+node build.mjs --check    # fail if the root is out of date (use this in CI)
+```
+
+**The root HTML files are generated artefacts and are committed.** GitHub Pages
+serves them straight from the branch, so Pages still needs no build step, no
+package manager and no `node_modules`. To change a page, edit its file in
+`src/` and re-run the build.
+
+`admin.html` is deliberately excluded: it is a separate single-page tool with
+no shared chrome to deduplicate.
+
+The cache buster now lives in one place — `build.config.json`. Bump `version`
+there and re-run the build whenever you change any `.js` or `.css`. It is
+injected into every stylesheet and script tag across all six pages, so it
+cannot be missed on one page.
+
+Next.js was considered and rejected. GitHub Pages can only host a static
+export, which forfeits SSR, ISR, server actions and middleware — the actual
+reasons to want a framework here. This gets the deduplication benefit with zero
+dependencies.
+
+## Tooling
+
+There is no `package.json`, lockfile or `node_modules`, and there is nothing
+for a package manager to do: the only third-party code is sql.js, copied
+verbatim into `vendor/` with its SHA-256 recorded in `db.js`. A package manager
+becomes worth adopting the moment there is a real dependency tree — a
+formatter, linter or test runner — and at that point npm or pnpm are
+interchangeable.
+
+## The Android app
+
+The app should fetch **https://shahzadp.github.io/store/catalog.json**. It
+cannot run sql.js, so `catalog.sql` is useless to it; the JSON is the same data
+without the search vectors (6.9 KB against 25.6 KB for the SQL).
+
+Regenerate and commit it whenever the catalog changes — the admin panel has a
+**Download catalog.json** button next to the SQL one.
+
+### Serving the APK without a server
+
+Yes, and the best option is not Pages at all.
+
+| Option | Verdict |
+| --- | --- |
+| **GitHub Releases** | **Recommended.** Attach the APK to a release; it is served from `github.com/.../releases/download/...`. No repo bloat, no size ceiling, versioned per build, and public repos download without login. |
+| Commit the APK into the repo | Works, but Git rejects files over 100 MB and a large binary is permanent in git history — every future clone pays for it. Fine only for a small, rarely-changed file. |
+| Git LFS | Avoids history bloat but Pages serves LFS objects from `media.githubusercontent.com`, not the Pages domain, so the button cannot be a same-origin link. |
+| Pages itself | Fine below ~1 MB; GitHub Pages starts serving large files slowly well before the hard limits. |
+
+So: no server, no new host, no extra cost — upload the APK as a release asset
+and point the Download button at the release URL when there is one.
+
+Two things that do not go away with any of these: the browser will show a
+"this file may be harmful" interstitial for a sideloaded `.apk` on desktop
+Chrome and Firefox (mobile Chrome downloads it without comment), and an APK
+distributed outside the Play Store means Android will ask users to allow
+unknown sources. A Play Store listing is the only way to remove both.
 
 ## Currency
 

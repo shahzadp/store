@@ -517,6 +517,62 @@ const SEARCH_DIMS = 384;
     return products.every((p) => bySlug.get(p.slug) === model);
   }
 
+  /**
+   * The same catalog as plain JSON, for clients that cannot run SQLite.
+   *
+   * The Flutter app fetches catalog.json from the site; it does not embed
+   * sql.js or parse catalog.sql. Deliberately excludes product_vectors: those
+   * are ternlight embeddings for the browser's own search and are useless to a
+   * Dart client, and they would roughly triple the payload.
+   *
+   * price_cents stays an integer. Formatting "Rs 7,800" is a presentation rule
+   * and duplicating it here means two places to change when it moves.
+   */
+  function toJson() {
+    const settings = {};
+    for (const row of all('SELECT key, value FROM settings')) settings[row.key] = row.value;
+
+    const products = all('SELECT * FROM products ORDER BY sort_order ASC, id ASC').map((p) => ({
+      slug: p.slug,
+      name: p.name,
+      category: p.category,
+      price_cents: p.price_cents,
+      in_stock: Boolean(p.in_stock),
+      description: p.description,
+      details: p.details || '',
+      specs: specPairs(p.specs).reduce((acc, [k, v]) => {
+        acc[k] = v;
+        return acc;
+      }, {}),
+      image_url: p.image_url || null,
+      tint: p.tint || null,
+    }));
+
+    const collections = all('SELECT * FROM collections ORDER BY sort_order ASC, id ASC').map((c) => ({
+      slug: c.slug,
+      title: c.title,
+      description: c.description,
+      image_url: c.image_url || null,
+      tint: c.tint || null,
+    }));
+
+    return JSON.stringify(
+      {
+        generated_at: new Date().toISOString(),
+        store: {
+          name: settings.store_name || 'Alex Store',
+          whatsapp: settings.whatsapp || '',
+          free_delivery_over_paisa: Number(settings.free_delivery_over_paisa || 0),
+          currency: 'PKR',
+        },
+        products,
+        collections,
+      },
+      null,
+      2,
+    );
+  }
+
   /** Replaces the whole index so it can never drift out of sync. */
   function replaceVectors(entries, model = SEARCH_MODEL) {
     run('DELETE FROM product_vectors');
@@ -602,7 +658,8 @@ const SEARCH_DIMS = 384;
     SEARCH_MODEL,
     SEARCH_DIMS,
     setSetting,
-    toSql,
+    toSql,
+  toJson,
     saveDraft,
     clearDraft,
     hasDraft,
