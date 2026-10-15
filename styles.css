@@ -278,7 +278,11 @@ h2 {
 
 .editorial {
   padding-top: 72px;
-  padding-bottom: 8px;
+  /* Was 8px, which was only enough because a .notes section used to follow
+     here. That section is gone and this is now the last thing in <main>, so
+     without this the collections sit almost against the footer. 64px matches
+     .product-detail, so every page ends at the same distance. */
+  padding-bottom: 64px;
 }
 
 .collections {
