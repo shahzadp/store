@@ -65,7 +65,7 @@ APK. Set it to a release asset URL and re-run the build to turn it into a real
 link:
 
 ```json
-"apkUrl": "https://github.com/shahzadp/alex-store-app/releases/download/latest/apk/alex-store.apk"
+"apkUrl": "https://github.com/shahzadp/alex-store-app/releases/latest/download/alex-store.apk"
 ```
 
 The two states are genuinely different elements, not the same element with an
@@ -73,10 +73,16 @@ attribute flipped: a link with an empty `href` navigates to the current page,
 and a button is not middle-clickable or long-press-savable. So the build emits
 a `<button>` when the URL is empty and an `<a>` when it is not.
 
-Use the **`latest`** release tag. GitHub lets an asset be replaced under the
-same name, so that URL always serves the newest build and the site never needs
-editing again. A versioned URL (`v1.0/apk/alex-store-1.0.apk`) means editing the
-site on every single release.
+Use the **`latest`** path, not a tag: `releases/latest/download/<asset name>`.
+`latest` resolves to whichever non-prerelease release is newest, so each new
+release is served with no edit here at all — `v1.1` needed none. A tag in the
+URL (`releases/download/v1.0/...`) would mean editing this on every release, and
+the near-miss `releases/download/latest/...` 404s: the only two legal forms are
+`latest/download/<asset>` and `download/<tag>/<asset>`.
+
+The asset must be uploaded under exactly the name the URL ends in, because GitHub
+takes an asset's name from the file it was uploaded from. Uploading
+`app-release.apk` gives a URL ending `app-release.apk`, and the button 404s.
 
 The icon lives in `src/_android-icon.svg` so both variants share one copy.
 

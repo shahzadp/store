@@ -204,10 +204,13 @@ WhatsApp link resolves, Lighthouse a11y 1.0.
 
 - [x] Create `shahzadp/alex-store-app` (separate repo: Flutter brings its own
       toolchain, CI and release cadence, and F-Droid wants its own repo). Done —
-      the repo exists and the app is written, but **not yet shipped**: see the
-      note on search below before treating it as usable.
-- [ ] Publish `v1.0`, then set `apkUrl` in `build.config.json` and rebuild. The
-      hero button is currently correctly inert.
+      the repo exists, the app is written, and it ships.
+- [x] Publish the app and point the button at it. `v1.0` was the first release;
+      `v1.1` added the launch film and fixes the Android 12 system splash, which
+      had been drawing its own motionless copy of the mark before the film
+      animated the same mark in. No edit here is needed per release: `apkUrl`
+      uses the `latest` form and the button's label carries no version, so the
+      site served `v1.1` the moment it became the newest release.
 - [x] Decide app search. Vectors are back in `catalog.json` (base64, ~3 KB each)
       and the app embeds **natively** via `flutter_rust_bridge` rather than
       running the 9.75 MB WASM, which Dart cannot host. The engine is the same
