@@ -10,6 +10,11 @@ const Store = (() => {
   let storeName = 'Alex Store';
   let whatsappNumber = '923288304524';
 
+  // Delivery, as a percentage of the order. One value, read from the catalog
+  // so this page and the Android app cannot disagree about what delivery
+  // costs. 0 means "show no delivery pricing at all".
+  let deliveryPercent = 0;
+
   /** Formats integer paisa as PKR, e.g. 780000 -> "Rs 7,800". */
   function formatPrice(paisa) {
     try {
@@ -23,6 +28,36 @@ const Store = (() => {
     }
   }
 
+  /**
+   * The price shown next to the price itself: what this would cost WITH
+   * delivery added, struck through, so the main price is unchanged but the
+   * delivery saving is visible. Returns "" when delivery_percent is unset, so
+   * a catalog with no delivery pricing renders exactly as it always did.
+   */
+  function deliveryIncluded(paisa) {
+    if (!deliveryPercent) return null;
+    return Math.round(paisa * (1 + deliveryPercent / 100));
+  }
+
+  /**
+   * A product's price as HTML: the struck-through delivery-included figure
+   * (when there is one) followed by the unchanged price. Returned as markup
+   * rather than text because `.product__price` and `.product-detail__price`
+   * style the two differently; everything interpolated is escaped here so
+   * callers may pass it straight into an innerHTML template.
+   */
+  function priceHtml(paisa) {
+    const now = `<span class="price__now">${escapeHtml(formatPrice(paisa))}</span>`;
+    const incl = deliveryIncluded(paisa);
+    if (incl === null) return now;
+    const was = formatPrice(incl);
+    return (
+      `<span class="price__was" title="Including delivery"` +
+      ` aria-label="${escapeHtml(`${was} including delivery`)}">${escapeHtml(was)}</span>` +
+      now
+    );
+  }
+
   /** wa.me deep link with a prefilled message. */
   function whatsappLink(message) {
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
@@ -32,7 +67,17 @@ const Store = (() => {
     return whatsappLink(`Hi ${storeName}! I have a question about your products.`);
   }
 
-  function productLink(product) {
+  /**
+   * The WhatsApp order message for one product.
+   *
+   * `selections` is an optional array of `{ label, on, desc, price_cents }`
+   * add-ons (e.g. a cold drink). Every add-on is stated either way — "Cold
+   * drink (500ml): yes" or "Cold drink (500ml): no" — so an unmarked option is
+   * an explicit answer rather than a silence the shop has to interpret. A
+   * surcharge, when there is one, is stated on that same line and NOT folded
+   * into the price above: the page price never changes with a choice.
+   */
+  function productLink(product, selections) {
     const lines = [
       `Hi ${storeName}! I'd like to order:`,
       '',
@@ -42,6 +87,14 @@ const Store = (() => {
 
     // Only ask about the detail if there is any, and keep it to one extra line.
     if (product.description) lines.push(product.description);
+
+    for (const { label, on, desc, price_cents } of selections || []) {
+      if (!label) continue;
+      const name = desc ? `${label} (${desc})` : label;
+      if (on && price_cents > 0) lines.push(`${name}: yes (+ ${formatPrice(price_cents)})`);
+      else lines.push(`${name}: ${on ? 'yes' : 'no'}`);
+    }
+
     lines.push('', 'Is it available?');
 
     return whatsappLink(lines.join('\n'));
@@ -170,7 +223,6 @@ const Store = (() => {
   function productCard(product) {
     const href = productLink(product);
     const detail = productUrl(product);
-    const price = formatPrice(product.price_cents);
 
     const media = product.image_url
       ? `<img class="product__img" src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" loading="lazy">`
@@ -194,7 +246,7 @@ const Store = (() => {
           ${product.description
             ? `<p class="product__desc">${escapeHtml(product.description)}</p>`
             : ''}
-          <div class="product__price">${escapeHtml(price)}</div>
+          <div class="product__price">${priceHtml(product.price_cents)}</div>
           <div class="product__actions">
             <a class="btn btn-solid btn-buy" href="${escapeHtml(href)}" target="_blank" rel="noopener"
                ${product.in_stock ? '' : 'aria-disabled="true"'}>
@@ -218,40 +270,42 @@ const Store = (() => {
       el.setAttribute('href', generalLink());
     });
 
-    // Stored in paisa, same as product prices, so the banner and the catalog
-    // can never drift apart on units. innerHTML rather than textContent so
-    // the "WhatsApp" word can be tinted; the values are escaped first.
+    // Delivery is a percentage of the order, read from the catalog so this
+    // page and the Android app format the same number.
+    deliveryPercent = Number(Catalog.getSetting('delivery_percent')) || 0;
+
+    // The free-delivery offer used to be a sticky bar at the top of every
+    // page. It is now announced once, as a claimable voucher (voucher.js),
+    // and stated quietly in the footer. The figure still comes from the
+    // catalog, so it cannot drift from the app's.
     const threshold = Number(Catalog.getSetting('free_delivery_over_paisa'));
-    document.querySelectorAll('[data-free-delivery]').forEach((el) => {
-      // The bar states the free-delivery threshold and nothing else.
-      // Ordering is a WhatsApp conversation everywhere on this site
-      // already - every product button, the drawer and the footer all
-      // say so - so the instruction was repeated noise, and the longer
-      // sentence also wrapped onto a second line on phones.
-      if (Number.isFinite(threshold) && threshold > 0) {
-        el.textContent = `Free delivery over ${formatPrice(threshold)}`;
+    const deliveryNote =
+      Catalog.getSetting('voucher_title') ||
+      (Number.isFinite(threshold) && threshold > 0
+        ? `Free delivery over ${formatPrice(threshold)}`
+        : '');
+    document.querySelectorAll('[data-delivery-note]').forEach((el) => {
+      if (deliveryNote) {
+        el.textContent = deliveryNote;
+        el.removeAttribute('hidden');
       } else {
-        // Nothing to announce, so remove the bar rather than leave an
-        // empty dark strip. syncStickyOffsets() below re-measures and the
-        // header docks to the top.
         el.remove();
       }
     });
 
-    // This text is longer than the static placeholder and wraps the bar onto a
-    // second line on narrow screens (35px -> 54px at 390px wide). The sticky
-    // chrome is positioned and the hero is sized from those measurements, so
-    // they have to be re-taken here or the header docks under the bar and the
-    // hero runs past the bottom of the first screen. sticky.js is not loaded
-    // on every page, hence the guard.
+    // Removing the bar changed the sticky chrome's height; re-measure so the
+    // header docks to the top. sticky.js is not loaded on every page, hence
+    // the guard.
     if (typeof syncStickyOffsets === 'function') syncStickyOffsets();
 
-    return { storeName, whatsappNumber };
+    return { storeName, whatsappNumber, deliveryPercent };
   }
 
   return {
     init,
     formatPrice,
+    deliveryIncluded,
+    priceHtml,
     whatsappLink,
     generalLink,
     productLink,

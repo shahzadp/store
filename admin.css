@@ -148,6 +148,13 @@ small {
 
 .field--wide { grid-column: 1 / -1; }
 
+/* A sub-heading inside a card, for a second group of fields. */
+.subhead {
+  margin: 28px 0 4px;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
 .checkbox {
   display: flex;
   align-items: center;

@@ -116,11 +116,12 @@ $('#product-form').addEventListener('submit', (event) => {
     return;
   }
 
-  const payload = {
-    name: $('#f-name').value,
-    description: $('#f-description').value,
-    details: $('#f-details').value,
-    specs: $('#f-specs').value,
+  const payload = {
+    name: $('#f-name').value,
+    description: $('#f-description').value,
+    details: $('#f-details').value,
+    specs: $('#f-specs').value,
+    options: $('#f-options').value,
     category: $('#f-category').value,
     price_cents: priceCents,
     slug: $('#f-slug').value,
@@ -279,6 +280,16 @@ $('#product-list').addEventListener('click', (event) => {
   $('#f-specs').value = Catalog.specPairs(product.specs)
     .map(([label, value]) => `${label}: ${value}`)
     .join('\n');
+  // One add-on per line: "Label | size | rupees". Trailing empty columns are
+  // dropped, so a plain option stays a single word on its line.
+  $('#f-options').value = Catalog.optionPairs(product.options)
+    .map((option) => {
+      const parts = [option.label, option.desc || ''];
+      if (option.price_cents > 0) parts.push(String(option.price_cents / 100));
+      while (parts.length > 1 && parts[parts.length - 1] === '') parts.pop();
+      return parts.join(' | ');
+    })
+    .join('\n');
   $('#f-category').value = product.category;
   $('#f-price').value = (product.price_cents / 100).toFixed(2);
   $('#f-slug').value = product.slug;
@@ -296,11 +307,18 @@ $('#product-list').addEventListener('click', (event) => {
 
 /* -------------------------------------------------------------- settings */
 
-$('#save-settings').addEventListener('click', () => {
-  Catalog.setSetting('store_name', $('#s-name').value.trim() || 'Alex Store');
-  Catalog.setSetting('whatsapp', $('#s-wa').value.replace(/[^0-9]/g, ''));
-  status('Details saved locally', 'ok');
-  updateDraftNote();
+$('#save-settings').addEventListener('click', () => {
+  Catalog.setSetting('store_name', $('#s-name').value.trim() || 'Alex Store');
+  Catalog.setSetting('whatsapp', $('#s-wa').value.replace(/[^0-9]/g, ''));
+  // A blank delivery charge means "show no delivery pricing", stored as 0 so
+  // the readers never have to treat an empty string as a number.
+  Catalog.setSetting('delivery_percent', String(Number($('#s-delivery').value) || 0));
+  Catalog.setSetting('voucher_title', $('#s-voucher-title').value.trim());
+  Catalog.setSetting('voucher_code', $('#s-voucher-code').value.trim());
+  Catalog.setSetting('voucher_description', $('#s-voucher-description').value.trim());
+  Catalog.setSetting('voucher_terms', $('#s-voucher-terms').value.trim());
+  status('Details saved locally', 'ok');
+  updateDraftNote();
 });
 
 /* --------------------------------------------------------------- publish */
@@ -431,9 +449,14 @@ $('#refresh').addEventListener('click', () => {
 (async function init() {
   status('Loading catalog…');
   try {
-    await Catalog.init();
-    $('#s-name').value = Catalog.getSetting('store_name') || 'Alex Store';
-    $('#s-wa').value = Catalog.getSetting('whatsapp') || '';
+    await Catalog.init();
+    $('#s-name').value = Catalog.getSetting('store_name') || 'Alex Store';
+    $('#s-wa').value = Catalog.getSetting('whatsapp') || '';
+    $('#s-delivery').value = Catalog.getSetting('delivery_percent') || '';
+    $('#s-voucher-title').value = Catalog.getSetting('voucher_title') || '';
+    $('#s-voucher-code').value = Catalog.getSetting('voucher_code') || '';
+    $('#s-voucher-description').value = Catalog.getSetting('voucher_description') || '';
+    $('#s-voucher-terms').value = Catalog.getSetting('voucher_terms') || '';
     refresh();
     renderCollections();
     indexNote();

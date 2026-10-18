@@ -1,20 +1,18 @@
 /* ==========================================================================
    Sticky header offsets
 
-   The announcement bar sticks to the top of the viewport; the header docks
-   immediately below it. Both heights are published as CSS variables because
-   the bar wraps to two lines on narrow screens, which would otherwise leave
-   a gap or an overlap at a hardcoded offset.
+   The header is sticky and the hero is sized against these offsets, so the
+   chrome's real height has to be published as CSS variables rather than
+   assumed. There used to be a sticky announcement bar above the header; it is
+   now a first-visit voucher (see voucher.js), so `.announce` is normally
+   absent and the announced height is zero — but the measuring stays, because
+   a future bar, a wrapped header or a font swap still has to be caught.
 
-   These have to be measured, not hardcoded -- and measured continuously.
-   The bar's text is injected by Store.init() and wraps differently depending
-   on that text and the viewport: at 390px wide it settles on two lines and
-   54px, but a one-shot measurement taken at first paint sees the empty bar at
-   35px. The hero, sized against --sticky-h, then overran the viewport by
-   exactly that 19px, and on scroll the header docked 35px down under a 54px
-   bar so it slid beneath the announcement text. A ResizeObserver catches
-   every later change for the same reason: font loading, the injected copy,
-   and an admin-edited delivery threshold all change the height too.
+   These have to be measured, not hardcoded -- and measured continuously. The
+   header wraps differently depending on the viewport, and a one-shot
+   measurement taken at first paint can miss a later reflow. A ResizeObserver
+   catches every later change: font loading, injected copy, and an admin-edited
+   setting all change the height too.
    ========================================================================== */
 
 function stickyOffsets() {
@@ -29,9 +27,9 @@ function stickyOffsets() {
   root.setProperty('--sticky-h', `${announceHeight + headerHeight}px`);
 }
 
-// Original name, kept because common.js calls it after it rewrites the
-// announcement bar. That explicit call is the one that actually matters:
-// see the note below on why ResizeObserver is not the primary mechanism.
+// Original name, kept because common.js calls it after the catalog resolves.
+// That explicit call is the one that actually matters: see the note below on
+// why ResizeObserver is not the primary mechanism.
 function syncStickyOffsets() {
   stickyOffsets();
 }
@@ -47,12 +45,11 @@ if (document.fonts && document.fonts.ready) {
 }
 
 // Secondary net, not the primary mechanism. ResizeObserver catches any later
-// reflow (font swap, an admin-edited delivery threshold). It is kept as a
-// safety net rather than relied upon because RO only fires when the document
-// is actually painted -- it stays completely silent in a background iframe,
-// where a forced 54px -> 66px change produced zero callbacks. The explicit
-// syncStickyOffsets() call after the text is written is what makes this
-// deterministic.
+// reflow (font swap, an admin-edited setting). It is kept as a safety net
+// rather than relied upon because RO only fires when the document is actually
+// painted -- it stays completely silent in a background iframe, where a forced
+// height change produced zero callbacks. The explicit syncStickyOffsets() call
+// after the catalog resolves is what makes this deterministic.
 if (typeof ResizeObserver !== 'undefined') {
   const observer = new ResizeObserver(syncStickyOffsets);
   const announce = document.querySelector('.announce');

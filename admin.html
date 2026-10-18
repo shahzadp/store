@@ -6,7 +6,7 @@
 <title>Catalog — Alex Store</title>
 <meta name="robots" content="noindex">
 <meta name="description" content="Catalog editor for Alex Store.">
-<link rel="stylesheet" href="./admin.css?v=55">
+<link rel="stylesheet" href="./admin.css?v=64">
 </head>
 <body>
 
@@ -46,6 +46,38 @@
         <label for="s-wa">WhatsApp number</label>
         <input id="s-wa" name="whatsapp" inputmode="numeric">
         <small>Country code and number only — no <code>+</code>, spaces or dashes.</small>
+      </div>
+      <div class="field">
+        <label for="s-delivery">Delivery charge (%)</label>
+        <input id="s-delivery" name="delivery_percent" inputmode="decimal" placeholder="10">
+        <small>Shown as a struck-through &ldquo;including delivery&rdquo; price beside
+          every price, and read by the site and the app alike. Leave blank for none.</small>
+      </div>
+    </div>
+
+    <h3 class="subhead">Free-delivery voucher</h3>
+    <p class="muted">
+      Announced once, as a claimable voucher, instead of the old sticky bar.
+      The threshold itself is set in the catalog as <code>free_delivery_over_paisa</code>.
+    </p>
+    <div class="grid">
+      <div class="field">
+        <label for="s-voucher-title">Title</label>
+        <input id="s-voucher-title" name="voucher_title" placeholder="Free delivery over Rs 6,000">
+      </div>
+      <div class="field">
+        <label for="s-voucher-code">Code</label>
+        <input id="s-voucher-code" name="voucher_code" placeholder="FREEDELIVERY">
+      </div>
+      <div class="field field--wide">
+        <label for="s-voucher-description">Description</label>
+        <textarea id="s-voucher-description" name="voucher_description" rows="2"
+                  placeholder="Claim this voucher and we cover delivery on any order over Rs 6,000."></textarea>
+      </div>
+      <div class="field field--wide">
+        <label for="s-voucher-terms">Terms</label>
+        <textarea id="s-voucher-terms" name="voucher_terms" rows="2"
+                  placeholder="Valid on orders over Rs 6,000. One claim per customer."></textarea>
       </div>
     </div>
     <div class="form-actions">
@@ -92,6 +124,18 @@
           <small>One per line, as <code>Label: value</code>. Shown in the
             specifications box. Up to 12 lines — dimensions, weight, capacity,
             material and care are the ones people look for first.</small>
+        </div>
+
+        <div class="field field--wide">
+          <label for="f-options">Add-ons</label>
+          <textarea id="f-options" name="options" rows="2"
+                    placeholder="Cold drink"></textarea>
+          <small>One per line, up to 6. Optional choices the buyer can tick, such
+            as a <em>Cold drink</em> with a meal. Add a size and a surcharge with
+            pipes — <code>Cold drink | 500ml | 100</code> — where
+            <code>100</code> is rupees. The choice and its surcharge are carried
+            into the WhatsApp message; the price shown on the page never
+            changes.</small>
         </div>
 
         <div class="field">
@@ -219,10 +263,10 @@
 
 </main>
 
-<script src="./vendor/sql-wasm.js?v=55"></script>
-<script src="./db.js?v=55"></script>
-<script src="./common.js?v=55"></script>
-<script src="./search.js?v=55"></script>
-<script src="./admin.js?v=55"></script>
+<script src="./vendor/sql-wasm.js?v=64"></script>
+<script src="./db.js?v=64"></script>
+<script src="./common.js?v=64"></script>
+<script src="./search.js?v=64"></script>
+<script src="./admin.js?v=64"></script>
 </body>
 </html>

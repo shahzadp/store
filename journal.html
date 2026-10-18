@@ -5,13 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Journal — Alex Store</title>
 <meta name="description" content="Notes from the shop: how things are made, how to care for them, and what we have learned stocking them. Nothing published yet.">
-<link rel="stylesheet" href="./styles.css?v=62">
+<link rel="stylesheet" href="./styles.css?v=64">
 <script data-goatcounter="https://mystore.goatcounter.com/count"
         async src="https://gc.zgo.at/count.js"></script>
 </head>
 <body>
-
-<div class="announce" data-free-delivery>&nbsp;</div>
 
 <header class="header">
   <div class="header__inner">
@@ -92,11 +90,37 @@
   </section>
 </main>
 
+<!-- First-visit free-delivery voucher. Shown once per browser (voucher.js),
+     and only when the catalog actually carries a voucher. Hidden by default
+     so nothing flashes before the catalog loads. -->
+<div class="voucher" id="voucher" role="dialog" aria-modal="true" aria-labelledby="voucher-title" hidden>
+  <canvas class="voucher__confetti" data-voucher-confetti aria-hidden="true"></canvas>
+  <div class="voucher__panel">
+    <div class="voucher__ticket">
+      <div class="voucher__kicker">Welcome offer</div>
+      <h2 class="voucher__title" id="voucher-title"></h2>
+      <p class="voucher__desc" id="voucher-desc"></p>
+      <p class="voucher__code" id="voucher-code" hidden></p>
+      <p class="voucher__terms" id="voucher-terms" hidden></p>
+      <div class="voucher__actions">
+        <button class="btn btn-solid" type="button" data-voucher-claim>
+          <span class="btn__label">Claim voucher</span>
+        </button>
+        <button class="voucher__dismiss" type="button" data-voucher-dismiss>No thanks</button>
+      </div>
+      <p class="voucher__claimed" id="voucher-claimed" role="status" aria-live="polite" hidden>
+        Voucher claimed &mdash; see you at checkout.
+      </p>
+    </div>
+  </div>
+</div>
+
 <footer class="footer">
   <div class="footer__inner">
     <div>
       <div class="footer__title">Order on <span class="wa-word">WhatsApp</span></div>
       <div class="footer__meta">Replies within a few hours &middot; +92 328 8304524</div>
+      <div class="footer__note" data-delivery-note hidden></div>
     </div>
     <div>
       <a class="btn btn-solid" data-whatsapp-general href="#" target="_blank" rel="noopener">
@@ -106,12 +130,13 @@
   </div>
 </footer>
 
-<script src="./vendor/sql-wasm.js?v=62"></script>
-<script src="./db.js?v=62"></script>
-<script src="./common.js?v=62"></script>
-<script src="./drawer.js?v=62"></script>
-<script src="./sticky.js?v=62"></script>
-<script src="./search.js?v=62"></script>
-<script src="./journal.js?v=62"></script>
+<script src="./vendor/sql-wasm.js?v=64"></script>
+<script src="./db.js?v=64"></script>
+<script src="./common.js?v=64"></script>
+<script src="./voucher.js?v=64"></script>
+<script src="./drawer.js?v=64"></script>
+<script src="./sticky.js?v=64"></script>
+<script src="./search.js?v=64"></script>
+<script src="./journal.js?v=64"></script>
 </body>
 </html>

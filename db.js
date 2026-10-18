@@ -21,7 +21,10 @@ const CATALOG_URL = './catalog.sql';
 // v2: the schema dropped the per-product currency column. Bumping the key
 // means a stale USD draft in someone's browser is ignored rather than
 // silently reappearing.
-const DRAFT_KEY = 'alexstore.catalogDraft.v3';
+// v4: products gained an `options` column (selectable add-ons) and the store
+// gained a delivery percentage and a voucher. A v3 draft predates them, so it
+// is discarded rather than half-read.
+const DRAFT_KEY = 'alexstore.catalogDraft.v4';
 
 const Catalog = (() => {
   let db = null;
@@ -97,8 +100,8 @@ const Catalog = (() => {
     const productLines = rows
       .map(
         (p) =>
-          `  (${escape(p.slug)}, ${escape(p.name)}, ${escape(p.description)}, ` +
-          `${escape(p.details)}, ${escape(p.specs)}, ${escape(p.category)}, ` +
+          `  (${escape(p.slug)}, ${escape(p.name)}, ${escape(p.description)}, ` +
+          `${escape(p.details)}, ${escape(p.specs)}, ${escape(p.options)}, ${escape(p.category)}, ` +
           `${p.price_cents}, ${escape(p.image_url)}, ` +
           `${escape(p.tint)}, ${p.in_stock ? 1 : 0}, ${p.sort_order})`,
       )
@@ -141,8 +144,12 @@ CREATE TABLE IF NOT EXISTS products (
   -- Long-form copy for the product page. The description column stays the
   -- one-line version used on cards, in search and in the WhatsApp message.
   details     TEXT,
-  -- JSON object of label -> value for the specifications box.
-  specs       TEXT,
+  -- JSON object of label -> value for the specifications box.
+  specs       TEXT,
+  -- JSON array of selectable add-ons, e.g.
+  -- [{"key":"cold_drink","label":"Cold drink"}]. An add-on is a preference
+  -- carried into the WhatsApp message; it never changes the price.
+  options     TEXT,
   image_url   TEXT,
   tint        TEXT,
   in_stock    INTEGER NOT NULL DEFAULT 1 CHECK (in_stock IN (0, 1)),
@@ -176,7 +183,7 @@ CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 INSERT OR IGNORE INTO settings (key, value) VALUES
 ${settingLines};
 
-INSERT INTO products (slug, name, description, details, specs, category, price_cents, image_url, tint, in_stock, sort_order) VALUES
+INSERT INTO products (slug, name, description, details, specs, options, category, price_cents, image_url, tint, in_stock, sort_order) VALUES
 ${productLines}
 ON CONFLICT (slug) DO UPDATE SET
   name        = excluded.name,
@@ -325,6 +332,91 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
     }
   }
 
+  /**
+   * Parses a product's selectable add-ons into ordered option objects.
+   *
+   * An add-on is a preference the shop is told about in the WhatsApp message
+   * ("Cold drink (500ml): yes (+ Rs 100)"). `desc` is optional detail — the
+   * size, say — and `price_cents` an optional surcharge stated in that message.
+   * Neither changes the price shown on the page: the displayed price is the
+   * price, and the message is where the shop reads the order.
+   *
+   * Stored as a JSON array so more can be added without another schema change.
+   */
+  function optionPairs(raw) {
+    if (!raw) return [];
+    try {
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .map((o) => ({
+          key: String((o && o.key) || '').trim(),
+          label: String((o && o.label) || '').trim(),
+          desc: String((o && o.desc) || '').trim(),
+          price_cents: Math.max(0, Math.round(Number((o && o.price_cents) || 0) || 0)),
+        }))
+        .filter((o) => o.key && o.label);
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Canonical JSON for the `options` column, or null when there are none.
+   *
+   * The admin submits one option per line, with optional detail after pipes:
+   *
+   *   Cold drink | 500ml | 100
+   *
+   * — the label, a short description (the size, say) and a surcharge in RUPEES,
+   * matching how the product price is entered. Only the label is required.
+   * Already-stored JSON passes straight back through, so editing a product does
+   * not lose a saved description or price. The key is derived from the label, so
+   * a product saved through the admin cannot lose a mis-typed key.
+   */
+  function normaliseOptions(input) {
+    // Already-canonical JSON: validate and hand it back untouched, so nothing
+    // the admin did not edit is silently dropped.
+    if (typeof input === 'string' && input.trim().startsWith('[')) {
+      const parsed = optionPairs(input);
+      return parsed.length ? JSON.stringify(parsed) : null;
+    }
+
+    const rows = [];
+    if (typeof input === 'string' && input.trim()) {
+      rows.push(...input.split('\n').map((line) => line.trim()).filter(Boolean));
+    } else if (Array.isArray(input)) {
+      for (const o of input) {
+        if (typeof o === 'string') {
+          rows.push(o);
+          continue;
+        }
+        if (!o) continue;
+        const parts = [String(o.label || o.key || '').trim()];
+        if (o.desc) parts.push(String(o.desc).trim());
+        const cents = Number(o.price_cents);
+        if (Number.isFinite(cents) && cents > 0) parts.push(String(cents / 100));
+        rows.push(parts.join(' | '));
+      }
+    }
+
+    const out = [];
+    for (const row of rows.slice(0, 6)) {
+      const [rawLabel, rawDesc, rawPrice] = String(row || '').split('|');
+      const text = String(rawLabel || '').trim().slice(0, 60);
+      if (!text || out.some((o) => o.label === text)) continue;
+
+      const option = { key: slugify(text), label: text };
+      const desc = String(rawDesc || '').trim().slice(0, 60);
+      if (desc) option.desc = desc;
+      const rupees = Number(String(rawPrice || '').trim());
+      if (Number.isFinite(rupees) && rupees > 0) option.price_cents = Math.round(rupees * 100);
+
+      out.push(option);
+    }
+    return out.length ? JSON.stringify(out) : null;
+  }
+
   /** Validates a payload; returns {ok:true, value} or {ok:false, errors}. */
   function validate(input) {
     const errors = {};
@@ -345,6 +437,10 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
     // without re-parsing text. Bad lines are dropped rather than rejected: a
     // half-typed row should not block saving the rest of the product.
     const specs = normaliseSpecs(input.specs);
+
+    // Selectable add-ons, e.g. "Cold drink (500ml)". A preference, with an
+    // optional surcharge, that is never folded into the price shown.
+    const options = normaliseOptions(input.options);
 
     const price = Number(input.price_cents);
     if (!Number.isInteger(price) || price < 0) {
@@ -376,6 +472,7 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
         description,
         details,
         specs,
+        options,
         category,
         price_cents: price,
         image_url: imageUrl,
@@ -436,9 +533,9 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
 
     run(
       `INSERT INTO products
-         (slug, name, description, details, specs, category, price_cents, image_url, tint, in_stock, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [value.slug, value.name, value.description, value.details, value.specs,
+         (slug, name, description, details, specs, options, category, price_cents, image_url, tint, in_stock, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [value.slug, value.name, value.description, value.details, value.specs, value.options,
        value.category, value.price_cents, value.image_url, value.tint,
        value.in_stock, value.sort_order],
     );
@@ -453,11 +550,11 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
 
     run(
       `UPDATE products
-          SET slug = ?, name = ?, description = ?, details = ?, specs = ?,
+          SET slug = ?, name = ?, description = ?, details = ?, specs = ?, options = ?,
               category = ?, price_cents = ?, image_url = ?, tint = ?,
               in_stock = ?, sort_order = ?
         WHERE id = ?`,
-      [value.slug, value.name, value.description, value.details, value.specs,
+      [value.slug, value.name, value.description, value.details, value.specs, value.options,
        value.category, value.price_cents, value.image_url, value.tint,
        value.in_stock, value.sort_order, id],
     );
@@ -654,6 +751,10 @@ function withRefundPolicy(text) {
       }, {}),
       image_url: p.image_url || null,
       tint: p.tint || null,
+      // Selectable add-ons (e.g. "Cold drink (500ml)", + Rs 100). The buyer's
+      // choice — and any surcharge — travels in the WhatsApp message; the price
+      // shown on the page never changes.
+      options: optionPairs(p.options),
       vector: vectorFor(p.slug),
     }));
 
@@ -672,6 +773,20 @@ function withRefundPolicy(text) {
           name: settings.store_name || 'Alex Store',
           whatsapp: settings.whatsapp || '',
           free_delivery_over_paisa: Number(settings.free_delivery_over_paisa || 0),
+          // Delivery is a percentage of the order. Both surfaces show the
+          // pre-delivery price struck through and the price itself unchanged,
+          // so a percentage is the only number either of them needs. One
+          // setting, read by the site AND the app, so they cannot disagree.
+          delivery_percent: Number(settings.delivery_percent || 0),
+          // The free-delivery offer, announced as a claimable voucher instead
+          // of the old top strip. The threshold itself stays in
+          // free_delivery_over_paisa; this is only how it is worded.
+          voucher: {
+            title: settings.voucher_title || 'Free delivery',
+            code: settings.voucher_code || '',
+            description: settings.voucher_description || '',
+            terms: settings.voucher_terms || '',
+          },
           currency: 'PKR',
           // The same words as the note appended to every product's `details`,
           // for an app build that would rather render the policy as its own
@@ -777,6 +892,7 @@ function withRefundPolicy(text) {
     indexIsComplete,
     replaceVectors,
     specPairs,
+    optionPairs,
     SEARCH_MODEL,
     SEARCH_DIMS,
     setSetting,
