@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-18T16:18:35.391Z",
+  "generated_at": "2026-10-18T17:08:54.550Z",
   "store": {
     "name": "Alex Store",
     "whatsapp": "923288304524",
@@ -74,7 +74,7 @@
       "slug": "roti",
       "name": "Roti",
       "category": "Food & Drinks",
-      "price_cents": 4000,
+      "price_cents": 8000,
       "in_stock": true,
       "description": "Hand-rolled whole-wheat flatbread, cooked fresh on the tawa.",
       "details": "Hand-rolled and cooked to order on a hot tawa, then held briefly over the flame so it puffs and stays soft rather than turning brittle. Whole-wheat flour and no shortening, and no oil brushed on at the end, so it is as good with a dry kebab as with a curry.\n\nOnce an order has been dispatched, a cancellation fee applies.",
