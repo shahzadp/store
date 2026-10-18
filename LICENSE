@@ -1,0 +1,30 @@
+Copyright (c) 2026 shahzadp (https://github.com/shahzadp)
+All rights reserved.
+
+This repository and everything in it - the storefront, its HTML, CSS and
+JavaScript, the page copy, the product catalog (catalog.json, catalog.sql and the
+product data in them), the illustrations (hero-still-life.svg and
+src/_android-icon.svg), the "Alex Store" name and logo, and the contact details
+published here - is the property of the copyright holder. No permission is
+granted to copy, modify, publish, host, mirror, redistribute, or otherwise use
+any of it.
+
+In particular, nothing here grants any right to the "Alex Store" name, to the
+site's design, copy or catalog, or to anything confusingly similar to them; and
+nothing here permits publishing this storefront, or an altered version of it, in
+a way that presents it as this shop, or as affiliated with, endorsed by, or
+coming from it.
+
+The Android app is a separate work with its own terms, in its own repository:
+https://github.com/shahzadp/alex-store-app
+
+Third-party components are licensed by their own authors and are NOT covered by
+the terms above. See THIRD_PARTY_NOTICES.md.
+
+THE CONTENTS AND CODE IN THIS REPOSITORY ARE PROVIDED "AS IS", WITHOUT WARRANTY
+OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE CONTENTS OR THE USE OR OTHER DEALINGS IN
+THEM.

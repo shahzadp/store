@@ -155,6 +155,17 @@ button height and gaps.
 **Safari/iOS: none verified.** All testing has been Chromium on desktop
 emulation. Not a single iOS device has been checked.
 
+**A third-party licence file at the root makes GitHub mislabel the whole repo.**
+This repository had no `LICENSE` and no badge, which was harmless. Committing the
+sql.js notice without thinking would not have been: GitHub's licence detector
+reads a root file whose name looks like a licence as *the repository's* licence,
+so `THIRD_PARTY_SQLJS_LICENSE` would have made GitHub report this storefront as
+MIT - and here it would have been believed, because this repository really does
+contain MIT-licensed code. That is why `LICENSE` (all rights reserved) and
+`THIRD_PARTY_NOTICES.md` landed together, in that order, and why the notice is
+deliberately not named like a licence. Recorded here rather than only in the app
+repository's MEMORY because it is this repository that would suffer it next.
+
 ---
 
 ## 5. Publishing checklist

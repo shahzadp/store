@@ -186,6 +186,11 @@ request left the storefront blank with no error.
 Verify the vendored copies against the published hashes recorded in
 `db.js`.
 
+sql.js is MIT licensed, so its notice has to travel with the copies that are
+vendored here; it is reproduced in full in `THIRD_PARTY_NOTICES.md`. That file is
+deliberately not named like a licence, so GitHub's detector does not read it as
+this repository's licence - see the top of that file for why that matters.
+
 ## Search
 
 The search icon (or `Ctrl`/`Cmd` + `K`) opens a dialog that embeds
@@ -503,3 +508,23 @@ siblings.
 `admin.html` is public and has no login — but it only edits a database in your
 own browser, so there is no shared state for anyone else to damage. The
 published catalog only changes when you commit `catalog.sql`.
+
+## Licence
+
+**This repository is not open source.** `LICENSE` is all-rights-reserved: no
+permission is granted to copy, host, mirror or reuse the storefront, its code,
+its copy, its catalog or its illustrations, and nothing here permits publishing
+a copy of this site - or an altered version of it - as though it were this shop.
+
+That is deliberate, and it is aimed at the one risk a public storefront cannot
+design away. What a copycat needs is exactly what the shop has to publish
+anyway: the name, the look, the copy, the footer's WhatsApp number, and the app.
+Branding therefore cannot prove who the shop is, and the licence does not pretend
+otherwise - what it does is make "this is a copy" a stated violation instead of an
+arguable one, which is something a host or GitHub can act on when asked to take a
+copy down. The thing that *does* prove the app is the signing certificate, which
+is documented in the app repository.
+
+Third-party licences, including the sql.js build vendored in `vendor/`, are
+reproduced in `THIRD_PARTY_NOTICES.md`. The app has its own separate terms, in its
+own repository.
