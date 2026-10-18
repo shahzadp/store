@@ -105,6 +105,25 @@ an APK committed to the repo is permanent in git history. Releases assets are
 outside the tree, so they cost nothing. Use the `latest` release tag so the URL
 never changes again.
 
+**The refund policy lives in `db.js`, and reaches every product twice.** The
+wording is one constant, `REFUND_POLICY`. `toJson()` appends its note to every
+product's `details` in `catalog.json`, which is how the policy gets in front of
+someone who already has the app installed: the app renders exactly three
+per-product text fields, and `details` is the only one of them that is neither
+embedded for search nor pasted into the WhatsApp message, so nothing else could
+carry it without a re-index or a new APK. Appending on export rather than storing
+it in the `products` table is what keeps a product added next month from missing
+it, and keeps the shop's own copy clean.
+
+The product page does not read it from the data. `product.js` renders the same
+constant as its own small note, and strips the appended copy out of `details`
+first, so a shopper reads the sentence once instead of twice. The About page
+carries the full wording, including the cancellation fee, as hand-written static
+copy — deliberately not generated from the constant, because a policy should
+still be readable if a script fails. **That makes the About page and the constant
+a matched pair: change the fee or the window in one and change it in the other.**
+The product page and the app cannot drift apart, because they read the constant.
+
 ---
 
 ## 4. Things that have actually bitten

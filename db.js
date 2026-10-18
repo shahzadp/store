@@ -483,6 +483,52 @@ ${vectors.length ? `\n-- Semantic search index.\nDELETE FROM product_vectors;\n\
 const SEARCH_MODEL = 'ternlight/base@0.1.1';
 const SEARCH_DIMS = 384;
 
+// The refund policy, in one place.
+//
+// THREE consumers need the same words, and two of them cannot see each other:
+//
+//   * catalog.json, which is the only file the Flutter app can read. toJson()
+//     appends the note to every product's `details`, because the app renders
+//     exactly three per-product text fields and `details` is the only one that
+//     is neither embedded for search nor pasted into the WhatsApp message. That
+//     is what carries a policy change to phones that already have the app.
+//   * product.js, which shows the note under every product's full description.
+//   * src/about.html, which carries the full wording and the cancellation fee.
+//
+// The About page is static copy on purpose - it should still state the policy
+// if a script fails to load - so it is NOT generated from this constant, and
+// the two must agree: if the fee or the window ever changes, change both. The
+// product page and the app cannot drift apart, because they read this.
+const REFUND_POLICY = {
+  heading: 'Refunds and cancellations',
+  label: 'Refund policy',
+  note:
+    'Cancel free before dispatch; a cancellation fee applies after dispatch. ' +
+    'Damaged or wrong items are replaced or refunded in full if reported ' +
+    'within 7 days. Full policy is on the About page.',
+};
+
+/** The exact text toJson() appends, and the only thing stripRefundPolicy
+ *  removes. Built from REFUND_POLICY so the two cannot drift apart. */
+function refundBlock() {
+  return '\n\n' + REFUND_POLICY.label + ': ' + REFUND_POLICY.note;
+}
+
+/** A product's copy with any appended note taken back off.
+ *
+ *  Trims, so re-exporting a catalog that already carries the note cannot stack
+ *  a second copy - the admin's editor may have been seeded from a published
+ *  catalog.json, note and all. */
+function stripRefundPolicy(text) {
+  return String(text || '').split(refundBlock()).join('').trim();
+}
+
+/** A product's copy with the note on the end. */
+function withRefundPolicy(text) {
+  const body = stripRefundPolicy(text);
+  return body ? body + refundBlock() : REFUND_POLICY.label + ': ' + REFUND_POLICY.note;
+}
+
   function float32ToBase64(vector) {
     const bytes = new Uint8Array(vector.buffer, vector.byteOffset, vector.byteLength);
     let binary = '';
@@ -581,7 +627,12 @@ const SEARCH_DIMS = 384;
       price_cents: p.price_cents,
       in_stock: Boolean(p.in_stock),
       description: p.description,
-      details: p.details || '',
+      // The refund note is appended here, not stored in the products table:
+      // the shop's own copy stays clean, and a product added later cannot miss
+      // it. `p.details || p.description` keeps the app's own fall-back - it
+      // shows the one-line description when there is no long copy - and then
+      // adds the note, so nothing that used to be visible stops being visible.
+      details: withRefundPolicy(p.details || p.description || ''),
       specs: specPairs(p.specs).reduce((acc, [k, v]) => {
         acc[k] = v;
         return acc;
@@ -607,6 +658,15 @@ const SEARCH_DIMS = 384;
           whatsapp: settings.whatsapp || '',
           free_delivery_over_paisa: Number(settings.free_delivery_over_paisa || 0),
           currency: 'PKR',
+          // The same words as the note appended to every product's `details`,
+          // for an app build that would rather render the policy as its own
+          // element than as the tail of a description. Nothing reads this
+          // today; it is here so the data exists before the code needs it.
+          refund_policy: {
+            heading: REFUND_POLICY.heading,
+            label: REFUND_POLICY.label,
+            note: REFUND_POLICY.note,
+          },
         },
         products,
         collections,
@@ -687,7 +747,11 @@ const SEARCH_DIMS = 384;
     isReady,
     listProducts,
     listCollections,
-    getSetting,
+    getSetting,
+
+    REFUND_POLICY,
+
+    stripRefundPolicy,
     slugify,
     createProduct,
     updateProduct,

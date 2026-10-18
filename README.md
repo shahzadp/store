@@ -327,6 +327,27 @@ product list: that is what fills the announcement bar and rewrites every
 `[data-whatsapp-general]` href. Skipping it leaves the page looking fine
 while every WhatsApp link on it is `href="#"`.
 
+## Refund policy
+
+The policy shows up in two places, and the words come from one constant.
+
+- **Every product page**, as small text under the full description, and **in the
+  Android app**, at the end of the same product's "Full description" box. Both
+  read `REFUND_POLICY` in `db.js`. `toJson()` appends its note to every product's
+  `details` in `catalog.json` — the app renders exactly three per-product text
+  fields, and `details` is the only one that is neither embedded for search nor
+  pasted into the WhatsApp message, so nowhere else would reach a phone that
+  already has the app installed, without a re-index or a new APK.
+- **The About page** (`src/about.html`), which carries the full wording,
+  including the cancellation fee. It is hand-written static copy on purpose: a
+  policy should still be readable if a script fails to load.
+
+**The About page and the constant are a matched pair.** It is not generated from
+`REFUND_POLICY`, so a change to the fee or the window has to be made in both. The
+product page and the app cannot drift apart, because they read the constant —
+which is also why the note is not stored in the `products` table: the shop's own
+copy stays clean, and a product added later cannot miss it.
+
 ## Journal page
 
 `journal.html` exists because the nav carried a `Journal` item pointing at

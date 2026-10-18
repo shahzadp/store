@@ -243,6 +243,23 @@ the layout. Replace them with measured facts before the goods are listed.
 `specs` changes do not** — neither is part of the embedded text. Editing a
 product's long description or its measurements requires no rebuild.
 
+### The refund note is not yours to type
+
+Every product in `catalog.json` has the refund policy appended to its `details`
+by `db.js`'s `toJson()`. Leave it to the export:
+
+- **Do not paste the refund note into a product's `details` in the admin.** It is
+  added on export, and the product page strips it before rendering. Typing it
+  yourself means maintaining a second copy of a policy that already exists in one
+  place.
+- **`catalog.sql` does not carry it — only `catalog.json` does.** This is the one
+  intentional difference between the two files: the site reads `catalog.sql` and
+  renders the note from `db.js`, while the app can only read `catalog.json`, so
+  that is where it has to be. `check-vectors-agree.mjs` does not compare
+  `details`, and no vector is affected by it.
+- The wording is `REFUND_POLICY` in `db.js`. The full policy, including the
+  cancellation fee, is hand-written copy on the About page; the two must agree.
+
 ### Field reference
 
 | Field | Required | Rule |

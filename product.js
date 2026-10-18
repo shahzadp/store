@@ -121,7 +121,20 @@ function render(product) {
 
   // The long-form copy when there is any, otherwise the one-line description,
   // so the box is never empty on a product that has not been given details.
-  const full = product.details || product.description;
+  //
+  // `stripRefundPolicy` first, because catalog.json carries the policy note on
+  // the end of every product's `details` — db.js appends it there for the app,
+  // which has no other place to show it. The site renders it from the same
+  // constant instead, as its own line below the copy, so a shopper does not
+  // read the same sentence twice and the note is not buried in the prose.
+  const full = Catalog.stripRefundPolicy(product.details || product.description);
+  const policy = Catalog.REFUND_POLICY;
+  const policyNote = policy
+    ? `
+      <p class="product-detail__policy">
+        <span class="product-detail__policy-label">${Store.escapeHtml(policy.label)}</span>${Store.escapeHtml(policy.note)}
+      </p>`
+    : '';
   const fullBox = `
     <section class="product-detail__box product-detail__box--full" aria-labelledby="full-heading">
       <h2 class="product-detail__box-title" id="full-heading">Full description</h2>
@@ -131,7 +144,7 @@ function render(product) {
             ? `<p>${Store.escapeHtml(full)}</p>`
             : '<p class="product-detail__desc--empty">No description for this product yet.</p>'
         }
-      </div>
+      </div>${policyNote}
     </section>`;
 
   view.innerHTML = `
