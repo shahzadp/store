@@ -81,9 +81,11 @@ product page. `specs` is JSON label/value for the specifications box. Only
 `description` is embedded, so only it needs an index rebuild.
 
 **Product page = three regions.** Product, a Specifications box to its right on
-desktop, and a scrollable Full description box beneath. The image height is set
-by the grid row so it matches the specs box exactly (verified delta 0 at six
-widths). The scroll region only gets `tabindex` when it actually overflows.
+desktop, and a Full description box beneath. The image height is set by the grid
+row so it matches the specs box exactly (verified delta 0 at six widths). The
+description box grows with its copy instead of scrolling inside a fixed height:
+a capped box hid the end of a long write-up behind an inner scrollbar, and the
+page already scrolls.
 
 **Grid uniformity is enforced by CSS, not discipline.** `.product__name`
 reserves two lines, `.product__desc` three, and `margin-top: auto` on the price

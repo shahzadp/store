@@ -74,26 +74,6 @@ function renderNotFound() {
     </div>`;
 }
 
-/**
- * Renders the scrollable copy regions.
- *
- * A scrollable box that is not keyboard-scrollable is a trap: a keyboard user
- * can focus it and arrow-key nowhere. tabindex is therefore only added when
- * the content actually overflows, so a short description does not create a
- * dead tab stop.
- */
-function markScrollable() {
-  view.querySelectorAll('[data-scroll]').forEach((el) => {
-    if (el.scrollHeight > el.clientHeight + 1) {
-      el.setAttribute('tabindex', '0');
-      el.setAttribute('role', 'region');
-    } else {
-      el.removeAttribute('tabindex');
-      el.removeAttribute('role');
-    }
-  });
-}
-
 function render(product) {
   const media = product.image_url
     ? `<img class="product-detail__img" src="${Store.escapeHtml(product.image_url)}" alt="${Store.escapeHtml(product.name)}">`
@@ -165,7 +145,7 @@ function render(product) {
   const fullBox = `
     <section class="product-detail__box product-detail__box--full" aria-labelledby="full-heading">
       <h2 class="product-detail__box-title" id="full-heading">Full description</h2>
-      <div class="product-detail__copy" data-scroll>
+      <div class="product-detail__copy">
         ${
           full
             ? `<p>${Store.escapeHtml(full)}</p>`
@@ -203,7 +183,6 @@ function render(product) {
 
   renderCrumbs(product);
   syncMeta(product);
-  markScrollable();
   wireOptions(product);
 }
 
