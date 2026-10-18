@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Shared storefront helpers � used by index.html and shop.html.
+   Shared storefront helpers — used by index.html and shop.html.
    The store trades in PKR only.
    ========================================================================== */
 
@@ -74,8 +74,8 @@ const Store = (() => {
    * The WhatsApp order message for one product.
    *
    * `selections` is an optional array of `{ label, on, desc, price_cents }`
-   * add-ons (e.g. a cold drink). Every add-on is stated either way � "Cold
-   * drink (500ml): yes" or "Cold drink (500ml): no" � so an unmarked option is
+   * add-ons (e.g. a cold drink). Every add-on is stated either way — "Cold
+   * drink (500ml): yes" or "Cold drink (500ml): no" — so an unmarked option is
    * an explicit answer rather than a silence the shop has to interpret. A
    * surcharge, when there is one, is stated on that same line and NOT folded
    * into the price above: the page price never changes with a choice.
@@ -85,7 +85,7 @@ const Store = (() => {
       `Hi ${storeName}! I'd like to order:`,
       '',
       `*${product.name}*`,
-      `${product.category} � ${formatPrice(product.price_cents)}`,
+      `${product.category} — ${formatPrice(product.price_cents)}`,
     ];
 
     // Only ask about the detail if there is any, and keep it to one extra line.
@@ -128,7 +128,7 @@ const Store = (() => {
     return `./product.html?slug=${encodeURIComponent(slug)}`;
   }
 
-  /** Absolute, canonical URL for a product � what gets copied on share. */
+  /** Absolute, canonical URL for a product — what gets copied on share. */
   function shareUrl(product) {
     return new URL(productUrl(product), window.location.href).href;
   }
@@ -237,7 +237,7 @@ const Store = (() => {
     // The image link is aria-hidden and removed from the tab order: it points
     // at the same place as the title link directly beneath it, and when a
     // product has no image it wraps an aria-hidden tint block, which left the
-    // link with no accessible name at all � Lighthouse flagged every one of
+    // link with no accessible name at all — Lighthouse flagged every one of
     // them as a nameless link. One link per destination is also kinder to
     // screen reader users than announcing the same target twice.
     return `

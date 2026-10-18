@@ -1,6 +1,6 @@
 /* ==========================================================================
 
-   Alex Store � catalog admin
+   Alex Store — catalog admin
 
    Edits a local SQLite copy (db.js) and exports catalog.sql to publish.
 
@@ -643,7 +643,7 @@ $('#export').addEventListener('click', () => {
 
   downloadFile('catalog.sql', Catalog.toSql(), 'text/plain;charset=utf-8');
 
-  status('Downloaded catalog.sql � replace the repo copy and push', 'ok');
+  status('Downloaded catalog.sql — replace the repo copy and push', 'ok');
 
 });
 
@@ -657,7 +657,7 @@ $('#export-json').addEventListener('click', () => {
 
   downloadFile('catalog.json', Catalog.toJson(), 'application/json');
 
-  status('Downloaded catalog.json � replace the repo copy and push', 'ok');
+  status('Downloaded catalog.json — replace the repo copy and push', 'ok');
 
 });
 
@@ -737,10 +737,10 @@ function indexNote() {
   const count = Catalog.listProducts().length;
 
   if (Catalog.indexIsComplete()) {
-    note.textContent = `Index is current � ${count} products embedded. Download catalog.sql to publish it.`;
+    note.textContent = `Index is current — ${count} products embedded. Download catalog.sql to publish it.`;
     note.className = 'draft-note';
   } else {
-    note.textContent = `No current index � ${count} products need embedding before semantic search can run.`;
+    note.textContent = `No current index — ${count} products need embedding before semantic search can run.`;
     note.className = 'draft-note draft-note--active';
   }
 }
