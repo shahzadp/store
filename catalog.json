@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-18T01:43:58.334Z",
+  "generated_at": "2026-10-18T02:04:07.556Z",
   "store": {
     "name": "Alex Store",
     "whatsapp": "923288304524",
@@ -7,8 +7,7 @@
     "currency": "PKR",
     "refund_policy": {
       "heading": "Refunds and cancellations",
-      "label": "Refund policy",
-      "note": "Cancel free before dispatch; a cancellation fee applies after dispatch. Damaged or wrong items are replaced or refunded in full if reported within 7 days. Full policy is on the About page."
+      "note": "Once an order has been dispatched, a cancellation fee applies."
     }
   },
   "products": [
@@ -19,7 +18,7 @@
       "price_cents": 780000,
       "in_stock": true,
       "description": "Glazed stoneware, holds heat well and goes in the dishwasher.",
-      "details": "Thrown in small batches and glazed inside and out, so it holds heat as well as it looks doing it. The foot is left unglazed, which stops it sticking to a shelf or a table. The handle is pulled rather than attached, so there is no seam to crack.\n\nRefund policy: Cancel free before dispatch; a cancellation fee applies after dispatch. Damaged or wrong items are replaced or refunded in full if reported within 7 days. Full policy is on the About page.",
+      "details": "Thrown in small batches and glazed inside and out, so it holds heat as well as it looks doing it. The foot is left unglazed, which stops it sticking to a shelf or a table. The handle is pulled rather than attached, so there is no seam to crack.\n\nOnce an order has been dispatched, a cancellation fee applies.",
       "specs": {
         "Capacity": "350 ml",
         "Dimensions": "9 cm high x 8 cm wide",
@@ -38,7 +37,7 @@
       "price_cents": 1780000,
       "in_stock": true,
       "description": "Woven European flax, softens with every wash.",
-      "details": "Woven from European flax and washed before it leaves us, so it arrives already soft rather than needing a break-in period. Heavy enough to sit over the back of a chair without sliding. The selvedge is finished by hand.\n\nRefund policy: Cancel free before dispatch; a cancellation fee applies after dispatch. Damaged or wrong items are replaced or refunded in full if reported within 7 days. Full policy is on the About page.",
+      "details": "Woven from European flax and washed before it leaves us, so it arrives already soft rather than needing a break-in period. Heavy enough to sit over the back of a chair without sliding. The selvedge is finished by hand.\n\nOnce an order has been dispatched, a cancellation fee applies.",
       "specs": {
         "Dimensions": "130 x 180 cm",
         "Weight": "1.1 kg",
@@ -56,7 +55,7 @@
       "price_cents": 1170000,
       "in_stock": true,
       "description": "Borosilicate glass with a cork stopper, pours without dripping.",
-      "details": "Borosilicate, so it survives a hot liquid being poured straight into it. The cork is a natural stopper with a silicone ring underneath to keep it watertight. The spout is narrow enough to pour clean without running down the side.\n\nRefund policy: Cancel free before dispatch; a cancellation fee applies after dispatch. Damaged or wrong items are replaced or refunded in full if reported within 7 days. Full policy is on the About page.",
+      "details": "Borosilicate, so it survives a hot liquid being poured straight into it. The cork is a natural stopper with a silicone ring underneath to keep it watertight. The spout is narrow enough to pour clean without running down the side.\n\nOnce an order has been dispatched, a cancellation fee applies.",
       "specs": {
         "Capacity": "1 litre",
         "Dimensions": "28 cm high x 9 cm wide",
@@ -75,7 +74,7 @@
       "price_cents": 670000,
       "in_stock": true,
       "description": "Rapeseed and coconut wax, unscented, about 40 hours of burn.",
-      "details": "Unscented, so it does not compete with a room or a meal. The wick is cotton and lead-free, and the wax is a rapeseed and coconut blend rather than paraffin, which burns cleaner and keeps its shape in a warm room.\n\nRefund policy: Cancel free before dispatch; a cancellation fee applies after dispatch. Damaged or wrong items are replaced or refunded in full if reported within 7 days. Full policy is on the About page.",
+      "details": "Unscented, so it does not compete with a room or a meal. The wick is cotton and lead-free, and the wax is a rapeseed and coconut blend rather than paraffin, which burns cleaner and keeps its shape in a warm room.\n\nOnce an order has been dispatched, a cancellation fee applies.",
       "specs": {
         "Burn time": "Approx. 40 hours",
         "Net weight": "220 g",
@@ -94,7 +93,7 @@
       "price_cents": 1560000,
       "in_stock": true,
       "description": "Wheel-thrown stoneware with a matte white glaze.",
-      "details": "Wheel-thrown, so no two are identical in a small way: the rim will not be perfectly even, and that is the point of it. Matte white glaze outside, unglazed foot. Holds a full bunch of cut flowers or a single branch.\n\nRefund policy: Cancel free before dispatch; a cancellation fee applies after dispatch. Damaged or wrong items are replaced or refunded in full if reported within 7 days. Full policy is on the About page.",
+      "details": "Wheel-thrown, so no two are identical in a small way: the rim will not be perfectly even, and that is the point of it. Matte white glaze outside, unglazed foot. Holds a full bunch of cut flowers or a single branch.\n\nOnce an order has been dispatched, a cancellation fee applies.",
       "specs": {
         "Height": "26 cm",
         "Mouth diameter": "9 cm",
@@ -113,7 +112,7 @@
       "price_cents": 1330000,
       "in_stock": true,
       "description": "Lambswool cover with a feather-down insert, 45cm square.",
-      "details": "Lambswool cover with a feather-down insert, filled firm enough to sit upright on a chair rather than slumping. The cover unzips at the back for washing. The feather is washable, so it can be refilled rather than replaced.\n\nRefund policy: Cancel free before dispatch; a cancellation fee applies after dispatch. Damaged or wrong items are replaced or refunded in full if reported within 7 days. Full policy is on the About page.",
+      "details": "Lambswool cover with a feather-down insert, filled firm enough to sit upright on a chair rather than slumping. The cover unzips at the back for washing. The feather is washable, so it can be refilled rather than replaced.\n\nOnce an order has been dispatched, a cancellation fee applies.",
       "specs": {
         "Dimensions": "45 x 45 cm",
         "Weight": "900 g",
@@ -132,7 +131,7 @@
       "price_cents": 1000000,
       "in_stock": true,
       "description": "Shallow glazed bowl, nests with the others to save shelf space.",
-      "details": "Wide and shallow, which is what makes it a serving bowl rather than a mixing bowl: the food stays visible and easy to reach across a table. Glazed inside, so it takes a sauce without soaking it in. Nests with the others.\n\nRefund policy: Cancel free before dispatch; a cancellation fee applies after dispatch. Damaged or wrong items are replaced or refunded in full if reported within 7 days. Full policy is on the About page.",
+      "details": "Wide and shallow, which is what makes it a serving bowl rather than a mixing bowl: the food stays visible and easy to reach across a table. Glazed inside, so it takes a sauce without soaking it in. Nests with the others.\n\nOnce an order has been dispatched, a cancellation fee applies.",
       "specs": {
         "Capacity": "2.5 litres",
         "Dimensions": "9 cm high x 28 cm wide",
@@ -151,7 +150,7 @@
       "price_cents": 2450000,
       "in_stock": true,
       "description": "A heavy stoneware pitcher for water or wine, glazed in a soft matte cream.",
-      "details": "Glazed inside and out in a matte cream, so nothing tastes of the clay. The handle is pulled rather than attached, so there is no seam to crack, and the lip is unglazed on the inside only where the glaze would pool. Holds 1.2 litres, which is enough for four glasses.\n\nRefund policy: Cancel free before dispatch; a cancellation fee applies after dispatch. Damaged or wrong items are replaced or refunded in full if reported within 7 days. Full policy is on the About page.",
+      "details": "Glazed inside and out in a matte cream, so nothing tastes of the clay. The handle is pulled rather than attached, so there is no seam to crack, and the lip is unglazed on the inside only where the glaze would pool. Holds 1.2 litres, which is enough for four glasses.\n\nOnce an order has been dispatched, a cancellation fee applies.",
       "specs": {
         "Capacity": "1.2 litres",
         "Dimensions": "22 cm high x 14 cm wide",
@@ -170,7 +169,7 @@
       "price_cents": 1450000,
       "in_stock": true,
       "description": "Unlacquered brass that darkens to a deeper patina over time.",
-      "details": "Unlacquered brass, left uncoated so it darkens to a deeper patina as it is handled instead of staying permanently shiny. Made for keys, a watch, or a small pile of odds and ends. It will not return to bright.\n\nRefund policy: Cancel free before dispatch; a cancellation fee applies after dispatch. Damaged or wrong items are replaced or refunded in full if reported within 7 days. Full policy is on the About page.",
+      "details": "Unlacquered brass, left uncoated so it darkens to a deeper patina as it is handled instead of staying permanently shiny. Made for keys, a watch, or a small pile of odds and ends. It will not return to bright.\n\nOnce an order has been dispatched, a cancellation fee applies.",
       "specs": {
         "Dimensions": "28 x 18 cm",
         "Weight": "640 g",

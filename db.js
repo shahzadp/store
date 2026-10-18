@@ -501,32 +501,47 @@ const SEARCH_DIMS = 384;
 // product page and the app cannot drift apart, because they read this.
 const REFUND_POLICY = {
   heading: 'Refunds and cancellations',
-  label: 'Refund policy',
-  note:
-    'Cancel free before dispatch; a cancellation fee applies after dispatch. ' +
-    'Damaged or wrong items are replaced or refunded in full if reported ' +
-    'within 7 days. Full policy is on the About page.',
+  note: 'Once an order has been dispatched, a cancellation fee applies.',
 };
 
 /** The exact text toJson() appends, and the only thing stripRefundPolicy
  *  removes. Built from REFUND_POLICY so the two cannot drift apart. */
 function refundBlock() {
-  return '\n\n' + REFUND_POLICY.label + ': ' + REFUND_POLICY.note;
+  return '\n\n' + REFUND_POLICY.note;
 }
 
 /** A product's copy with any appended note taken back off.
  *
  *  Trims, so re-exporting a catalog that already carries the note cannot stack
  *  a second copy - the admin's editor may have been seeded from a published
- *  catalog.json, note and all. */
+ *  catalog.json, note and all. That is also why the older, longer wording is
+ *  removed on sight: the catalog.json published on 16 Oct 2026 carried a
+ *  paragraph beginning "Refund policy: ", and a product showing both would read
+ *  as two different promises.
+ *
+ *  The old text is matched whole and exactly. Anything that is not that string
+ *  is the shopkeeper's own copy, and is left alone. */
+const REFUND_LEGACY =
+  '\n\nRefund policy: Cancel free before dispatch; a cancellation fee applies after dispatch. ' +
+  'Damaged or wrong items are replaced or refunded in full if reported within 7 days. ' +
+  'Full policy is on the About page.';
+
 function stripRefundPolicy(text) {
-  return String(text || '').split(refundBlock()).join('').trim();
+  const body = String(text || '')
+    .split(refundBlock())
+    .join('')
+    .split(REFUND_LEGACY)
+    .join('')
+    .trim();
+  // A product with no copy at all exports as the bare note, with no blank line
+  // in front of it. Without this it would grow a second copy on every export.
+  return body === REFUND_POLICY.note ? '' : body;
 }
 
 /** A product's copy with the note on the end. */
 function withRefundPolicy(text) {
   const body = stripRefundPolicy(text);
-  return body ? body + refundBlock() : REFUND_POLICY.label + ': ' + REFUND_POLICY.note;
+  return body ? body + refundBlock() : REFUND_POLICY.note;
 }
 
   function float32ToBase64(vector) {
@@ -664,7 +679,6 @@ function withRefundPolicy(text) {
           // today; it is here so the data exists before the code needs it.
           refund_policy: {
             heading: REFUND_POLICY.heading,
-            label: REFUND_POLICY.label,
             note: REFUND_POLICY.note,
           },
         },

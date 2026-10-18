@@ -128,12 +128,14 @@ function render(product) {
   // constant instead, as its own line below the copy, so a shopper does not
   // read the same sentence twice and the note is not buried in the prose.
   const full = Catalog.stripRefundPolicy(product.details || product.description);
-  const policy = Catalog.REFUND_POLICY;
-  const policyNote = policy
+  // The refund condition, and nothing more than this sentence: it is a line of
+  // small print under the copy, not a second description. The rest of the
+  // policy - the refund window, who pays the return, how refunds are paid - is
+  // on the About page, which is where a shopper goes when they care. This is the
+  // same sentence db.js's toJson() appends to `details` for the app.
+  const policyNote = Catalog.REFUND_POLICY.note
     ? `
-      <p class="product-detail__policy">
-        <span class="product-detail__policy-label">${Store.escapeHtml(policy.label)}</span>${Store.escapeHtml(policy.note)}
-      </p>`
+      <p class="product-detail__policy">${Store.escapeHtml(Catalog.REFUND_POLICY.note)}</p>`
     : '';
   const fullBox = `
     <section class="product-detail__box product-detail__box--full" aria-labelledby="full-heading">
