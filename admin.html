@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Catalog — Alex Store</title>
+<title>Catalog â€” Alex Store</title>
 <meta name="robots" content="noindex">
 <meta name="description" content="Catalog editor for Alex Store.">
 <link rel="stylesheet" href="./admin.css?v=64">
@@ -11,7 +11,7 @@
 <body>
 
 <header class="bar">
-  <h1>Catalog — Alex Store</h1>
+  <h1>Catalog â€” Alex Store</h1>
   <div class="bar__actions">
     <span id="status" class="status" role="status" aria-live="polite"></span>
   </div>
@@ -24,7 +24,7 @@
     <p class="muted">
       Edits are saved to <strong>this browser only</strong>. Visitors still see the published
       <code>catalog.sql</code>. To publish, download both files below and replace
-      their copies in the repo, then push — Pages rebuilds in about a minute.<br> <code>catalog.sql</code> is what this site reads. <code>catalog.json</code> is the same data as plain JSON: the Android app fetches it, because it cannot run SQLite in a browser the way this page does.
+      their copies in the repo, then push â€” Pages rebuilds in about a minute.<br> <code>catalog.sql</code> is what this site reads. <code>catalog.json</code> is the same data as plain JSON: the Android app fetches it, because it cannot run SQLite in a browser the way this page does.
     </p>
     <div class="publish-actions">
       <button class="btn btn-solid" type="button" id="export">Download catalog.sql</button>
@@ -45,7 +45,7 @@
       <div class="field">
         <label for="s-wa">WhatsApp number</label>
         <input id="s-wa" name="whatsapp" inputmode="numeric">
-        <small>Country code and number only — no <code>+</code>, spaces or dashes.</small>
+        <small>Country code and number only â€” no <code>+</code>, spaces or dashes.</small>
       </div>
       <div class="field">
         <label for="s-delivery">Delivery charge (%)</label>
@@ -55,6 +55,17 @@
       </div>
     </div>
 
+      <div class="field">
+        <label for="s-delivery-low">Delivery charge for low prices (%)</label>
+        <input id="s-delivery-low" name="delivery_percent_low" inputmode="decimal" placeholder="50">
+        <small>Applied to products priced below the threshold (default 50%).</small>
+      </div>
+      <div class="field">
+        <label for="s-delivery-threshold">Low-price threshold (paisa)</label>
+        <input id="s-delivery-threshold" name="delivery_threshold_paisa" inputmode="numeric" placeholder="100000">
+        <small>Products priced below this (100000 paisa = Rs 1,000) use the
+          percentage above.</small>
+      </div>
     <h3 class="subhead">Free-delivery voucher</h3>
     <p class="muted">
       Announced once, as a claimable voucher, instead of the old sticky bar.
@@ -104,7 +115,7 @@
         <div class="field field--wide">
           <label for="f-description">Description</label>
           <textarea id="f-description" name="description" rows="2"
-                    placeholder="One line, plain and factual — material, size, how it behaves. No marketing language."></textarea>
+                    placeholder="One line, plain and factual â€” material, size, how it behaves. No marketing language."></textarea>
           <small>Shown between the name and the price. This is also the text the
             search engine matches, so name the materials and the use plainly.</small>
         </div>
@@ -122,7 +133,7 @@
           <textarea id="f-specs" name="specs" rows="5"
                     placeholder="Dimensions: 9 cm high x 8 cm wide&#10;Weight: 320 g&#10;Material: Glazed stoneware&#10;Care: Dishwasher safe"></textarea>
           <small>One per line, as <code>Label: value</code>. Shown in the
-            specifications box. Up to 12 lines — dimensions, weight, capacity,
+            specifications box. Up to 12 lines â€” dimensions, weight, capacity,
             material and care are the ones people look for first.</small>
         </div>
 
@@ -132,7 +143,7 @@
                     placeholder="Cold drink"></textarea>
           <small>One per line, up to 6. Optional choices the buyer can tick, such
             as a <em>Cold drink</em> with a meal. Add a size and a surcharge with
-            pipes — <code>Cold drink | 500ml | 100</code> — where
+            pipes â€” <code>Cold drink | 500ml | 100</code> â€” where
             <code>100</code> is rupees. The choice and its surcharge are carried
             into the WhatsApp message; the price shown on the page never
             changes.</small>
@@ -156,7 +167,7 @@
 
         <div class="field field--wide">
           <label for="f-image">Image URL</label>
-          <input id="f-image" name="image_url" placeholder="https://… (blank uses the tinted placeholder)">
+          <input id="f-image" name="image_url" placeholder="https://â€¦ (blank uses the tinted placeholder)">
         </div>
 
         <div class="field field--wide">
@@ -185,7 +196,7 @@
     <h2 id="c-title">Add a collection</h2>
     <p class="muted">
       Collections are editorial, not for sale. They are independent of the
-      product catalog — no price, no stock, and nothing links between them.
+      product catalog â€” no price, no stock, and nothing links between them.
     </p>
     <form id="collection-form" autocomplete="off">
       <input type="hidden" id="c-id" name="id">
@@ -220,7 +231,7 @@
 
         <div class="field field--wide">
           <label for="c-image">Image URL</label>
-          <input id="c-image" name="image_url" placeholder="https://… (blank uses the tinted placeholder)">
+          <input id="c-image" name="image_url" placeholder="https://â€¦ (blank uses the tinted placeholder)">
         </div>
       </div>
 
@@ -251,14 +262,14 @@
       <h2>Collections</h2>
       <button class="btn btn-ghost" type="button" id="refresh">Refresh</button>
     </div>
-    <div id="collection-list" class="list"><p class="muted">Loading…</p></div>
+    <div id="collection-list" class="list"><p class="muted">Loadingâ€¦</p></div>
   </section>
 
   <section class="card">
     <div class="card__head">
       <h2>Products</h2>
     </div>
-    <div id="product-list" class="list"><p class="muted">Loading…</p></div>
+    <div id="product-list" class="list"><p class="muted">Loadingâ€¦</p></div>
   </section>
 
 </main>

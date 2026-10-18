@@ -137,6 +137,8 @@ INSERT OR IGNORE INTO settings (key, value) VALUES
 
 
   ('delivery_percent', '10'),
+  ('delivery_percent_low', '50'),
+  ('delivery_threshold_paisa', '100000'),
   ('free_delivery_over_paisa', '600000'),
   ('store_name', 'Alex Store'),
   ('voucher_code', 'FREEDELIVERY'),

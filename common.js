@@ -1,5 +1,5 @@
-/* ==========================================================================
-   Shared storefront helpers — used by index.html and shop.html.
+﻿/* ==========================================================================
+   Shared storefront helpers â€” used by index.html and shop.html.
    The store trades in PKR only.
    ========================================================================== */
 
@@ -14,6 +14,8 @@ const Store = (() => {
   // so this page and the Android app cannot disagree about what delivery
   // costs. 0 means "show no delivery pricing at all".
   let deliveryPercent = 0;
+  let deliveryPercentLow = 0;
+  let deliveryThresholdPaisa = 100000;
 
   /** Formats integer paisa as PKR, e.g. 780000 -> "Rs 7,800". */
   function formatPrice(paisa) {
@@ -35,8 +37,9 @@ const Store = (() => {
    * a catalog with no delivery pricing renders exactly as it always did.
    */
   function deliveryIncluded(paisa) {
-    if (!deliveryPercent) return null;
-    return Math.round(paisa * (1 + deliveryPercent / 100));
+    const pct = paisa < deliveryThresholdPaisa ? deliveryPercentLow : deliveryPercent;
+    if (!pct) return null;
+    return Math.round(paisa * (1 + pct / 100));
   }
 
   /**
@@ -71,8 +74,8 @@ const Store = (() => {
    * The WhatsApp order message for one product.
    *
    * `selections` is an optional array of `{ label, on, desc, price_cents }`
-   * add-ons (e.g. a cold drink). Every add-on is stated either way — "Cold
-   * drink (500ml): yes" or "Cold drink (500ml): no" — so an unmarked option is
+   * add-ons (e.g. a cold drink). Every add-on is stated either way â€” "Cold
+   * drink (500ml): yes" or "Cold drink (500ml): no" â€” so an unmarked option is
    * an explicit answer rather than a silence the shop has to interpret. A
    * surcharge, when there is one, is stated on that same line and NOT folded
    * into the price above: the page price never changes with a choice.
@@ -82,7 +85,7 @@ const Store = (() => {
       `Hi ${storeName}! I'd like to order:`,
       '',
       `*${product.name}*`,
-      `${product.category} — ${formatPrice(product.price_cents)}`,
+      `${product.category} â€” ${formatPrice(product.price_cents)}`,
     ];
 
     // Only ask about the detail if there is any, and keep it to one extra line.
@@ -125,7 +128,7 @@ const Store = (() => {
     return `./product.html?slug=${encodeURIComponent(slug)}`;
   }
 
-  /** Absolute, canonical URL for a product — what gets copied on share. */
+  /** Absolute, canonical URL for a product â€” what gets copied on share. */
   function shareUrl(product) {
     return new URL(productUrl(product), window.location.href).href;
   }
@@ -234,7 +237,7 @@ const Store = (() => {
     // The image link is aria-hidden and removed from the tab order: it points
     // at the same place as the title link directly beneath it, and when a
     // product has no image it wraps an aria-hidden tint block, which left the
-    // link with no accessible name at all — Lighthouse flagged every one of
+    // link with no accessible name at all â€” Lighthouse flagged every one of
     // them as a nameless link. One link per destination is also kinder to
     // screen reader users than announcing the same target twice.
     return `
@@ -273,6 +276,8 @@ const Store = (() => {
     // Delivery is a percentage of the order, read from the catalog so this
     // page and the Android app format the same number.
     deliveryPercent = Number(Catalog.getSetting('delivery_percent')) || 0;
+    deliveryPercentLow = Number(Catalog.getSetting('delivery_percent_low')) || 0;
+    deliveryThresholdPaisa = Number(Catalog.getSetting('delivery_threshold_paisa')) || 100000;
 
     // The free-delivery offer used to be a sticky bar at the top of every
     // page. It is now announced once, as a claimable voucher (voucher.js),

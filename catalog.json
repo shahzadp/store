@@ -1,10 +1,12 @@
 {
-  "generated_at": "2026-10-18T19:48:40.362Z",
+  "generated_at": "2026-10-18T20:26:15.413Z",
   "store": {
     "name": "Alex Store",
     "whatsapp": "923288304524",
     "free_delivery_over_paisa": 600000,
     "delivery_percent": 10,
+    "delivery_percent_low": 50,
+    "delivery_threshold_paisa": 100000,
     "voucher": {
       "title": "Free delivery over Rs 6,000",
       "code": "FREEDELIVERY",
