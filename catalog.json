@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-18T20:26:15.413Z",
+  "generated_at": "2026-10-18T20:30:43.843Z",
   "store": {
     "name": "Alex Store",
     "whatsapp": "923288304524",
@@ -30,7 +30,7 @@
       "details": "Cut thin and fried twice: once to cook them through, again to crisp the outside. That second fry is why they stay crisp on the way to you instead of steaming soft in the box. Salted the moment they come out of the oil, while the surface still holds it. Served with ketchup; ask for chilli garlic instead if you prefer.\n\nOnce an order has been dispatched, a cancellation fee applies.",
       "specs": {
         "Portion": "Regular",
-        "Serves": "1â€“2",
+        "Serves": "1–2",
         "Cut": "Thin, twice-fried",
         "Served with": "Ketchup"
       },
@@ -281,7 +281,7 @@
     {
       "slug": "table-and-tide",
       "title": "Table & Tide",
-      "description": "Pieces for the everyday table â€” mugs, carafes and bowls made to be used daily and washed often.",
+      "description": "Pieces for the everyday table � mugs, carafes and bowls made to be used daily and washed often.",
       "image_url": null,
       "tint": "#CFC3E3"
     },

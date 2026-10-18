@@ -1,6 +1,6 @@
-﻿/* ==========================================================================
+/* ==========================================================================
 
-   Alex Store â€” catalog admin
+   Alex Store � catalog admin
 
    Edits a local SQLite copy (db.js) and exports catalog.sql to publish.
 
@@ -136,7 +136,7 @@ function renderList(products) {
 
             ${p.description ? `<div class="row__desc">${escapeHtml(p.description)}</div>` : ''}
 
-            <div class="row__meta">${escapeHtml(p.category)} Â· ${escapeHtml(price)} Â· sort ${p.sort_order} Â· /${escapeHtml(p.slug)}</div>
+            <div class="row__meta">${escapeHtml(p.category)} · ${escapeHtml(price)} · sort ${p.sort_order} · /${escapeHtml(p.slug)}</div>
 
           </div>
 
@@ -330,7 +330,7 @@ function renderCollections() {
 
             <div class="row__name">${escapeHtml(c.title)}</div>
 
-            <div class="row__meta">sort ${c.sort_order} Â· /${escapeHtml(c.slug)}</div>
+            <div class="row__meta">sort ${c.sort_order} · /${escapeHtml(c.slug)}</div>
 
           </div>
 
@@ -643,7 +643,7 @@ $('#export').addEventListener('click', () => {
 
   downloadFile('catalog.sql', Catalog.toSql(), 'text/plain;charset=utf-8');
 
-  status('Downloaded catalog.sql â€” replace the repo copy and push', 'ok');
+  status('Downloaded catalog.sql � replace the repo copy and push', 'ok');
 
 });
 
@@ -657,7 +657,7 @@ $('#export-json').addEventListener('click', () => {
 
   downloadFile('catalog.json', Catalog.toJson(), 'application/json');
 
-  status('Downloaded catalog.json â€” replace the repo copy and push', 'ok');
+  status('Downloaded catalog.json � replace the repo copy and push', 'ok');
 
 });
 
@@ -669,7 +669,7 @@ $('#discard').addEventListener('click', async () => {
 
   Catalog.clearDraft();
 
-  status('Reloadingâ€¦');
+  status('Reloading…');
 
   window.location.reload();
 
@@ -737,10 +737,10 @@ function indexNote() {
   const count = Catalog.listProducts().length;
 
   if (Catalog.indexIsComplete()) {
-    note.textContent = `Index is current â€” ${count} products embedded. Download catalog.sql to publish it.`;
+    note.textContent = `Index is current � ${count} products embedded. Download catalog.sql to publish it.`;
     note.className = 'draft-note';
   } else {
-    note.textContent = `No current index â€” ${count} products need embedding before semantic search can run.`;
+    note.textContent = `No current index � ${count} products need embedding before semantic search can run.`;
     note.className = 'draft-note draft-note--active';
   }
 }
@@ -766,10 +766,10 @@ $('#build-index').addEventListener('click', async () => {
   try {
     out.textContent = 'Loading engine (one time)';
     const vectors = await Search.embed(texts, (message) => {
-      if (message) out.textContent = `${message}â€¦`;
+      if (message) out.textContent = `${message}…`;
     });
 
-    out.textContent = `Embedding ${products.length} productsâ€¦`;
+    out.textContent = `Embedding ${products.length} products…`;
     Catalog.replaceVectors(
       products.map((p, i) => ({ slug: p.slug, vector: vectors[i] })),
     );
@@ -800,7 +800,7 @@ $('#refresh').addEventListener('click', () => {
 
 (async function init() {
 
-  status('Loading catalogâ€¦');
+  status('Loading catalog…');
 
   try {
 
