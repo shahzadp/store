@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Alex Store</title>
 <meta name="description" content="One store, multiple products. Explore a growing collection across several categories, all in one place. Order on WhatsApp.">
+<!-- GitHub Pages cannot send response headers, so the enforceable half of the
+     security policy has to travel in the document. Everything is denied by
+     default; each origin below is one the page genuinely loads:
+
+       gc.zgo.at + mystore.goatcounter.com  the analytics script and its beacon
+       cdn.jsdelivr.net                     the search engine, imported on demand
+       https:                               catalog images, which the owner supplies
+                                            as any http(s) URL (CATALOG-GUIDE,
+                                            Field reference)
+       'wasm-unsafe-eval'                   sql.js and ternlight instantiate WASM
+
+     `style-src` keeps 'unsafe-inline' because product tints are written as
+     `style="background:…"` by common.js and search.js. Inline STYLE is the one
+     exception; inline SCRIPT is not allowed anywhere, which is what makes this
+     worth having. `frame-ancestors` is deliberately absent: it is ignored in a
+     meta tag, so clickjacking cannot be fixed from here. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://cdn.jsdelivr.net https://mystore.goatcounter.com; media-src 'self'; frame-src 'none'; form-action 'self'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="stylesheet" href="./styles.css?v=66">
 <script data-goatcounter="https://mystore.goatcounter.com/count"
         async src="https://gc.zgo.at/count.js"></script>

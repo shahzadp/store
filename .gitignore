@@ -7,9 +7,17 @@ Thumbs.db
 # Scratch files: throwaway Node patch scripts, one-off measurement harnesses
 # and commit-message files written to disk to dodge shell quoting. These keep
 # being swept into commits by `git add -A`, so they are ignored explicitly.
-_*.js
-_*.html
-_msg*.txt
+#
+# Anchored to the repository root on purpose. Unanchored, `_*.html` also matched
+# `src/_layout.html` — the shared head/nav/footer template every page is built
+# from — so it was never tracked and a fresh clone could not run `node build.mjs`.
+/_*.js
+/_*.html
+/_msg*.txt
+
+# The same throwaway scripts once they outgrew a single file. Nothing in here is
+# imported by the site or the build; `scratch/` is a workbench, not source.
+/scratch/
 
 # src/ IS committed: it holds the page sources the build reads.
 # The generated HTML in the root is committed too, because Pages serves it

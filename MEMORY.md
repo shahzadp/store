@@ -12,7 +12,7 @@ context. Companion documents: `README.md` (architecture) and
 ## 1. Current state
 
 - 8 products, 3 collections, 1 free-delivery setting (Rs 6,000).
-- Cache-buster version: **56** (in `build.config.json`, not in the HTML).
+- Cache-buster version: **66** (in `build.config.json`, not in the HTML).
 - Semantic search: ternlight `@ternlight/base@0.1.1`, 384 dims, hit@3 = 15/16.
 - Accessibility: 1.0 with zero Lighthouse failures on all seven pages.
 - Seven pages: `index`, `shop`, `collections`, `about`, `journal`, `product`,
@@ -60,6 +60,20 @@ silently hung (`initSqlJs()` never settled) and rendered the storefront blank
 with no error. It is now vendored in `vendor/` with SHA-256 hashes recorded in
 `db.js`. The only remaining CDN request is the search model, which is
 best-effort with its own retry.
+
+**The Content-Security-Policy is a meta tag, because Pages has no headers.**
+`src/_layout.html` carries `default-src 'none'` plus an explicit allowance for
+each origin the page really uses (GoatCounter, jsDelivr, any HTTPS image host)
+and `'wasm-unsafe-eval'` for sql.js and ternlight. `img-src` stays at `https:`
+rather than naming Pexels, because the catalog contract lets the owner paste any
+`http(s)` image URL and a host-specific rule would silently blank a legitimate
+product photo. Inline script is blocked, so catalog text cannot become code;
+inline style stays allowed because the tint markup is written as
+`style="background:…"`. `admin.html` repeats the policy without analytics and
+with the same `img-src`. The header-only directives (`frame-ancestors`) cannot
+be expressed from a meta tag, so clickjacking is the one protection this host
+cannot provide. SRI is not used: the only external script updates in place, and
+the engine is a dynamic import with no `integrity` hook.
 
 **Product vectors are precomputed.** Visitors embed only their query; product
 embeddings ship inside `catalog.sql`. Adding a product without rebuilding the
@@ -187,6 +201,19 @@ contain MIT-licensed code. That is why `LICENSE` (all rights reserved) and
 deliberately not named like a licence. Recorded here rather than only in the app
 repository's MEMORY because it is this repository that would suffer it next.
 
+**A CSP that blocks analytics does not report a failure.** GoatCounter sends its
+hit with `navigator.sendBeacon`, then falls back to a 1px `<img>` — two different
+fetch types, so it needs *both* `connect-src` and `img-src` for
+`mystore.goatcounter.com`. Miss either and the page looks perfect while the
+dashboard stays empty. `admin.html` is excluded from analytics, which is why its
+policy does not name that origin at all.
+
+**The site's own tint markup forces `style-src 'unsafe-inline'`.** Product cards,
+search thumbnails and admin swatches are built as
+`style="background:${tint}"` inside `innerHTML`, and CSP treats a style attribute
+as inline style. Removing `'unsafe-inline'` does not harden anything visible in
+review — it silently strips every placeholder tint to the page background.
+
 ---
 
 ## 5. Publishing checklist
@@ -270,6 +297,7 @@ WhatsApp link resolves, Lighthouse a11y 1.0.
 | Catalog loading, validation, draft, export | `db.js` |
 | Catalog editor | `admin.html`, `admin.js` |
 | Search engine, dialog, ranking | `search.js` |
+| Security policy (CSP, referrer) | `src/_layout.html` (public pages), `admin.html` |
 | Product page rendering | `product.js` |
 | Shared render helpers, announcement | `common.js` |
 | Vendored sql.js (do not edit) | `vendor/` |
