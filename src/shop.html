@@ -20,7 +20,17 @@
     <div class="container">
       <div class="section-head">
         <h2>Products</h2>
-        <span class="catalog-count" id="count" aria-live="polite"></span>
+        <div class="shop-tools">
+          <span class="catalog-count" id="count" aria-live="polite"></span>
+          <label class="sort" for="sort">Sort
+            <select class="sort__select" id="sort">
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name">Name: A&ndash;Z</option>
+            </select>
+          </label>
+        </div>
       </div>
 
       <div class="filters" id="filters" role="group" aria-label="Filter by category"></div>

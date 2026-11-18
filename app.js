@@ -18,6 +18,17 @@ async function start() {
     ? products.map(Store.productCard).join('')
     : '<li class="catalog-status">No products in the catalog yet.</li>';
 
+  // Recently viewed — only once the shopper has actually opened something.
+  const recentSection = document.getElementById('recently');
+  const recentRow = document.getElementById('recent-row');
+  if (recentSection && recentRow) {
+    const recent = Store.recentlyViewedProducts();
+    if (recent.length) {
+      recentRow.innerHTML = recent.map(Store.productCard).join('');
+      recentSection.removeAttribute('hidden');
+    }
+  }
+
   // Collections are editorial and independent of the catalog.
   const strip = document.getElementById('home-collections');
   if (strip) {

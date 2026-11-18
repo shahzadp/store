@@ -6,13 +6,28 @@
 let allProducts = [];
 let categories = [];
 let activeCategory = 'All';
+let activeSort = 'featured';
+
+const SORTERS = {
+  'featured': null, // catalog order
+  'price-asc': (a, b) => a.price_cents - b.price_cents,
+  'price-desc': (a, b) => b.price_cents - a.price_cents,
+  'name': (a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }),
+};
+
+function visibleProducts() {
+  const filtered =
+    activeCategory === 'All'
+      ? [...allProducts]
+      : allProducts.filter((p) => p.category === activeCategory);
+
+  const sorter = SORTERS[activeSort];
+  return sorter ? filtered.sort(sorter) : filtered;
+}
 
 function render() {
   const list = document.getElementById('products');
-  const visible =
-    activeCategory === 'All'
-      ? allProducts
-      : allProducts.filter((p) => p.category === activeCategory);
+  const visible = visibleProducts();
 
   list.setAttribute('aria-busy', 'false');
   list.innerHTML = visible.length
@@ -47,21 +62,40 @@ function readCategoryFromUrl() {
   return match ? match.category : 'All';
 }
 
+/** Honours ?sort= so a sorted view can be shared or reloaded. */
+function readSortFromUrl() {
+  const requested = new URLSearchParams(window.location.search).get('sort');
+  return Object.prototype.hasOwnProperty.call(SORTERS, requested)
+    ? requested
+    : 'featured';
+}
+
+function writeUrlParams() {
+  // Keep the address bar honest so the view can be shared or reloaded.
+  const url = new URL(window.location);
+  if (activeCategory === 'All') url.searchParams.delete('category');
+  else url.searchParams.set('category', activeCategory);
+  if (activeSort === 'featured') url.searchParams.delete('sort');
+  else url.searchParams.set('sort', activeSort);
+  history.replaceState(null, '', url);
+}
+
 document.getElementById('filters').addEventListener('click', (event) => {
   const button = event.target.closest('.filter');
   if (!button) return;
 
   activeCategory = button.dataset.category;
-
-  // Keep the address bar honest so the filter can be shared or reloaded.
-  const url = new URL(window.location);
-  if (activeCategory === 'All') url.searchParams.delete('category');
-  else url.searchParams.set('category', activeCategory);
-  history.replaceState(null, '', url);
+  writeUrlParams();
 
   document.querySelectorAll('.filter').forEach((el) => {
     el.setAttribute('aria-pressed', String(el.dataset.category === activeCategory));
   });
+  render();
+});
+
+document.getElementById('sort').addEventListener('change', (event) => {
+  activeSort = event.target.value;
+  writeUrlParams();
   render();
 });
 
@@ -70,6 +104,8 @@ async function start() {
 
   allProducts = Catalog.listProducts();
   activeCategory = readCategoryFromUrl();
+  activeSort = readSortFromUrl();
+  document.getElementById('sort').value = activeSort;
   renderFilters();
   render();
   Store.initShare();

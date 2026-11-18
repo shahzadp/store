@@ -38,6 +38,10 @@
       <button class="icon-link" type="button" data-search-open aria-label="Search products">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg>
       </button>
+      <a class="icon-link saved-link" href="./saved.html" aria-label="Saved products">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.3s-7.2-4.6-9.5-9.2A5.4 5.4 0 0 1 12 6.3a5.4 5.4 0 0 1 9.5 4.8C19.2 15.7 12 20.3 12 20.3Z"></path></svg>
+        <span class="icon-badge" data-saved-count hidden>0</span>
+      </a>
     </div>
 
     <a class="logo" href="./">Alex Store</a>
@@ -50,6 +54,10 @@
       <button class="nav__search" type="button" data-search-open aria-label="Search products">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5L21 21"></path></svg>
       </button>
+      <a class="nav__search saved-link" href="./saved.html" aria-label="Saved products">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.3s-7.2-4.6-9.5-9.2A5.4 5.4 0 0 1 12 6.3a5.4 5.4 0 0 1 9.5 4.8C19.2 15.7 12 20.3 12 20.3Z"></path></svg>
+        <span class="icon-badge" data-saved-count hidden>0</span>
+      </a>
       <div class="nav__footer">
         <div class="cat">Questions?</div>
         <a class="nav__wa" data-whatsapp-general href="#" target="_blank" rel="noopener">Order on <span class="wa-word">WhatsApp</span></a>
@@ -74,6 +82,15 @@
     <p class="search__status" id="search-status" role="status" aria-live="polite"></p>
     <ul class="search__results" id="search-results"></ul>
     <p class="search__hint">Search by meaning &mdash; the engine downloads once, then is cached.</p>
+  </div>
+</div>
+
+<!-- quick view dialog -->
+<div class="quickview" id="quickview-dialog" role="dialog" aria-modal="true" aria-label="Quick view" hidden>
+  <div class="quickview__backdrop" data-quickview-close></div>
+  <div class="quickview__panel" role="document">
+    <button class="quickview__close" type="button" data-quickview-close aria-label="Close quick view">&times;</button>
+    <div class="quickview__content" id="quickview-body"></div>
   </div>
 </div>
 

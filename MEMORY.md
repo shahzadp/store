@@ -12,11 +12,16 @@ context. Companion documents: `README.md` (architecture) and
 ## 1. Current state
 
 - 8 products, 3 collections, 1 free-delivery setting (Rs 6,000).
-- Cache-buster version: **66** (in `build.config.json`, not in the HTML).
+- Cache-buster version: **67** (in `build.config.json`, not in the HTML).
 - Semantic search: ternlight `@ternlight/base@0.1.1`, 384 dims, hit@3 = 15/16.
-- Accessibility: 1.0 with zero Lighthouse failures on all seven pages.
-- Seven pages: `index`, `shop`, `collections`, `about`, `journal`, `product`,
-  `admin`.
+- Accessibility: 1.0 with zero Lighthouse failures on all public pages.
+- Eight pages: `index`, `shop`, `collections`, `about`, `journal`, `product`,
+  `saved`, `admin`.
+- Storefront UX (2026-11-18): saved-for-later (`saved.html`, localStorage, heart
+  on every card), recently viewed strip on the home page, "You may also like"
+  on the product page, sort on the shop page (`?sort=`), quick view modal,
+  sticky mobile buy bar on the product page, share via the platform share
+  sheet with clipboard fallback. All on-device; no account, no server.
 - Repo: 28→~32 tracked files, ~930 KB, **zero dependencies**. No
   `package.json`, no lockfile, no `node_modules`.
 
@@ -139,6 +144,49 @@ copy — deliberately not generated from the constant, because a policy should
 still be readable if a script fails. **That makes the About page and the constant
 a matched pair: change the fee or the window in one and change it in the other.**
 The product page and the app cannot drift apart, because they read the constant.
+
+---
+
+**Shopify-style storefront pass (2026-11-18).** Everything client-side; no
+backend was added and nothing left the browser except the prefilled WhatsApp
+message, which was already the only thing that did.
+
+- **Saved for later is a localStorage list of slugs** (`alexstore.saved.v1`),
+  read directly by `saved.js` and by `common.js`'s `initSaved()`. The heart on
+  every card (top-right of the image) is written by `saveFab()` inside
+  `productCard()`, so any page that renders cards gets the same toggle with the
+  same `aria-pressed` contract. The header and drawer heart icons carry a
+  `[data-saved-count]` badge, kept in sync by `updateSavedBadges()` after every
+  toggle and across tabs via the `storage` event. A corrupt value or a disabled
+  store reads as an empty list everywhere — a broken wishlist must never take
+  the shop down with it.
+- **Recently viewed** (`alexstore.recent.v1`, cap 6) is written by the product
+  page and rendered on the home page only when non-empty. Missing products are
+  dropped from both lists; a deleted product can never ghost-render.
+- **Related products** on the product page (`renderRelated`) prefer the same
+  category, fall back to the rest of the catalog, cap at four. An empty row
+  hides the section.
+- **Quick view** is one delegated handler in `common.js`
+  (`[data-quickview-slug]`) feeding one dialog in `_layout.html`. Escape, the
+  backdrop and the × all close it, focus returns to the opener, and the body
+  stops scrolling while open.
+- **The sticky buy bar** on the product page appears only below 820px and only
+  once the page's own buy button has scrolled out of view (one
+  IntersectionObserver). Its link is kept identical to the page's — including
+  the add-on selections — by the same `sync()` in `wireOptions()`.
+- **Share prefers the platform share sheet** (`navigator.share`) in every build
+  where it exists, falling back to copy-to-clipboard otherwise — including an
+  `AbortError`-as-dismissal that does nothing. This reversed an earlier
+  documented decision ("navigator.share deliberately not used"): the sheet is
+  the right thing on every phone a shopper actually holds; the clipboard stays
+  as the universal fallback, with its visible confirmation.
+- **Sort on the products page** reads and writes `?sort=` alongside
+  `?category=`; both survive sharing the URL. Featured keeps catalog order.
+
+**What this does not prove.** No iOS device was checked (unchanged caveat),
+and the quick view's share sheet was exercised only in the Chromium pane via
+its clipboard fallback — `navigator.share` is absent in the headless build,
+so the sheet path is written but not observed.
 
 ---
 

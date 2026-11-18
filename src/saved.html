@@ -1,0 +1,39 @@
+<!--
+  Source for saved.html. Edit this file, not the generated one in the
+  repo root - `node build.mjs` regenerates that from here plus
+  src/_layout.html.
+
+  page: saved
+  title: Saved — Alex Store
+  description: The products you saved on this device. Order on WhatsApp.
+-->
+<main>
+  <section class="page-head page-head--tight container">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="./">Home</a>
+      <span aria-hidden="true">&gt;</span>
+      <span aria-current="page">Saved</span>
+    </nav>
+  </section>
+
+  <section class="shop shop--flush">
+    <div class="container">
+      <div class="section-head">
+        <h2>Saved</h2>
+        <div class="shop-tools">
+          <span class="catalog-count" id="saved-count" aria-live="polite"></span>
+          <button class="filter" type="button" id="saved-clear" hidden>Clear all</button>
+        </div>
+      </div>
+
+      <ul class="products" id="saved-products" hidden></ul>
+
+      <div class="saved-empty" id="saved-empty" hidden>
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.3s-7.2-4.6-9.5-9.2A5.4 5.4 0 0 1 12 6.3a5.4 5.4 0 0 1 9.5 4.8C19.2 15.7 12 20.3 12 20.3Z"></path></svg>
+        <h3>Nothing saved yet</h3>
+        <p>Browse the shop and tap the heart on any product &mdash; it will be waiting for you here, on this device.</p>
+        <a class="btn btn-solid" href="./shop.html"><span class="btn__label">Browse products</span></a>
+      </div>
+    </div>
+  </section>
+</main>

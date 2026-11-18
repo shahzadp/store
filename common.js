@@ -134,10 +134,11 @@ const Store = (() => {
   }
 
   /**
-   * Share control. Copies the product's absolute URL rather than opening a
-   * platform share sheet, so it behaves identically on desktop and mobile
-   * and is testable. `navigator.share` is deliberately not used: it is
-   * mobile-only and its title/body cannot be asserted.
+   * Share control. On platforms with a share sheet (every modern phone, most
+   * desktop browsers) the product's absolute URL goes straight into it, with
+   * the platform deciding where — WhatsApp, Messages, anywhere. Everywhere
+   * else, and when the sheet itself fails, it copies the URL to the clipboard
+   * with a visible "Link copied" confirmation, so no tap is ever a dead end.
    */
   function shareButton(product, extraClass = '') {
     const name = typeof product === 'string' ? '' : escapeHtml(product.name);
@@ -171,6 +172,23 @@ const Store = (() => {
       if (!product) return;
 
       const url = shareUrl(product);
+
+      // The platform share sheet, where there is one. A dismissal
+      // (AbortError) is a choice, not a failure — nothing to report. Any
+      // other error falls through to the clipboard path below.
+      if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+        try {
+          await navigator.share({
+            title: product.name,
+            text: `${product.name} — ${formatPrice(product.price_cents)} · ${storeName}`,
+            url,
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+        }
+      }
+
       const label = button.querySelector('.share__label');
       const original = label ? label.textContent : '';
 
@@ -202,6 +220,235 @@ const Store = (() => {
         button.classList.remove('share--done');
         if (label) label.textContent = original;
       }, 2000);
+    });
+  }
+
+  /* ==========================================================================
+     Saved for later + recently viewed — on-device, no account, no server.
+
+     localStorage is the only persistence the storefront has, and both lists
+     below are exactly that: two arrays of slugs under versioned keys. Anything
+     unrecognised (private mode, a corrupt value, a disabled store) reads as an
+     empty list rather than throwing, because a broken wishlist must never take
+     the shop down with it.
+     ========================================================================== */
+
+  const SAVED_KEY = 'alexstore.saved.v1';
+  const RECENT_KEY = 'alexstore.recent.v1';
+  const RECENT_MAX = 6;
+
+  function readSlugList(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list.filter((s) => typeof s === 'string') : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function writeSlugList(key, list) {
+    try {
+      localStorage.setItem(key, JSON.stringify(list));
+    } catch {
+      // Private mode / disabled storage: the list just does not persist.
+    }
+  }
+
+  function savedList() {
+    return readSlugList(SAVED_KEY);
+  }
+
+  function isSaved(slug) {
+    return savedList().includes(slug);
+  }
+
+  /** Adds or removes the slug. Newest save sits first. Returns the new state. */
+  function toggleSaved(slug) {
+    const list = savedList();
+    const index = list.indexOf(slug);
+    if (index >= 0) list.splice(index, 1);
+    else list.unshift(slug);
+    writeSlugList(SAVED_KEY, list);
+    return index < 0;
+  }
+
+  function clearSaved() {
+    writeSlugList(SAVED_KEY, []);
+  }
+
+  /** Saved slugs resolved against the catalog, in save order, missing dropped. */
+  function savedProducts() {
+    if (typeof Catalog === 'undefined' || !Catalog.listProducts) return [];
+    const wanted = new Map(savedList().map((slug) => [slug, true]));
+    if (!wanted.size) return [];
+    const bySlug = new Map(Catalog.listProducts().map((p) => [p.slug, p]));
+    return savedList().map((slug) => bySlug.get(slug)).filter(Boolean);
+  }
+
+  /** Records a product view, most-recent first, capped — the home row. */
+  function recordProductView(slug) {
+    const list = readSlugList(RECENT_KEY).filter((s) => s !== slug);
+    list.unshift(slug);
+    writeSlugList(RECENT_KEY, list.slice(0, RECENT_MAX));
+  }
+
+  /** Recently viewed products, most recent first, missing entries dropped. */
+  function recentlyViewedProducts() {
+    if (typeof Catalog === 'undefined' || !Catalog.listProducts) return [];
+    const bySlug = new Map(Catalog.listProducts().map((p) => [p.slug, p]));
+    return readSlugList(RECENT_KEY).map((slug) => bySlug.get(slug)).filter(Boolean);
+  }
+
+  /** Keeps every saved-count badge on the page in step with the list. */
+  function updateSavedBadges() {
+    const count = savedList().length;
+    document.querySelectorAll('[data-saved-count]').forEach((el) => {
+      el.textContent = String(count);
+      el.hidden = count === 0;
+    });
+  }
+
+  /** Syncs one save toggle (or all of them) to [data-save-slug] buttons. */
+  function syncSaveButtons(slug) {
+    const list = savedList();
+    document.querySelectorAll('[data-save-slug]').forEach((button) => {
+      if (slug && button.dataset.saveSlug !== slug) return;
+      const saved = list.includes(button.dataset.saveSlug);
+      button.setAttribute('aria-pressed', String(saved));
+      button.classList.toggle('save-fab--saved', saved);
+      const label = button.dataset.saveLabel;
+      if (label) {
+        button.setAttribute('aria-label', saved ? `Remove ${label} from saved` : `Save ${label} for later`);
+      }
+    });
+  }
+
+  /**
+   * Wires every save toggle on the page, now and for markup added later, and
+   * keeps tabs/windows in agreement through the `storage` event. Called once
+   * from init().
+   */
+  function initSaved() {
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-save-slug]');
+      if (!button) return;
+      toggleSaved(button.dataset.saveSlug);
+      syncSaveButtons(button.dataset.saveSlug);
+      updateSavedBadges();
+    });
+
+    window.addEventListener('storage', (event) => {
+      if (event.key === SAVED_KEY) {
+        syncSaveButtons(null);
+        updateSavedBadges();
+      }
+    });
+
+    updateSavedBadges();
+  }
+
+  /**
+   * The save toggle used on cards, the quick view and the product page.
+   * `inline` renders it as a plain action button instead of a floating disc
+   * over the image.
+   */
+  function saveFab(product, { inline = false } = {}) {
+    const saved = isSaved(product.slug);
+    const name = escapeHtml(product.name);
+    const label = saved ? `Remove ${name} from saved` : `Save ${name} for later`;
+
+    return `<button class="save-fab${saved ? ' save-fab--saved' : ''}${inline ? ' save-fab--inline' : ''}"
+             type="button" data-save-slug="${escapeHtml(product.slug)}" data-save-label="${name}"
+             aria-pressed="${saved}" aria-label="${label}">
+             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+               <path d="M12 20.3s-7.2-4.6-9.5-9.2A5.4 5.4 0 0 1 12 6.3a5.4 5.4 0 0 1 9.5 4.8C19.2 15.7 12 20.3 12 20.3Z"></path>
+             </svg>
+           </button>`;
+  }
+
+  /* ==========================================================================
+     Quick view — the product in a modal, so the grid does not have to be
+     navigated away from to answer "what is this and what does it cost".
+     ========================================================================== */
+
+  let quickViewReturnFocus = null;
+
+  function quickViewMarkup(product) {
+    const media = product.image_url
+      ? `<img class="quickview__img" src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}">`
+      : `<div class="quickview__img quickview__img--placeholder" style="background:${escapeHtml(product.tint || '#D9CCEA')}" aria-hidden="true"></div>`;
+
+    const buy = product.in_stock
+      ? `<a class="btn btn-solid" href="${escapeHtml(productLink(product))}" target="_blank" rel="noopener">
+           <span class="btn__label">${highlightWhatsApp('Buy on WhatsApp')}</span>
+         </a>`
+      : `<span class="btn btn-solid" aria-disabled="true"><span class="btn__label">Sold out</span></span>`;
+
+    return `
+      <div class="quickview__media">${media}</div>
+      <div class="quickview__body">
+        <div class="cat">${escapeHtml(product.category)}</div>
+        <h3 class="quickview__name">${escapeHtml(product.name)}</h3>
+        <div class="quickview__price">${priceHtml(product.price_cents)}</div>
+        ${product.description
+          ? `<p class="quickview__desc">${escapeHtml(product.description)}</p>`
+          : ''}
+        <div class="quickview__actions">
+          ${buy}
+          ${saveFab(product, { inline: true })}
+        </div>
+        <a class="quickview__details" href="${escapeHtml(productUrl(product))}">View full details &rarr;</a>
+      </div>`;
+  }
+
+  function openQuickView(slug) {
+    const product =
+      typeof Catalog !== 'undefined' && Catalog.listProducts
+        ? Catalog.listProducts().find((p) => p.slug === slug)
+        : null;
+    if (!product) return;
+
+    const dialog = document.getElementById('quickview-dialog');
+    const body = document.getElementById('quickview-body');
+    if (!dialog || !body) return;
+
+    body.innerHTML = quickViewMarkup(product);
+    quickViewReturnFocus = document.activeElement;
+    dialog.hidden = false;
+    document.body.classList.add('quickview-open');
+
+    const close = dialog.querySelector('[data-quickview-close]');
+    if (close) close.focus();
+  }
+
+  function closeQuickView() {
+    const dialog = document.getElementById('quickview-dialog');
+    if (!dialog || dialog.hidden) return;
+    dialog.hidden = true;
+    document.body.classList.remove('quickview-open');
+
+    if (quickViewReturnFocus && typeof quickViewReturnFocus.focus === 'function') {
+      quickViewReturnFocus.focus();
+    }
+    quickViewReturnFocus = null;
+  }
+
+  /** Delegated triggers + the three ways out (backdrop, button, Escape). */
+  function initQuickView() {
+    document.addEventListener('click', (event) => {
+      const open = event.target.closest('[data-quickview-slug]');
+      if (open) {
+        event.preventDefault();
+        openQuickView(open.dataset.quickviewSlug);
+        return;
+      }
+      if (event.target.closest('[data-quickview-close]')) closeQuickView();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeQuickView();
     });
   }
 
@@ -244,6 +491,7 @@ const Store = (() => {
       <li>
         <article class="product">
           <a class="product__link" href="${escapeHtml(detail)}" aria-hidden="true" tabindex="-1">${media}</a>
+          ${saveFab(product)}
           <div class="cat">${escapeHtml(product.category)}</div>
           <h3 class="product__name"><a href="${escapeHtml(detail)}">${escapeHtml(product.name)}</a></h3>
           ${product.description
@@ -255,7 +503,11 @@ const Store = (() => {
                ${product.in_stock ? '' : 'aria-disabled="true"'}>
               <span class="btn__label">${product.in_stock ? highlightWhatsApp('Buy on WhatsApp') : 'Sold out'}</span>
             </a>
-            ${shareButton(product)}
+            <div class="product__actions-row">
+              <button class="quickview-btn" type="button" data-quickview-slug="${escapeHtml(product.slug)}"
+                      aria-label="Quick view: ${escapeHtml(product.name)}">Quick view</button>
+              ${shareButton(product, 'share--row')}
+            </div>
           </div>
         </article>
       </li>`;
@@ -303,6 +555,11 @@ const Store = (() => {
     // the guard.
     if (typeof syncStickyOffsets === 'function') syncStickyOffsets();
 
+    // Save toggles, the badge and quick view all work off delegated clicks and
+    // localStorage, so any page that renders cards gets them for free.
+    initSaved();
+    initQuickView();
+
     return { storeName, whatsappNumber, deliveryPercent };
   }
 
@@ -322,5 +579,18 @@ const Store = (() => {
     shareButton,
     initShare,
     highlightWhatsApp,
+    savedList,
+    isSaved,
+    toggleSaved,
+    clearSaved,
+    savedProducts,
+    recordProductView,
+    recentlyViewedProducts,
+    saveFab,
+    openQuickView,
+    closeQuickView,
+    initSaved,
+    initQuickView,
+    updateSavedBadges,
   };
 })();

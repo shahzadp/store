@@ -75,6 +75,9 @@ function renderNotFound() {
 }
 
 function render(product) {
+  // Remember the view for the "Recently viewed" row on the home page.
+  Store.recordProductView(product.slug);
+
   const media = product.image_url
     ? `<img class="product-detail__img" src="${Store.escapeHtml(product.image_url)}" alt="${Store.escapeHtml(product.name)}">`
     : `<div class="product-detail__img placeholder" style="background:${Store.escapeHtml(product.tint || '#D9CCEA')}" aria-hidden="true"></div>`;
@@ -179,11 +182,17 @@ function render(product) {
 
       ${specsBox}
       ${fullBox}
+      <section class="related" id="related" hidden aria-label="You may also like">
+        <h2 class="product-detail__box-title">You may also like</h2>
+        <ul class="recent__row" id="related-row"></ul>
+      </section>
     </div>`;
 
   renderCrumbs(product);
   syncMeta(product);
   wireOptions(product);
+  renderRelated(product);
+  wireBuyBar(product);
 }
 
 /**
@@ -200,16 +209,75 @@ function optionMeta(option) {
 }
 
 /**
+ * "You may also like" — same category first, then whatever else the shop
+ * carries, capped at four. Every card is a real, in-catalog product; nothing
+ * here is invented or merchandised beyond that.
+ */
+function renderRelated(product) {
+  const section = view.querySelector('#related');
+  const row = view.querySelector('#related-row');
+  if (!section || !row) return;
+
+  const others = Catalog.listProducts().filter((p) => p.slug !== product.slug);
+  const sameCategory = others.filter((p) => p.category === product.category);
+  const related = (sameCategory.length ? sameCategory : others).slice(0, 4);
+
+  if (!related.length) return;
+
+  row.innerHTML = related.map(Store.productCard).join('');
+  section.removeAttribute('hidden');
+}
+
+/**
+ * The sticky buy bar under small viewports. It appears only once the page's
+ * own buy button has scrolled out of view, and its link mirrors the page's —
+ * add-ons included — through the same sync in wireOptions().
+ */
+function wireBuyBar(product) {
+  const bar = document.getElementById('buybar');
+  const price = document.getElementById('buybar-price');
+  if (!bar || !price) return;
+
+  if (!product.in_stock) return; // the page's disabled control is the story
+
+  price.textContent = Store.formatPrice(product.price_cents);
+
+  // Mirror the page's buy link even before any add-on is touched.
+  const pageLink = document.getElementById('buy-link');
+  const barLink = document.getElementById('buybar-link');
+  if (pageLink && barLink) barLink.href = pageLink.getAttribute('href') || '#';
+
+  const anchor = view.querySelector('.product-detail__actions');
+  if (!anchor || typeof IntersectionObserver === 'undefined') {
+    bar.hidden = false;
+    document.body.classList.add('buybar-visible');
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      const past = !entry.isIntersecting;
+      bar.hidden = !past;
+      document.body.classList.toggle('buybar-visible', past);
+    }
+  });
+  observer.observe(anchor);
+}
+
+/**
  * Keeps the buy link's WhatsApp message in step with the add-ons. Every option
  * is stated either way ("Cold drink (500ml): yes"/"no"), so an unticked box is
  * an explicit answer rather than a silence; a chosen surcharge is stated on the
  * line as "(+ Rs 100)". The link stays a real anchor whose href is merely
- * updated, so middle-click and copy-link still behave.
+ * updated, so middle-click and copy-link still behave. The sticky buy bar's
+ * link is kept in step too — it is the same action in a smaller box.
  */
 function wireOptions(product) {
   const box = view.querySelector('.product-options');
   const link = view.querySelector('#buy-link');
   if (!box || !link) return;
+
+  const barLink = document.getElementById('buybar-link');
 
   const sync = () => {
     const selections = [...box.querySelectorAll('input[data-option-key]')].map((input) => ({
@@ -219,6 +287,7 @@ function wireOptions(product) {
       price_cents: Number(input.dataset.optionPrice) || 0,
     }));
     link.href = Store.productLink(product, selections);
+    if (barLink) barLink.href = link.href;
   };
 
   box.addEventListener('change', sync);

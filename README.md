@@ -25,6 +25,7 @@ a backend, because there is no backend.
 | `collections.html` / `collections.js` | Collections — editorial, not for sale. **Generated.** |
 | `about.html` / `about.js`, `journal.html` / `journal.js` | Static copy pages. **Generated.** |
 | `product.html` / `product.js` | Per-product page. **Generated.** |
+| `saved.html` / `saved.js` | Saved-for-later page — the on-device wishlist. **Generated.** |
 | `admin.html` / `admin.css` / `admin.js` | Catalog editor. Hand-written, not part of the build. |
 | `README.md` | This file. |
 

@@ -20,3 +20,14 @@
     </div>
   </section>
 </main>
+
+<!-- Sticky mobile buy bar. Appears only once the page's own buy button has
+     scrolled out of view (product.js), and only on small screens (CSS). -->
+<div class="buybar" id="buybar" role="group" aria-label="Buy this product" hidden>
+  <div class="buybar__inner">
+    <span class="buybar__price" id="buybar-price"></span>
+    <a class="btn btn-solid buybar__cta" id="buybar-link" href="#" target="_blank" rel="noopener">
+      <span class="btn__label">Buy on <span class="wa-word">WhatsApp</span></span>
+    </a>
+  </div>
+</div>
