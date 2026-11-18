@@ -238,6 +238,16 @@ button height and gaps.
 **Safari/iOS: none verified.** All testing has been Chromium on desktop
 emulation. Not a single iOS device has been checked.
 
+**A product page min-width trap on phones.** The product page produced a
+horizontal scrollbar at phone widths, even after pinch-zoom. Cause:
+`.product-detail` and `.product-detail__main` declare their tracks as plain
+`1fr`, which resolves to `minmax(auto, 1fr)` — the track refuses to shrink
+below its largest child's min-content, and the 800px photograph is the
+largest child. The fix is `minmax(0, 1fr)` on the tracks AND `min-width: 0`
+on every media/body/box/related child, because one does not help without
+the other. Diagnosed by squeezing `body` to 320px and listing the elements
+that exceeded it: it was the image, pinned at ~460px.
+
 **A third-party licence file at the root makes GitHub mislabel the whole repo.**
 This repository had no `LICENSE` and no badge, which was harmless. Committing the
 sql.js notice without thinking would not have been: GitHub's licence detector

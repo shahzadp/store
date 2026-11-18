@@ -209,9 +209,10 @@ function optionMeta(option) {
 }
 
 /**
- * "You may also like" — same category first, then whatever else the shop
- * carries, capped at four. Every card is a real, in-catalog product; nothing
- * here is invented or merchandised beyond that.
+ * "You may also like" — same category first, then the rest of the catalog,
+ * capped at four. Every card is a real, in-catalog product; nothing here is
+ * invented or merchandised beyond that. Padding to four means the row never
+ * looks thin because one category is small.
  */
 function renderRelated(product) {
   const section = view.querySelector('#related');
@@ -220,7 +221,11 @@ function renderRelated(product) {
 
   const others = Catalog.listProducts().filter((p) => p.slug !== product.slug);
   const sameCategory = others.filter((p) => p.category === product.category);
-  const related = (sameCategory.length ? sameCategory : others).slice(0, 4);
+  const sameSet = new Set(sameCategory);
+  const related = [
+    ...sameCategory,
+    ...others.filter((p) => !sameSet.has(p)),
+  ].slice(0, 4);
 
   if (!related.length) return;
 

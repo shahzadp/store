@@ -1035,7 +1035,11 @@ h2 {
 
 .product-detail {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  /* minmax(0, …) matters here: grid tracks otherwise default to an `auto`
+     minimum — the content's intrinsic width. The product photograph is an
+     800px intrinsic on a ~450px-wide column, which is exactly the overflow
+     that produced a horizontal scrollbar on phones. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
   gap: 32px 48px;
   /* stretch, not start: the image and the specifications box are grid
      siblings, so letting the row height decide makes both end on the same
@@ -1049,11 +1053,13 @@ h2 {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 48px;
   align-items: stretch;
+  min-width: 0;
 }
 
 .product-detail__media {
   position: relative;
   min-height: 0;
+  min-width: 0;
 }
 
 .product-detail__img {
@@ -1070,6 +1076,7 @@ h2 {
   flex-direction: column;
   align-items: flex-start;
   gap: 10px;
+  min-width: 0;
 }
 
 .product-detail__name {
@@ -1159,6 +1166,7 @@ h2 {
   border: 1px solid var(--line);
   background: var(--surface-off-white);
   padding: 22px 24px 24px;
+  min-width: 0;
 }
 
 /* Spans both columns: it reads as an extension of the product, not a
@@ -1185,6 +1193,7 @@ h2 {
   line-height: 1.65;
   color: var(--ink-body);
   max-width: 70ch;
+  min-width: 0;
 }
 
 .product-detail__copy p {
@@ -1258,16 +1267,18 @@ h2 {
   /* One column: product, then specifications, then the full description.
      The specs box was desktop-only by request, but dimensions and weight are
      exactly what a phone shopper wants before messaging, so it stacks rather
-     than disappearing. */
+     than disappearing. minmax(0, 1fr) because an intrinsic 800px photograph
+     otherwise keeps the single track wider than the screen. */
   .product-detail {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
     padding: 8px 0 48px;
   }
 
   .product-detail__main {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
+    min-width: 0;
   }
 
   .product-detail__media {
@@ -1277,6 +1288,8 @@ h2 {
   .product-detail__img {
     position: static;
     height: auto;
+    width: 100%;
+    min-width: 0;
     aspect-ratio: 4 / 5;
   }
 
@@ -2089,7 +2102,7 @@ body.voucher-open {
 .recent__row {
   list-style: none;
   display: flex;
-  gap: 20px;
+  gap: 16px;
   margin: 0;
   padding: 4px 2px 16px;
   overflow-x: auto;
@@ -2098,7 +2111,7 @@ body.voucher-open {
 }
 
 .recent__row > li {
-  flex: 0 0 clamp(180px, 52vw, 218px);
+  flex: 0 0 clamp(170px, 20vw, 236px);
   min-width: 0;
   scroll-snap-align: start;
 }
@@ -2108,6 +2121,7 @@ body.voucher-open {
   grid-column: 1 / -1;
   padding-top: 8px;
   border-top: 1px solid var(--line);
+  min-width: 0;
 }
 
 .related .recent__row {
