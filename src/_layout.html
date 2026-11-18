@@ -21,8 +21,9 @@
      exception; inline SCRIPT is not allowed anywhere, which is what makes this
      worth having. `frame-ancestors` is deliberately absent: it is ignored in a
      meta tag, so clickjacking cannot be fixed from here. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://cdn.jsdelivr.net https://mystore.goatcounter.com; media-src 'self'; frame-src 'none'; form-action 'self'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://gc.zgo.at https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://cdn.jsdelivr.net https://mystore.goatcounter.com https://images.pexels.com; media-src 'self'; frame-src 'none'; form-action 'self'; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="preconnect" href="https://images.pexels.com" crossorigin>
 <link rel="stylesheet" href="./styles.css?v={{version}}">
 <script data-goatcounter="https://mystore.goatcounter.com/count"
         async src="https://gc.zgo.at/count.js"></script>
